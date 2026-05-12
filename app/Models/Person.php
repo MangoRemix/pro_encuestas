@@ -7,14 +7,16 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class Person extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    /** @use HasFactory<PersonFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -28,5 +30,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function rol(): BelongsTo {
+
+        return $this->belongsTo(Rol::class);
+
+    }
+
+    public function sex(): BelongsTo {
+
+        return $this->belongsTo(Sex::class);
+
+    }
+
+    public function parish(): BelongsTo {
+
+        return $this->belongsTo(Parish::class);
+
     }
 }

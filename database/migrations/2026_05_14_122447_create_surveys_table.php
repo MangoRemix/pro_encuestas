@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('age_ranges', function (Blueprint $table) {
-            $table->id()->autoIncrement()->primary();;
-            $table->string('range'); //example 18-55
+        Schema::create('surveys', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->max(550);
+            $table->timestamp('init_date');
+            $table->timestamp('finish_date');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('age_ranges');
+        Schema::dropIfExists('surveys');
     }
 };

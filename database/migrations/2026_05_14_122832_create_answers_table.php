@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('age_ranges', function (Blueprint $table) {
-            $table->id()->autoIncrement()->primary();;
-            $table->string('range'); //example 18-55
+        Schema::create('answers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->max(350);
+            $table->integer('order');
+            $table->unsignedBigInteger('question_id');
+            $table->foreign('question_id')->references('id')->on('questions')->nullable()->default(null);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('age_ranges');
+        Schema::dropIfExists('answers');
     }
 };

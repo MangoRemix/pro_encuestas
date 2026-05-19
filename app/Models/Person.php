@@ -8,14 +8,18 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use LDAP\Result;
 
+#[Fillable(['name', 'email', 'password','sex_id','age_range_id','parish_id'])]
 
-#[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class Person extends Authenticatable
 {
+    protected $table = 'persons';
+
     /** @use HasFactory<PersonFactory> */
     use HasFactory, Notifiable;
 
@@ -24,6 +28,7 @@ class Person extends Authenticatable
      *
      * @return array<string, string>
      */
+
     protected function casts(): array
     {
         return [
@@ -48,5 +53,11 @@ class Person extends Authenticatable
 
         return $this->belongsTo(Parish::class);
 
+    }
+
+    public function results(): HasMany {
+
+        return $this->hasMany(Result::class);
+        
     }
 }

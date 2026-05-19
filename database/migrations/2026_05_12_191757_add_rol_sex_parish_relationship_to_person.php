@@ -17,10 +17,13 @@ return new class extends Migration
             $table->unsignedBigInteger('rol_id');
             $table->unsignedBigInteger('parish_id');
             $table->unsignedBigInteger('sex_id');
+            $table->unsignedBigInteger('age_range_id');
 
             $table->foreign('rol_id')->references('id')->on('roles')->default('');
             $table->foreign('parish_id')->references('id')->on('parishes');
             $table->foreign('sex_id')->references('id')->on('sexs');
+            $table->foreign('age_range_id')->references('id')->on('age_ranges');
+            $table->softDeletes();
         });
     }
 
@@ -35,9 +38,10 @@ return new class extends Migration
         $table->dropForeign(['rol_id']);
         $table->dropForeign(['parish_id']);
         $table->dropForeign(['sex_id']);
+        $table->dropForeign(['age_range_id']);
 
         // 2. Ahora sí podemos borrar las columnas
-        $table->dropColumn(['rol_id', 'parish_id', 'sex_id']);
+        $table->dropColumn(['rol_id', 'parish_id', 'sex_id','age_range_id']);
         });
     }
 };

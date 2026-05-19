@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
             RolSeeder::class,
             ParishSeeder::class,
             SexSeeder::class,
-            AgeRangeSeeder::class
+            AgeRangeSeeder::class,
+            PersonSeeder::class
         ]);
     }
 }

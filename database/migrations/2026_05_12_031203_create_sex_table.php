@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('abbreviation')->max(100); //example M F 
             $table->string('description')->max(100); //example masculino/male femenino/female
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

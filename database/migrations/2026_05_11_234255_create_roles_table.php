@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id()->autoIncrement()->primary();;
             $table->string('name')->unique()->max(150);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

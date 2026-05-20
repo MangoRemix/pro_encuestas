@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('parishes', function (Blueprint $table) {
-            $table->id()->autoIncrement()->primary();;
-            $table->string('name')->max(300);
+            $table->id();
+            $table->string('name',300);
             $table->timestamps();
             $table->softDeletes();
         });

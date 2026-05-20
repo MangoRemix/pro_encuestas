@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('surveys', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->max(550);
+            $table->string('name',550);
             $table->timestamp('init_date');
             $table->timestamp('finish_date');
             $table->timestamps();

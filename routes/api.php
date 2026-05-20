@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AgeRangeController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\SurveyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +15,7 @@ Route::prefix('person')->group(function (){
 
     /** ENCUESTADO RESOURCES */
     Route::prefix('respondent')->group(function () {
-        Route::post('create',[PersonController::class, 'create']);
+        Route::post('create',[PersonController::class, 'store']);
     });
     
 });
@@ -22,6 +23,15 @@ Route::prefix('person')->group(function (){
 
 /** AGE RANGE RESOURCES  **/
 Route::prefix('age-range')->group(function (){
-    Route::post('create',[AgeRangeController::class, 'create']);
-    Route::delete('delete/{id}',[AgeRangeController::class, 'delete']);
+    Route::post('create',[AgeRangeController::class, 'store']);
+    Route::delete('delete/{id}',[AgeRangeController::class, 'destroy']);
+});
+
+/** SURVEY RESOURCES */
+Route::prefix('survey')->group(function (){
+    Route::post('create',[SurveyController::class, 'store']);
+    Route::get('show-all',[SurveyController::class, 'show_all']);
+    Route::get('show-one/{id}',[SurveyController::class, 'show_one']);
+    Route::put('update/{id}',[SurveyController::class, 'update']);
+    Route::delete('delete/{id}',[SurveyController::class, 'destroy']);
 });

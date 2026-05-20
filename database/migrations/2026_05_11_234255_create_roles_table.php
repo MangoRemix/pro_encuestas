@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
-            $table->id()->autoIncrement()->primary();;
-            $table->string('name')->unique()->max(150);
+            $table->id();
+            $table->string('name',150)->unique();
             $table->timestamps();
             $table->softDeletes();
         });

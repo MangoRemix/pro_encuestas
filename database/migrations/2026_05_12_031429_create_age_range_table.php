@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('age_ranges', function (Blueprint $table) {
-            $table->id()->autoIncrement()->primary();;
+            $table->id();
             $table->string('range'); //example 18-55
             $table->timestamps();
             $table->softDeletes();

@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sexs', function (Blueprint $table) {
-            $table->id()->autoIncrement()->primary();;
-            $table->string('abbreviation')->max(100); //example M F 
-            $table->string('description')->max(100); //example masculino/male femenino/female
+            $table->id();
+            $table->string('abbreviation',150); //example M F 
+            $table->string('description',150); //example masculino/male femenino/female
             $table->timestamps();
             $table->softDeletes();
         });

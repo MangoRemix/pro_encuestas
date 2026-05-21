@@ -49,7 +49,7 @@ class SurveyController extends Controller
     {
         try{
             
-            $request->name = strtoupper($request->name);
+            $request['name'] = strtoupper($request->name);
             
             $validator = Validator::make($request->all(), $this->rules());
             
@@ -76,11 +76,11 @@ class SurveyController extends Controller
     /**
      * Mostrar una encuesta específica.
      */
-    public function show_one(int $id): JsonResponse
+    public function show(int $id): JsonResponse
     {   
         try {
             //code...
-            $survey = Survey::where('id',$id)->get();
+            $survey = Survey::query()->where('id',$id)->get();
 
             if(!$survey){
                 throw new Exception("Not found register", 404);    
@@ -97,12 +97,6 @@ class SurveyController extends Controller
         
     }
 
-    public function show_all(): JsonResponse
-    {   
-        $survey = Survey::get();
-        return response()->json($survey, 200);
-    }
-
     /**
      * Actualizar una encuesta existente.
      */
@@ -116,7 +110,7 @@ class SurveyController extends Controller
                 return response()->json($validator->errors(), 422);
             }
 
-            $update = Survey::where('id',$id)->update($validator->validated());
+            $update = Survey::query()->where('id',$id)->update($validator->validated());
             if(!$update)
                 throw new Exception("Not found register", 404);
                 
@@ -142,7 +136,7 @@ class SurveyController extends Controller
         try {
 
             // Al usar el trait SoftDeletes en el modelo, esto solo llenará la columna deleted_at
-            $delete_status = Survey::where('id',$id)->delete();
+            $delete_status = Survey::query()->where('id',$id)->delete();
             
             if(!$delete_status)
                 throw new Exception("Not found register", 404);

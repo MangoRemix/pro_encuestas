@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name','order','survery_id'])]
+#[Fillable(['name','order','survey_id'])]
 
 class Category extends Model
 {

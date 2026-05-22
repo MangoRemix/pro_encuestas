@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AgeRangeController;
+use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\QuestionController;
@@ -41,6 +42,7 @@ Route::prefix('survey')->group(function (){
 /** CATEGORIES RESOURES */
 Route::prefix('category')->group(function (){
     Route::post('create',[CategoryController::class, 'store']);
+    /** CREAR UN METODO PARA CREAR ARRAY DE  CATEGORIES FALTANTE*/
     Route::get('show-all',[CategoryController::class, 'index']);
     Route::get('show-one/{id}',[CategoryController::class, 'show']);
     Route::put('update/{id}',[CategoryController::class, 'update']);
@@ -50,8 +52,19 @@ Route::prefix('category')->group(function (){
 /** QUESTIONS RESOURES */
 Route::prefix('question')->group(function (){
     Route::post('create',[QuestionController::class, 'store']);
+    /** CREAR UN METODO PARA CREAR ARRAY DE  QUESTIONS FALTANTE*/
     Route::get('show-all',[QuestionController::class, 'index']);
     Route::get('show-one/{id}',[QuestionController::class, 'show']);
     Route::put('update/{id}',[QuestionController::class, 'update']);
     Route::delete('delete/{id}',[QuestionController::class, 'destroy']);
+});
+
+/** ANSWERS RESOURES */
+Route::prefix('answer')->group(function (){
+    Route::post('create',[AnswerController::class, 'create']);
+    /** CREAR UN METODO PARA CREAR ARRAY DE  ANSWERS FALTANTE*/
+    Route::get('show-all',[AnswerController::class, 'index']);
+    Route::get('show-one/{id}',[AnswerController::class, 'show']);
+    Route::put('update/{id}',[AnswerController::class, 'update']);
+    Route::delete('delete/{id}',[AnswerController::class, 'destroy']);
 });

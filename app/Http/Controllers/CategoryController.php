@@ -80,9 +80,7 @@ class CategoryController extends Controller
             
             return response()->json([
                 "message" => "Categoria creada exitosamente",
-                "request" => $validator->validated()
-                //"exist" => $exist_category_order
-                //"ordered_categories" => $ordered_categories,
+                
             ],201);
 
         } catch (\Throwable $th) {

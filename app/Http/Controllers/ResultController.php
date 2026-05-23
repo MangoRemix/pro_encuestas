@@ -3,40 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Answer;
+use App\Models\Person;
 use App\Models\Question;
+use App\Models\Result;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class AnswerController extends Controller
+class ResultController extends Controller
 {
     public static function rules($id = null){
         return [
-            "name"=> "required|string|max:350",
-            "order" => "required|integer|min:1",
-            "question_id" => "required|integer|min:1",
+            "person_id" => "required|integer|min:1|exists:persons,id",
+            "question_id" => "required|integer|min:1|exists:questions,id",
+            "answer_id" => "required|integer|min:1|exists:answers,id",
         ];
-
     }
 
     public static function updateRules($id = null){
         return [
-            "name"=> "string|max:350",
-            "order" => "integer|min:1",
-            "question_id" => "integer|min:1",
+            "person_id" => "integer|min:1|exists:persons,id",
+            "question_id" => "integer|min:1|exists:questions,id",
+            "answer_id" => "integer|min:1|exists:answers,id",
         ];
-        
     }
-
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         //
-        $answer = Answer::all();
-        return response()->json($answer,200);
+        return response()->json(Result::all(),200);
     }
 
     /**
@@ -47,24 +44,21 @@ class AnswerController extends Controller
         //
         try {
             //code...
-            $request['name'] = strtoupper($request['name']);
-            
+
             $validator = Validator::make($request->all(),$this->rules());
 
             if($validator->fails()){
                 return response()->json($validator->errors(), 422);
             }
-
-            $question = Question::query()->where('id',$request['question_id'])->first();
-            
-            if(!$question)
-                throw new Exception("Not found question register", 404);
-
-
-            $answer = Answer::create($validator->validate());
+            $validate_answer = Answer::query()->where('id',$request['answer_id'])
+            ->where('question_id',$request['question_id'])->first();
+            if(!$validate_answer)
+                throw new Exception("Bad Request respuesta no pertenece a pregunta", 400);
+                
+            Result::create($validator->validated());
 
             return response()->json([
-                "message:" => "Creacion de respuesta exitosa",
+                "message" => "Resultado creado exitosamente"
             ],201);
 
         } catch (\Throwable $th) {
@@ -74,7 +68,6 @@ class AnswerController extends Controller
                 "code" => $th->getCode()
             ]);
         }
-
     }
 
     /**
@@ -93,13 +86,11 @@ class AnswerController extends Controller
         //
         try {
             //code...
-            $answer = Answer::query()->where('id',$id)->first();
-
-            if(!$answer)
-                throw new Exception("Not found answer register", 404);
-            
-            return response()->json(["answer"=>$answer],200);
-
+            $result = Result::query()->where('id',$id)->first();
+            if(!$result)
+                throw new Exception("Not found result register", 404);
+                
+            return response()->json($result,200);
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json([
@@ -112,7 +103,7 @@ class AnswerController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Answer $answer)
+    public function edit(Result $result)
     {
         //
     }
@@ -125,24 +116,21 @@ class AnswerController extends Controller
         //
         try {
             //code...
-            $request['name'] = strtoupper($request['name']);
-            
             $validator = Validator::make($request->all(),$this->updateRules());
 
             if($validator->fails()){
                 return response()->json($validator->errors(), 422);
             }
+            $validate_answer = Answer::query()->where('id',$request['answer_id'])
+            ->where('question_id',$request['question_id'])->first();
+            if(!$validate_answer)
+                throw new Exception("Bad Request respuesta no pertenece a pregunta", 400);
 
-            $answer = Answer::query()->where('id',$id)->first();
+            Result::query()->where('id',$id)->update($validator->validated());
 
-            if(!$answer)
-                throw new Exception("Not found answer register", 404);
-
-            Answer::query()->where('id',$id)->update($validator->validated());
             return response()->json([
                 "message" => "Actualización exitosa"
             ],200);
-
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json([
@@ -160,12 +148,11 @@ class AnswerController extends Controller
         //
         try {
             //code...
+            $result = Result::query()->where('id',$id)->first();
+            if(!$result)
+                throw new Exception("Not found result register", 404);
 
-            $answer = Answer::query()->where('id',$id)->first();
-            if(!$answer)
-                throw new Exception("Not found answer register", 404);
-                
-            Answer::query()->where('id',$id)->delete();
+            Result::query()->where('id',$id)->delete();
 
             return response()->json([
                 "message" => "Eliminación exitosa"

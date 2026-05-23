@@ -5,6 +5,7 @@ use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SurveyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -67,4 +68,14 @@ Route::prefix('answer')->group(function (){
     Route::get('show-one/{id}',[AnswerController::class, 'show']);
     Route::put('update/{id}',[AnswerController::class, 'update']);
     Route::delete('delete/{id}',[AnswerController::class, 'destroy']);
+});
+
+/** RESULTS RESOURES */
+Route::prefix('result')->group(function (){
+    Route::post('create',[ResultController::class, 'create']);
+    /** CREAR UN METODO PARA CREAR ARRAY DE  RESULTS FALTANTE*/
+    Route::get('show-all',[ResultController::class, 'index']);
+    Route::get('show-one/{id}',[ResultController::class, 'show']);
+    Route::put('update/{id}',[ResultController::class, 'update']);
+    Route::delete('delete/{id}',[ResultController::class, 'destroy']);
 });

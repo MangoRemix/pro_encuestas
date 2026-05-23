@@ -27,7 +27,7 @@ Route::prefix('person')->group(function (){
 
 /** AGE RANGE RESOURCES  **/
 Route::prefix('age-range')->group(function (){
-    Route::post('create',[AgeRangeController::class, 'store']);
+    Route::post('create',[AgeRangeController::class, 'create']);
     Route::delete('delete/{id}',[AgeRangeController::class, 'destroy']);
 });
 

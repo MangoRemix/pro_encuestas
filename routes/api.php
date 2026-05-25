@@ -46,7 +46,7 @@ Route::prefix('survey')->group(function (){
 Route::prefix('category')->group(function (){
     Route::post('create',[CategoryController::class, 'store']);
     Route::post('create-many',[CategoryController::class, 'createMany']);
-    /** CREAR UN METODO PARA CREAR ARRAY DE  CATEGORIES FALTANTE*/
+    
     Route::get('show-all',[CategoryController::class, 'index']);
     Route::get('show-one/{id}',[CategoryController::class, 'show']);
     Route::put('update/{id}',[CategoryController::class, 'update']);
@@ -56,6 +56,7 @@ Route::prefix('category')->group(function (){
 /** QUESTIONS RESOURES */
 Route::prefix('question')->group(function (){
     Route::post('create',[QuestionController::class, 'store']);
+    Route::post('create-many',[QuestionController::class, 'createMany']);
     /** CREAR UN METODO PARA CREAR ARRAY DE  QUESTIONS FALTANTE*/
     Route::get('show-all',[QuestionController::class, 'index']);
     Route::get('show-one/{id}',[QuestionController::class, 'show']);
@@ -66,6 +67,7 @@ Route::prefix('question')->group(function (){
 /** ANSWERS RESOURES */
 Route::prefix('answer')->group(function (){
     Route::post('create',[AnswerController::class, 'create']);
+    Route::post('create-many',[AnswerController::class, 'createMany']);
     /** CREAR UN METODO PARA CREAR ARRAY DE  ANSWERS FALTANTE*/
     Route::get('show-all',[AnswerController::class, 'index']);
     Route::get('show-one/{id}',[AnswerController::class, 'show']);

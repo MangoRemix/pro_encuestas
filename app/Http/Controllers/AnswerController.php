@@ -7,6 +7,7 @@ use App\Models\Question;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AnswerController extends Controller
 {
@@ -14,7 +15,7 @@ class AnswerController extends Controller
         return [
             "name"=> "required|string|max:350",
             "order" => "required|integer|min:1",
-            "question_id" => "required|integer|min:1",
+            "question_id" => "required|integer|min:1|exists:questions,id",
         ];
 
     }
@@ -23,7 +24,7 @@ class AnswerController extends Controller
         return [
             "name"=> "string|max:350",
             "order" => "integer|min:1",
-            "question_id" => "integer|min:1",
+            "question_id" => "integer|min:1|exists:questions,id",
         ];
         
     }
@@ -55,13 +56,21 @@ class AnswerController extends Controller
                 return response()->json($validator->errors(), 422);
             }
 
-            $question = Question::query()->where('id',$request['question_id'])->first();
+            // $question = Question::query()->where('id',$request['question_id'])->first();
             
-            if(!$question)
-                throw new Exception("Not found question register", 404);
+            // if(!$question)
+            //     throw new Exception("Not found question register", 404);
 
+            $exist_answer_order = Answer::query()->where('order',$request['order'])->join('questions','answers.question_id','=','questions.id')->first();
+            if($exist_answer_order)
+                 throw new Exception("orden de respuesta ya existe", 404);
 
-            $answer = Answer::create($validator->validate());
+            $name_answer_question_exist = Answer::query()->where('name',$request->name)->where('question_id',$request->question_id)->first();
+            
+            if($name_answer_question_exist)
+                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+
+            Answer::create($validator->validate());
 
             return response()->json([
                 "message:" => "Creacion de respuesta exitosa",
@@ -138,6 +147,15 @@ class AnswerController extends Controller
             if(!$answer)
                 throw new Exception("Not found answer register", 404);
 
+            $exist_answer_order = Answer::query()->where('order',$request['order'])->join('questions','answers.question_id','=','questions.id')->first();
+            if($exist_answer_order)
+                 throw new Exception("orden de respuesta ya existe", 404);
+
+            $name_answer_question_exist = Answer::query()->where('name',$request->name)->where('question_id',$request->question_id)->first();
+            
+            if($name_answer_question_exist)
+                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+
             Answer::query()->where('id',$id)->update($validator->validated());
             return response()->json([
                 "message" => "Actualización exitosa"
@@ -178,5 +196,67 @@ class AnswerController extends Controller
                 "code" => $th->getCode()
             ]);
         }
+    }
+
+    /** FINAL METODOS CRUD */
+
+    public function createMany(Request $request){
+        try {
+            //code...
+            $question_id = $request[0]['question_id'];
+
+            // $question = Question::query()->where('id',$question_id)->first();
+            
+            // if(!$question)
+            //     throw new Exception("Error not found question register", 404);
+
+            $data = [];
+
+            foreach ($request->all() as $categories => $value) {
+                # code...
+                $value['name'] = strtoupper($value['name']);
+                $value['created_at'] = now();
+                $value['updated_at'] = now();
+                //return response()->json($value);
+                array_push($data,$value);
+            }
+            //return response()->json($data);
+
+            $validator = Validator::make($data, [
+                '*.name'      => ['required','string','distinct',Rule::unique('answers','name')->where(function ($query) use ($question_id){
+                    $query->where('question_id',$question_id);
+                })],
+                '*.question_id' => 'required|integer|exists:questions,id|in:'.$question_id,
+                '*.order'     => ['required','integer','distinct',Rule::unique('answers','order')->where(function ($query) use ($question_id){
+                    $query->where('question_id',$question_id);
+                })], // <--- "distinct" hace la magia
+                "*.created_at" => 'date',
+                "*.updated_at" => 'date',
+            ],[
+                "*.name.in" => "los name deben ser diferentes",
+                "*.question_id.in" => "los question_id's son diferentes"
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            Answer::insert($validator->validated());
+
+            return response()->json([
+                "message" => "se han creado exitosamente los ".count($validator->validated())
+            ],200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'code' => $th->getCode(),
+                'line' => $th->getLine()
+            ]);
+        }
+
     }
 }

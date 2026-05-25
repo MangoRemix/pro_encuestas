@@ -21,7 +21,7 @@ class CategoryController extends Controller
         return [
             "name"=> 'required|string|max:350',
             "order"=> 'required|integer|min:1',
-            "survey_id"=> 'required|integer'
+            "survey_id"=> 'required|integer|exists:surveys,id'
         ];
         
     }
@@ -31,7 +31,7 @@ class CategoryController extends Controller
         return [
             "name"=> 'string|max:350',
             "order"=> 'integer|min:1',
-            "survey_id"=> 'integer'
+            "survey_id"=> 'integer|exists:surveys,id'
         ];
         
     }
@@ -57,8 +57,6 @@ class CategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
 
-        $console = new ConsoleOutput();
-
         try {
             $request['name'] = strtoupper($request['name']);
 
@@ -68,10 +66,10 @@ class CategoryController extends Controller
                 return response()->json($validator->errors(), 422);
             }
 
-            $survey = Survey::query()->where('id',$request['survey_id'])->first();
+            // $survey = Survey::query()->where('id',$request['survey_id'])->first();
 
-            if(!$survey)
-                throw new Exception("Not found survey_id", 404);
+            // if(!$survey)
+            //     throw new Exception("Not found survey_id", 404);
             
             
             $exist_category_order = Category::query()->where('order',$request['order'])->join('surveys','categories.survey_id','=','surveys.id')->first();
@@ -215,7 +213,7 @@ class CategoryController extends Controller
             $survey = Survey::query()->where('id',$survey_id)->first();
             
             if(!$survey)
-                throw new Exception("Error not found survey register", 40);
+                throw new Exception("Error not found survey register", 404);
 
             $data = [];
 
@@ -233,7 +231,9 @@ class CategoryController extends Controller
                     $query->where('survey_id',$survey_id);
                 })],
                 '*.survey_id' => 'required|integer|in:'.$survey_id,
-                '*.order'     => 'required|integer|distinct', // <--- "distinct" hace la magia
+                '*.order'     => ['required','integer','distinct',Rule::unique('categories','order')->where(function ($query) use ($survey_id){
+                    $query->where('survey_id',$survey_id);
+                })], // <--- "distinct" hace la magia
                 "*.created_at" => 'date',
                 "*.updated_at" => 'date',
             ],[
@@ -244,7 +244,6 @@ class CategoryController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'El orden de las categorías no puede repetirse.',
                     'errors' => $validator->errors()
                 ], 422);
             }

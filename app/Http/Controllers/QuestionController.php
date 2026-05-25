@@ -7,6 +7,7 @@ use App\Models\Question;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class QuestionController extends Controller
 {
@@ -69,6 +70,11 @@ class QuestionController extends Controller
             $exist_question_order = Question::query()->where('questions.order',$request['order'])->join('categories','questions.category_id','=','categories.id')->first();
             if($exist_question_order)
                 throw new Exception("orden de pregunta ya existe", 404);
+
+            $name_question_category_exist = Question::query()->where('name',$request->name)->where('category_id',$request->category_id)->first();
+            
+            if($name_question_category_exist)
+                throw new Exception("Error nombre de pregunta en categoria ya existe", 400);
             
             Question::create($validator->validated());
 
@@ -139,6 +145,12 @@ class QuestionController extends Controller
                 if(!$category)
                     throw new Exception("Not found category register", 404);
             }
+            
+            $name_question_category_exist = Question::query()->where('name',$request->name)->where('category_id',$request->category_id)->first();
+            
+            if($name_question_category_exist)
+                throw new Exception("Error nombre de pregunta en categoria ya existe", 400);
+
             $question = Question::query()->where('id',$id)->first();
             
             if(!$question)
@@ -191,5 +203,67 @@ class QuestionController extends Controller
                 'code' => $th->getCode()
             ]);
         }
+    }
+
+    /** FINAL METODOS CRUD */
+
+    public function createMany(Request $request){
+        try {
+            //code...
+            $category_id = $request[0]['category_id'];
+
+            $category = Category::query()->where('id',$category_id)->first();
+            
+            if(!$category)
+                throw new Exception("Error not found category register", 404);
+
+            $data = [];
+
+            foreach ($request->all() as $questions => $value) {
+                # code...
+                $value['name'] = strtoupper($value['name']);
+                $value['created_at'] = now();
+                $value['updated_at'] = now();
+                //return response()->json($value);
+                array_push($data,$value);
+            }
+
+            $validator = Validator::make($data, [
+                '*.name'      => ['required','string','distinct',Rule::unique('questions','name')->where(function ($query) use ($category_id){
+                    $query->where('category_id',$category_id);
+                })],
+                '*.category_id' => 'required|integer|in:'.$category_id,
+                '*.order'     => ['required','integer','distinct',Rule::unique('questions','order')->where(function ($query) use ($category_id){
+                    $query->where('category_id',$category_id);
+                })], // <--- "distinct" hace la magia
+                "*.created_at" => 'date',
+                "*.updated_at" => 'date',
+            ],[
+                "*.name.in" => "los name deben ser diferentes",
+                "*.category_id.in" => "los category_id's son diferentes"
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'El orden de las categorías no puede repetirse.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            Question::insert($validator->validated());
+
+            return response()->json([
+                "message" => "se han creado exitosamente los ".count($validator->validated())
+            ],200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'code' => $th->getCode(),
+                'line' => $th->getLine()
+            ]);
+        }
+
     }
 }

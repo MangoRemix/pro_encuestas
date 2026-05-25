@@ -8,6 +8,8 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class CategoryController extends Controller
 {
@@ -55,6 +57,8 @@ class CategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
 
+        $console = new ConsoleOutput();
+
         try {
             $request['name'] = strtoupper($request['name']);
 
@@ -73,7 +77,13 @@ class CategoryController extends Controller
             $exist_category_order = Category::query()->where('order',$request['order'])->join('surveys','categories.survey_id','=','surveys.id')->first();
             if($exist_category_order)
                  throw new Exception("orden de categoria ya existe", 404);
+
+            $name_category_survey_exist = Category::query()->where('name',$request->name)->where('survey_id',$request->survey_id)->first();
             
+            if($name_category_survey_exist)
+                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+                
+
             Category::create($validator->validated());
             //$ordered_categories = Category::query()->where('survey_id',$request->survey_id)->orderBy('categories.order','asc')->get();
             
@@ -143,6 +153,11 @@ class CategoryController extends Controller
             if($exist_category_order)
                  throw new Exception("orden de categoria ya existe", 404);
 
+            $name_category_survey_exist = Category::query()->where('name',$request->name)->where('survey_id',$request->survey_id)->first();
+            
+            if($name_category_survey_exist)
+                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+
             $category = Category::query()->where('id',$id)->update($validator->validated());
 
             if(!$category)
@@ -188,5 +203,65 @@ class CategoryController extends Controller
             ]);
         }
         
+    }
+
+    /** FINAL METODOS CRUD */
+
+    public function createMany(Request $request){
+        try {
+            //code...
+            $survey_id = $request[0]['survey_id'];
+
+            $survey = Survey::query()->where('id',$survey_id)->first();
+            
+            if(!$survey)
+                throw new Exception("Error not found survey register", 40);
+
+            $data = [];
+
+            foreach ($request->all() as $categories => $value) {
+                # code...
+                $value['name'] = strtoupper($value['name']);
+                $value['created_at'] = now();
+                $value['updated_at'] = now();
+                //return response()->json($value);
+                array_push($data,$value);
+            }
+
+            $validator = Validator::make($data, [
+                '*.name'      => ['required','string','distinct',Rule::unique('categories','name')->where(function ($query) use ($survey_id){
+                    $query->where('survey_id',$survey_id);
+                })],
+                '*.survey_id' => 'required|integer|in:'.$survey_id,
+                '*.order'     => 'required|integer|distinct', // <--- "distinct" hace la magia
+                "*.created_at" => 'date',
+                "*.updated_at" => 'date',
+            ],[
+                "*.name.in" => "los name deben ser diferentes",
+                "*.survey_id.in" => "los survey_id's son diferentes"
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'El orden de las categorías no puede repetirse.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            Category::insert($validator->validated());
+
+            return response()->json([
+                "message" => "se han creado exitosamente los ".count($validator->validated())
+            ],200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'code' => $th->getCode(),
+                'line' => $th->getLine()
+            ]);
+        }
+
     }
 }

@@ -24,10 +24,12 @@ Route::prefix('person')->group(function (){
     
 });
 
-
 /** AGE RANGE RESOURCES  **/
 Route::prefix('age-range')->group(function (){
     Route::post('create',[AgeRangeController::class, 'create']);
+    Route::get('show-all',[CategoryController::class, 'index']);
+    Route::get('show-one/{id}',[CategoryController::class, 'show']);
+    Route::put('update/{id}',[CategoryController::class, 'update']);
     Route::delete('delete/{id}',[AgeRangeController::class, 'destroy']);
 });
 
@@ -43,6 +45,7 @@ Route::prefix('survey')->group(function (){
 /** CATEGORIES RESOURES */
 Route::prefix('category')->group(function (){
     Route::post('create',[CategoryController::class, 'store']);
+    Route::post('create-many',[CategoryController::class, 'createMany']);
     /** CREAR UN METODO PARA CREAR ARRAY DE  CATEGORIES FALTANTE*/
     Route::get('show-all',[CategoryController::class, 'index']);
     Route::get('show-one/{id}',[CategoryController::class, 'show']);
@@ -73,7 +76,7 @@ Route::prefix('answer')->group(function (){
 /** RESULTS RESOURES */
 Route::prefix('result')->group(function (){
     Route::post('create',[ResultController::class, 'create']);
-    /** CREAR UN METODO PARA CREAR ARRAY DE  RESULTS FALTANTE*/
+    
     Route::get('show-all',[ResultController::class, 'index']);
     Route::get('show-one/{id}',[ResultController::class, 'show']);
     Route::put('update/{id}',[ResultController::class, 'update']);

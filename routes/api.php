@@ -49,6 +49,7 @@ Route::prefix('category')->group(function (){
     
     Route::get('show-all',[CategoryController::class, 'index']);
     Route::get('show-one/{id}',[CategoryController::class, 'show']);
+    Route::get('show-by-survey/{id}',[CategoryController::class, 'showBySurvey']);
     Route::put('update/{id}',[CategoryController::class, 'update']);
     Route::delete('delete/{id}',[CategoryController::class, 'destroy']);
 });

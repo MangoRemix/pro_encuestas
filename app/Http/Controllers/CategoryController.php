@@ -72,31 +72,36 @@ class CategoryController extends Controller
             //     throw new Exception("Not found survey_id", 404);
             
             
-            $exist_category_order = Category::query()->where('order',$request['order'])->join('surveys','categories.survey_id','=','surveys.id')->first();
-            if($exist_category_order)
-                 throw new Exception("orden de categoria ya existe", 404);
+            $exist_category_order = Category::query()->where('order',$request->order)->where('survey_id',$request->survey_id)
+            ->join('surveys','categories.survey_id','=','surveys.id')
+            ->first();
+            
+            if($exist_category_order){
+                
+                throw new Exception("orden de categoria ya existe", 404);
+            }
 
             $name_category_survey_exist = Category::query()->where('name',$request->name)->where('survey_id',$request->survey_id)->first();
             
             if($name_category_survey_exist)
                 throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
-                
-
-            Category::create($validator->validated());
+            
+            $category = Category::create($validator->validated());
             //$ordered_categories = Category::query()->where('survey_id',$request->survey_id)->orderBy('categories.order','asc')->get();
             
-            
             return response()->json([
+                "category"=> $category,
                 "message" => "Categoria creada exitosamente",
                 
             ],201);
 
         } catch (\Throwable $th) {
-
+            $statusCode = ($th->getCode() >= 400 && $th->getCode() < 600) ? $th->getCode() : 500;
             return response()->json([
+                
                 "error" => $th->getMessage(),
-                "code" => $th->getCode()
-            ]);
+                "code" => $statusCode
+            ],$statusCode);
         }
     }
 
@@ -146,15 +151,17 @@ class CategoryController extends Controller
             if($validator->fails()){
                 return response()->json($validator->errors(), 422);
             }
-
-            $exist_category_order = Category::query()->where('order',$request['order'])->join('surveys','categories.survey_id','=','surveys.id')->first();
-            if($exist_category_order)
-                 throw new Exception("orden de categoria ya existe", 404);
+            $category = Category::query()->where('id',$id)->first();
+            if($category->order != $request->order){
+                $exist_category_order = Category::query()->where('order',$request['order'])->join('surveys','categories.survey_id','=','surveys.id')->first();
+                if($exist_category_order)
+                    throw new Exception("orden de categoría ya existe", 404);
+            }
 
             $name_category_survey_exist = Category::query()->where('name',$request->name)->where('survey_id',$request->survey_id)->first();
             
             if($name_category_survey_exist)
-                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+                throw new Exception("Error nombre de categoría en encuesta ya existe", 400);
 
             $category = Category::query()->where('id',$id)->update($validator->validated());
 
@@ -163,7 +170,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 "message"=> "Actualización exitosa"
-            ]);
+            ],200);
 
         } catch (\Throwable $th) {
             //throw $th;
@@ -253,6 +260,25 @@ class CategoryController extends Controller
             return response()->json([
                 "message" => "se han creado exitosamente los ".count($validator->validated())
             ],200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'code' => $th->getCode(),
+                'line' => $th->getLine()
+            ]);
+        }
+
+    }
+
+    public function showBySurvey(int $id){
+
+        try {
+            //code...
+            $categories = Category::query()->where('survey_id',$id)->get();
+
+            return response()->json($categories);
+            
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json([

@@ -5,8 +5,8 @@
             <div class="text-white text-center">
                 <h1 class="text-3xl mb-3 underline">{{ survey?.name }}</h1>
                 <div class="flex items-center justify-center space-x-5">
-                    <span>Fecha de Inicio: {{ survey?.init_date }}</span> 
-                    <span>Fecha de Fin: {{ survey?.finish_date }}</span> 
+                    <span>Fecha de Inicio: <b>{{ formatedDate(survey?.init_date) }}</b> </span> 
+                    <span>Fecha de Fin: <b>{{ formatedDate(survey?.finish_date) }}</b> </span> 
                 </div>
                 
                 
@@ -16,36 +16,45 @@
                 <Icon class="h-9 w-9 p-1 rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300" icon="ic:outline-plus" />
             </button>
             
-            <div class="mt-5 w-full min-h-20 max-h-100 overflow-scroll">
-                
-                <table class="w-full table-auto text-center">
-                    <thead class="bg-blue-900">
-                        <tr class="border-b border-neutral-300">
-                            
-                            <th class="p-2 w-20 text-white">Orden</th>
-                            <th class="p-2 text-white">Nombre</th>
-                            <th class="p-2 w-45 text-white">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white">
-                        <tr class="hover:bg-blue-800 transition-all duration-90 hover:text-white border border-neutral-300" v-for="(category,index) in categoriesBySurvey">
-                            
-                            <td class="p-2">{{ category.order }}</td>
-                            <td class="p-2">{{ category.name }}</td>
-                            <td class="p-2 ">
-                                <div class="w-full flex gap-x-5 justify-center align-center">
-                                    <Icon @click="getCategoryToEdit(category.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                    <Icon @click="deleteCategory(category.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
-                                </div>
+            <div class="mt-5 w-full">
+                <div id="table-header" class="w-full">
+                    <table class="table-auto text-center w-full">
+                        <thead class="bg-blue-900">
+                            <tr class="border-b border-neutral-300">
                                 
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                <th class="p-2 w-20 text-white">Orden</th>
+                                <th class="p-2 text-white">Nombre</th>
+                                <th class="p-2 w-45 text-white">Acciones</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div id="tale-body" class="w-full max-h-75 overflow-y-scroll">
+                    <table class="w-full">
+                        <tbody class="bg-white">
+                            <tr class="hover:bg-blue-800 transition-all duration-90 hover:text-white border border-neutral-300" v-for="(category,index) in categoriesBySurvey">
+                                
+                                <td class="p-2">{{ category.order }}</td>
+                                <td class="p-2">{{ category.name }}</td>
+                                <td class="p-2 ">
+                                    <div class="w-full flex gap-x-5 justify-center align-center">
+                                        <Icon @click="getCategoryToEdit(category.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
+                                        <Icon @click="deleteCategory(category.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                    </div>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
             </div>
             <Modal :show="isModalOpen" @close="isModalOpen = false">
                 <!-- FORMULARIO CATEGORIES -->
-                <h3 class="text-lg font-bold underline text-center mt-5">{{ operation_name }} categoría</h3>
+                
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+                    {{ operation_name }} categoría
+                </h2>
                 <form @submit.prevent="operation_name == 'Crear'?createCategory():updateCategory()" class="flex flex-col space-y-5 w-full h-full mt-10">
                     <div>
                         <label class="font-bold text-md ">Nombre categoría:</label>
@@ -83,6 +92,7 @@ import NotificationBox from '@/components/notification-box.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
+import {formatedDate} from '@/composables/shared'
 
 const isModalOpen = ref(false);
 const page = usePage()

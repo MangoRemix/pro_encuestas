@@ -1,6 +1,6 @@
 
 <template>
-  <div class="max-w-md mx-auto my-8 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+  <div class="max-w-md mx-auto my-8 p-6 bg-white border border-gray-200 rounded-xl shadow-sm w-200">
     <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
       Crear Nueva Encuesta
     </h2>
@@ -66,9 +66,13 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
 import NotificationBox from './notification-box.vue';
+import { apiHost } from '@/store/store.js';
+import { formatedDate } from '@/composables/shared.js';
+
+const {surveyId} = defineProps(['surveyId'])
 
 // Estado del formulario
 const form = reactive({
@@ -82,6 +86,31 @@ const loading = ref(false);
 const message = ref('');
 const isError = ref(false);
 
+  onMounted(async ()=>{
+    if(surveyId > 0){
+      const survey = await getSurvey(surveyId)
+      form.name = survey.name
+      form.init_date = formatedDate(survey.init_date); 
+      form.finish_date = formatedDate(survey.finish_date); 
+    }
+    
+
+  })
+
+
+  const getSurvey = async (id) => {
+    try {
+        const response = await axios.get(`${apiHost}survey/show-one/${id}`)
+        
+        if(response.data.length > 0)
+            return response.data[0]
+        else
+            return 'No hay encuestas registradas.'
+    } catch (error) {
+        console.log(error)   
+    }
+  }
+
 // Manejador del envío
 const handleSubmit = async () => {
   loading.value = true;
@@ -90,9 +119,15 @@ const handleSubmit = async () => {
 
   try {
     // Ajusta la URL según la configuración de tu entorno
-    const response = await axios.post('http://localhost:8000/api/survey/create', form);
+    let response = null
+    if(!surveyId)
+      response = await axios.post(`${apiHost}survey/create`, form);
+    else
+      response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
     
     message.value = '¡Encuesta creada con éxito!';
+    if(response.status == 200)
+      getSurvey(surveyId)
     // Limpiar el formulario
     form.name = '';
     form.init_date = '';

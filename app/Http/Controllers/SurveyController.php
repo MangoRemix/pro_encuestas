@@ -38,7 +38,7 @@ class SurveyController extends Controller
 
     public function index(): JsonResponse
     {
-        $surveys = Survey::all();
+        $surveys = Survey::orderBy('created_at','DESC')->get();
         return response()->json($surveys, 200);
     }
 
@@ -50,7 +50,8 @@ class SurveyController extends Controller
         try{
             
             $request['name'] = strtoupper($request->name);
-            
+            $request['finish_date'] = $request->finish_date.' 23:59:59';
+
             $validator = Validator::make($request->all(), $this->rules());
             
             if ($validator->fails()) {
@@ -61,7 +62,7 @@ class SurveyController extends Controller
 
             return response()->json([
                 'message' => 'Encuesta creada con éxito',
-                'data'    => $validator->validated()
+                'data'    => $survey
             ], 210); // 201 Created
         }
         catch(Exception $e){
@@ -104,6 +105,9 @@ class SurveyController extends Controller
     {
         try {
             // Los datos ya vienen validados aquí gracias al UpdateSurveyRequest    
+            $request['name'] = strtoupper($request->name);
+            $request['finish_date'] = $request->finish_date.' 23:59:59';
+            
             $validator = Validator::make($request->all(), $this->updateRules());
 
             if ($validator->fails()) {

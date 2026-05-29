@@ -8,7 +8,7 @@ defineEmits(['close']);
 
 <template>
   <!-- Teleport mueve el modal al final del <body> para evitar problemas de z-index -->
-  <Teleport to="body">
+  
     <Transition name="fade-modal">
       <div v-if="show" class="modal-overlay" @click.self="$emit('close')">
         <div class="modal-content">
@@ -17,7 +17,7 @@ defineEmits(['close']);
         </div>
       </div>
     </Transition>
-  </Teleport>
+  
 </template>
 
 <style scoped>

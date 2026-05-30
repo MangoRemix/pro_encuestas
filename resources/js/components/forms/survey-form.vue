@@ -68,7 +68,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
-import NotificationBox from './notification-box.vue';
+import notificationBox from '../notification-box.vue';
 import { apiHost } from '@/store/store.js';
 import { formatedDate } from '@/composables/shared.js';
 
@@ -140,7 +140,7 @@ const handleSubmit = async () => {
       message.value = 'Ocurrió un error al procesar la solicitud.';
     }
   } finally {
-    loading.value = false;
+  loading.value = false;
   }
 };
 </script>

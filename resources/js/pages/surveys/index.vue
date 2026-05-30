@@ -66,8 +66,9 @@ import { onMounted, ref } from 'vue';
 
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
-import SurveyForm from '@/components/survey-form.vue';
+
 import { formatedDate } from '@/composables/shared';
+import SurveyForm from '@/components/forms/survey-form.vue';
 
 const isModalOpen = ref(false);
 const surveys = ref([])

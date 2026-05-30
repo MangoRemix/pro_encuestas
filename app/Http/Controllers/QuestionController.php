@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class QuestionController extends Controller
 {
@@ -21,8 +22,8 @@ class QuestionController extends Controller
 
     public static function updateRules($id = null){
         return [
-            "name" => 'string|max:250',
-            "order" => 'integer|min:1',
+            "name" => 'required|string|max:250|min:5',
+            "order" => 'required|integer|min:1',
             "category_id" => 'integer|min:1'
         ];
     }
@@ -88,7 +89,7 @@ class QuestionController extends Controller
             return response()->json([
                 'error' => $th->getMessage(),
                 'code' => $th->getCode()
-            ]);
+            ],$th->getCode());
         }
     }
 
@@ -111,7 +112,7 @@ class QuestionController extends Controller
             return response()->json([
                 'error' => $th->getMessage(),
                 'code' => $th->getCode()
-            ]);
+            ],$th->getCode());
         }
     }
 
@@ -132,7 +133,7 @@ class QuestionController extends Controller
         try {
             //code...
 
-            $request['name'] = strtoupper($request['name']);
+            $request['name'] = strtoupper($request->name);
 
             $validator = Validator::make($request->all(),$this->updateRules());
 
@@ -140,7 +141,7 @@ class QuestionController extends Controller
                 return response()->json($validator->errors(), 422);
             }
             if($request['category_id']){
-                $category = Category::query()->where('id',$request['category_id'])->first();
+                $category = Category::query()->where('id',$request->category_id)->first();
 
                 if(!$category)
                     throw new Exception("Not found category register", 404);
@@ -149,7 +150,7 @@ class QuestionController extends Controller
             $name_question_category_exist = Question::query()->where('name',$request->name)->where('category_id',$request->category_id)->first();
             
             if($name_question_category_exist)
-                throw new Exception("Error nombre de pregunta en categoria ya existe", 400);
+                throw new Exception("Error nombre de pregunta en categoría ya existe", 400);
 
             $question = Question::query()->where('id',$id)->first();
             
@@ -166,7 +167,7 @@ class QuestionController extends Controller
 
             return response()->json([
                 "message" => 'Actualización exitosa'
-            ],201);
+            ],200);
                 
 
         } catch (\Throwable $th) {
@@ -174,7 +175,7 @@ class QuestionController extends Controller
             return response()->json([
                 'error' => $th->getMessage(),
                 'code' => $th->getCode()
-            ]);
+            ],$th->getCode());
         }
     }
 
@@ -186,11 +187,17 @@ class QuestionController extends Controller
         //
         try {
             //code...
-            $question = Question::query()->where('id',$id)->first();
+            $question = Question::select('id','name')->find($id,'id');
             if(!$question)
                 throw new Exception("Not found register", 404);
 
-            Question::query()->where('id',$id)->delete();
+            $new_name = $question->name.'-delete-'.date('Y-m-d');
+            
+            $question->update([
+                'name' => $new_name
+            ]);
+
+            $question->delete();
 
             return response()->json([
                 "message" => "Eliminación exitosa"
@@ -265,5 +272,24 @@ class QuestionController extends Controller
             ]);
         }
 
+    }
+
+    public function showByCategory(int $id){
+        try {
+            //code...
+            $questions = Question::query()->where('category_id',$id)->orderBy('order','asc')->get();
+
+            return response()->json([
+                "questions" => $questions
+            ],200);
+
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'error' => $th->getMessage(),
+                'code' => $th->getCode(),
+                'line' => $th->getLine()
+            ]);
+        }
     }
 }

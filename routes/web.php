@@ -17,6 +17,15 @@ Route::prefix('surveys')->group(function (){
     } )->name('survey-details');
 });
 
+Route::prefix('categories')->group(function (){
+    
+    Route::get('/details/{id}', function($id){
+        return Inertia::render('categories/details',[
+            'id' => $id
+        ]);
+    } )->name('category-details');
+});
+
 // Route::prefix('categories')->group(function (){
 //     Route::inertia('create', 'categories/create')->name('category-create');
     

@@ -3,7 +3,7 @@
     <MainLayout>
         <div class="min-h-100 w-170 py-10 mx-auto">
             <div class="text-white text-center">
-                <h1 class="text-3xl mb-3 underline">{{ survey?.name }}</h1>
+                <h1 class="text-3xl mb-3 underline font-bold">{{ survey?.name }}</h1>
                 <div class="flex items-center justify-center space-x-5">
                     <span>Fecha de Inicio: <b>{{ formatedDate(survey?.init_date) }}</b> </span> 
                     <span>Fecha de Fin: <b>{{ formatedDate(survey?.finish_date) }}</b> </span> 
@@ -58,13 +58,13 @@
                 <form @submit.prevent="operation_name == 'Crear'?createCategory():updateCategory()" class="flex flex-col space-y-5 w-full h-full mt-10">
                     <div>
                         <label class="font-bold text-md ">Nombre categoría:</label>
-                        <input v-model="form.name" class="inputs-form " type="text" name="" id="">
+                        <input v-model="form.name" required class="inputs-form " type="text" name="" id="">
 
                     </div>
                     <div class="flex items-center space-x-3">
                         <label class="font-bold text-md ">Orden de categoría:</label>
                         <div class="w-20">
-                            <input v-model="form.order" class="inputs-form text-center " type="number" name="" id="">
+                            <input v-model="form.order" required class="inputs-form text-center " type="number" name="" id="">
                         </div>
                         
 
@@ -86,8 +86,8 @@
 
 import axios from 'axios';
 import { Icon } from "@iconify/vue";
-import { onMounted, reactive, ref, watch } from 'vue';
-import {apiHost, selectedListComponentValue} from '../../store/store'
+import { onMounted, reactive, ref } from 'vue';
+import {apiHost} from '../../store/store'
 import NotificationBox from '@/components/notification-box.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/layouts/main-layout.vue';

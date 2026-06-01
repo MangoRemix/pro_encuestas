@@ -1,17 +1,79 @@
 <template>
-    <div id="main" class="w-full overflow-x-scroll">
-        <div class="w-11/12 flex items-center justify-end">
-            <img src="./../../../public/images/logoAlcaldia.png" class="bg-white rounded-full h-25 w-25 border-2 border-white mt-5" alt="">
+    <div id="main" class="w-full overflow-x-scroll min-h-screen relative">
+        <!-- Botón para abrir el Menú Lateral -->
+        <div class="fixed top-5 left-5 z-40">
+            <button 
+                @click="isMenuOpen = true" 
+                class="flex items-center justify-center bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 hover:scale-110 active:scale-95 transition-all cursor-pointer group"
+                aria-label="Abrir menú"
+            >
+                <Icon 
+                    icon="ic:round-menu" 
+                    class="text-2xl text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" 
+                />
+            </button>
         </div>
-        <div class="w-full xl:w-6xl min-h-screen mx-auto">
+
+        <!-- Componente de Menú Lateral -->
+        <Menu 
+            :show="isMenuOpen" 
+            :user="currentUser"
+            :items="menuItems"
+            @close="isMenuOpen = false" 
+        />
+
+        <div class="px-10 pl-24">
+            <img src="../../../public/images/logoAlcaldia.png " class="bg-white rounded-full h-25 w-25 border-2 border-white mt-5" alt="">
+        </div>
+        <div class="w-full xl:w-7xl min-h-screen mx-auto mt-4 px-4 sm:px-6">
             <slot />
         </div>
         
     </div>
 </template>
 <script setup>
+import { ref } from 'vue';
+import { Icon } from '@iconify/vue';
+import Menu from '@/components/menu.vue';
 
-    
+const isMenuOpen = ref(false);
+
+// Datos del usuario para mostrar en el menú
+const currentUser = ref({
+    name: 'Ing. Luis Rodríguez',
+    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+});
+
+// Ítems del menú con soporte para dropdowns
+const menuItems = ref([
+    {
+        label: 'Inicio',
+        icon: 'ic:round-home',
+        link: '/'
+    },
+    {
+        label: 'Encuestas',
+        icon: 'ic:baseline-assignment',
+        children: [
+            { label: 'Ver todas', link: '/surveys' },
+            { label: 'Crear nueva', link: '/surveys/create' },
+            { label: 'Categorías', link: '/categories' }
+        ]
+    },
+    {
+        label: 'Estadísticas',
+        icon: 'ic:baseline-bar-chart',
+        children: [
+            { label: 'Reportes Generales', link: '/reports' },
+            { label: 'Respuestas Recientes', link: '/answers' }
+        ]
+    },
+    {
+        label: 'Configuración',
+        icon: 'ic:baseline-settings',
+        link: '/settings'
+    }
+]);
 </script>
 <style>
     #main{

@@ -22,8 +22,8 @@ class AnswerController extends Controller
 
     public static function updateRules($id = null){
         return [
-            "name"=> "string|max:350",
-            "order" => "integer|min:1",
+            "name"=> "required|string|max:350|min:5",
+            "order" => "required|integer|min:1",
             "question_id" => "integer|min:1|exists:questions,id",
         ];
         
@@ -48,7 +48,7 @@ class AnswerController extends Controller
         //
         try {
             //code...
-            $request['name'] = strtoupper($request['name']);
+            $request['name'] = strtoupper($request->name);
             
             $validator = Validator::make($request->all(),$this->rules());
 
@@ -68,12 +68,12 @@ class AnswerController extends Controller
             $name_answer_question_exist = Answer::query()->where('name',$request->name)->where('question_id',$request->question_id)->first();
             
             if($name_answer_question_exist)
-                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+                throw new Exception("Error nombre de pregunta en encuesta ya existe", 400);
 
             Answer::create($validator->validate());
 
             return response()->json([
-                "message:" => "Creacion de respuesta exitosa",
+                "message:" => "Creación de respuesta exitosa",
             ],201);
 
         } catch (\Throwable $th) {
@@ -81,7 +81,7 @@ class AnswerController extends Controller
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
-            ]);
+            ],$th->getCode());
         }
 
     }
@@ -114,7 +114,22 @@ class AnswerController extends Controller
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
-            ]);
+            ],$th->getCode());
+        }
+    }
+
+    public function showByQuestion(int $id){
+        try {
+            //code...
+            $answers = Answer::query()->where('question_id',$id)->get();
+            
+            return response()->json(["answers"=>$answers?$answers:[]],200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                "error" => $th->getMessage(),
+                "code" => $th->getCode()
+            ],$th->getCode());
         }
     }
 
@@ -166,7 +181,7 @@ class AnswerController extends Controller
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
-            ]);
+            ],$th->getCode());
         }
     }
 
@@ -179,11 +194,17 @@ class AnswerController extends Controller
         try {
             //code...
 
-            $answer = Answer::query()->where('id',$id)->first();
+            $answer = Answer::select('id','name')->find($id,'id');
             if(!$answer)
                 throw new Exception("Not found answer register", 404);
-                
-            Answer::query()->where('id',$id)->delete();
+
+            $new_name = $answer->name . '-delete-' . date('Y-m-d_H-i-s');
+            
+            $answer->update([
+                'name' => $new_name
+            ]);
+
+            $answer->delete();
 
             return response()->json([
                 "message" => "Eliminación exitosa"
@@ -194,7 +215,7 @@ class AnswerController extends Controller
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
-            ]);
+            ],$th->getCode());
         }
     }
 
@@ -228,7 +249,7 @@ class AnswerController extends Controller
                 })],
                 '*.question_id' => 'required|integer|exists:questions,id|in:'.$question_id,
                 '*.order'     => ['required','integer','distinct',Rule::unique('answers','order')->where(function ($query) use ($question_id){
-                    $query->where('question_id',$question_id);
+                    $query->where('question_id',$question_id)->where('deleted_at',null);
                 })], // <--- "distinct" hace la magia
                 "*.created_at" => 'date',
                 "*.updated_at" => 'date',
@@ -254,8 +275,7 @@ class AnswerController extends Controller
             return response()->json([
                 'error' => $th->getMessage(),
                 'code' => $th->getCode(),
-                'line' => $th->getLine()
-            ]);
+            ],$th->getCode());
         }
 
     }

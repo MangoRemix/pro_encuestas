@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +14,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Question extends Model
 {
     //
-    use SoftDeletes;
+    use  HasFactory,SoftDeletes;
+
+    protected static function booted()
+    {
+        static::deleted(function ($question) {
+            // Esto buscará todos los resultados asociados y aplicará softDelete
+            $question->results()->delete();
+        });
+
+        static::restored(function ($question) {
+            // Opcional: Si restauras la respuesta, podrías restaurar los resultados
+            $question->results()->restore();
+        });
+    }
     
     public function categories(): BelongsTo {
     

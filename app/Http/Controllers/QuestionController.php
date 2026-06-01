@@ -75,7 +75,7 @@ class QuestionController extends Controller
             $name_question_category_exist = Question::query()->where('name',$request->name)->where('category_id',$request->category_id)->first();
             
             if($name_question_category_exist)
-                throw new Exception("Error nombre de pregunta en categoria ya existe", 400);
+                throw new Exception("Error nombre de pregunta en categoría ya existe", 400);
             
             Question::create($validator->validated());
 
@@ -105,7 +105,7 @@ class QuestionController extends Controller
             if(!$question)
                 throw new Exception("Not found register", 404);
 
-            return response()->json($question,200);
+            return response()->json(['question'=>$question],200);
                 
         } catch (\Throwable $th) {
             //throw $th;
@@ -189,9 +189,9 @@ class QuestionController extends Controller
             //code...
             $question = Question::select('id','name')->find($id,'id');
             if(!$question)
-                throw new Exception("Not found register", 404);
+                throw new Exception("Not found question register", 404);
 
-            $new_name = $question->name.'-delete-'.date('Y-m-d');
+            $new_name = $question->name . '-delete-' . date('Y-m-d_H-i-s');
             
             $question->update([
                 'name' => $new_name
@@ -241,7 +241,7 @@ class QuestionController extends Controller
                 })],
                 '*.category_id' => 'required|integer|in:'.$category_id,
                 '*.order'     => ['required','integer','distinct',Rule::unique('questions','order')->where(function ($query) use ($category_id){
-                    $query->where('category_id',$category_id);
+                    $query->where('category_id',$category_id)->where('deleted_at',null);
                 })], // <--- "distinct" hace la magia
                 "*.created_at" => 'date',
                 "*.updated_at" => 'date',

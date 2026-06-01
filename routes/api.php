@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SurveyController;
+use App\Models\Answer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -73,6 +74,7 @@ Route::prefix('answer')->group(function (){
     /** CREAR UN METODO PARA CREAR ARRAY DE  ANSWERS FALTANTE*/
     Route::get('show-all',[AnswerController::class, 'index']);
     Route::get('show-one/{id}',[AnswerController::class, 'show']);
+    Route::get('show-by-question/{id}',[AnswerController::class, 'showByQuestion']);
     Route::put('update/{id}',[AnswerController::class, 'update']);
     Route::delete('delete/{id}',[AnswerController::class, 'destroy']);
 });

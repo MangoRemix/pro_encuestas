@@ -1,15 +1,15 @@
 <template>
-    <Head title="Categorías: detalle" />
+    <Head title="Preguntas: detalle" />
     
     <MainLayout>
         <NotificationBox v-if="message || isError? true:false" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100"/>
         <div class="min-h-100 w-170 py-10 mx-auto">
             <div class="text-white text-center">
-                <h1 class="text-3xl mb-3 underline font-bold">{{ category?.name }}</h1>
+                <h1 class="text-3xl mb-3 underline font-bold">{{ question?.name }}</h1>
             </div>
-            <h3 class="text-lg text-white font-bold underline text-center mt-5">Preguntas registradas</h3>
+            <h3 class="text-lg text-white font-bold underline text-center mt-5">Respuestas registradas</h3>
             <div class="flex items-center justify-end w-full">
-                <button @click="newQuestions()" >
+                <button @click="newAnswers()" >
                 <Icon class="h-9 w-9 p-1 rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300" icon="ic:outline-plus" />
             </button>
             </div>
@@ -30,14 +30,14 @@
                 <div id="tale-body" class="w-full max-h-75 overflow-y-scroll">
                     <table class="w-full">
                         <tbody class="bg-white">
-                            <tr class="hover:bg-blue-800 transition-all duration-90 hover:text-white border border-neutral-300" v-for="(question,index) in questionsByCategory">
+                            <tr class="hover:bg-blue-800 transition-all duration-90 hover:text-white border border-neutral-300" v-for="(answer,index) in answersByQuestion">
                                 
-                                <td class="p-2">{{ question.order }}</td>
-                                <td class="p-2">{{ question.name }}</td>
+                                <td class="p-2">{{ answer.order }}</td>
+                                <td class="p-2">{{ answer.name }}</td>
                                 <td class="p-2 ">
                                     <div class="w-full flex gap-x-5 justify-center align-center">
-                                        <Icon @click="getQuestionToEdit(question.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                        <Icon @click="deleteQuestion(question.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                        <Icon @click="getAnswerToEdit(answer.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
+                                        <Icon @click="deleteAnswer(answer.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                     </div>
                                     
                                 </td>
@@ -48,16 +48,16 @@
                 
             </div>
             <Modal :show="isModalOpen" @close="isModalOpen = false">
-                <!-- FORMULARIO CATEGORIES -->
+                <!-- FORMULARIO RESPUESTAS -->
                 
                 <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-                    {{ operation_name }} preguntas
+                    {{ operation_name }} respuestas
                 </h2>
                 
                 
-                <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelectedId)" action="" class=" w-150 min-h-50 max-h-70 overflow-y-scroll">
+                <form @submit.prevent="operation_name =='Crear'?createManyAnswers():updateAnswer(answerSelectedId)" action="" class=" w-150 min-h-50 max-h-70 overflow-y-scroll">
                     <div class="flex item-center justify-end space-x-3">
-                    <button @click="incrementFormRow" class="" v-if="operation_name!='Editar'">
+                    <button @click.prevent="incrementFormRow" class="" v-if="operation_name!='Editar'">
                         <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
                     </button>
                     
@@ -68,7 +68,7 @@
                 </div>
                     <div v-for="(formRow,index) in form" class="mb-3">
                         <div class="text-center font-bold mb-3">
-                            <span>Pregunta {{ index+1 }}</span>
+                            <span>Respuesta {{ index+1 }}</span>
                         </div>
                         <div class="flex items-center justify-between space-x-2">
                             <div class="w-35 flex items-center space-x-2">
@@ -105,27 +105,27 @@ const loading = ref(false);
 const message = ref('');
 const isError = ref(false);
 
-const category = ref()
-const questionsByCategory = ref([])
+const question = ref()
+const answersByQuestion = ref([])
 const operation_name = ref('create')
 const isModalOpen = ref(false)
 
-const questionSelectedId = ref(0)
+const answerSelectedId = ref(0)
 const form = ref([
     {
         name:'',
         order:0,
-        category_id:parseInt(page.props.id)
+        question_id:parseInt(page.props.id)
     }
 ])
 
 onMounted(async ()=>{
-    category.value = await getCategory(parseInt(page.props.id))
-    if(category.value.id)
-        questionsByCategory.value = await getQuestionsByCategory(category.value.id)
+    question.value = await getQuestion(parseInt(page.props.id))
+    if(question.value.id)
+        answersByQuestion.value = await getAnswersByQuestion(question.value.id)
 })
 
-const newQuestions = ()=>{
+const newAnswers = ()=>{
     isModalOpen.value = true; operation_name.value = 'Crear'
     form.value[0].name = ''
     form.value[0].order = 0
@@ -134,45 +134,49 @@ const incrementFormRow = () =>{
     form.value.push({
         name:'',
         order:0,
-        category_id:parseInt(page.props.id)
+        question_id:parseInt(page.props.id)
     })
 }
 
-const getCategory = async (id) => {
+const getQuestion = async (id) => {
 
     try {
-        const {data,error,status} = await axios.get(`${apiHost}category/show-one/${id}`)
+        const {data,error,status} = await axios.get(`${apiHost}question/show-one/${id}`)
         
         
-        if(data.category)
-            return data.category
+        if(data.question)
+            return data.question
         return null
     } catch (error) {
         console.log(error)
     }
 }
 
-const getQuestionsByCategory = async (id) => {
+const getAnswersByQuestion = async (id) => {
 
     try {
-        const {data,error} = await axios.get(`${apiHost}question/show-by-category/${id}`)
-        
-        if(data.questions)
-            return data.questions
+        const {data,error} = await axios.get(`${apiHost}answer/show-by-question/${id}`)
+        console.log(data)
+        if(data.answers)
+            return data.answers
         return null
     } catch (error) {
         console.log(error)
     }
 }
 
-const createManyQuestions = async () => {
+const createManyAnswers = async () => {
     try {
         loading.value = true
-        const {data,error,status} = await axios.post(`${apiHost}question/create-many`,form.value)
+        const {data,error,status} = await axios.post(`${apiHost}answer/create-many`,form.value)
         console.log(data)
         if(status == 201){
-            questionsByCategory.value.splice(index,1)
-            
+            getAnswersByQuestion.value.splice(index,1)
+            form.value = [{
+                name:'',
+                order:0,
+                question_id:parseInt(page.props.id)
+            }]
             message.value = data.message
         }
             
@@ -189,28 +193,39 @@ const createManyQuestions = async () => {
     }
 }
 
-const deleteQuestion = async (id,index) => {
+const deleteAnswer = async (id,index) => {
+    loading.value = true
     try {
-        const {data,error,status} = await axios.delete(`${apiHost}question/delete/${id}`)
+        const {data,error,status} = await axios.delete(`${apiHost}answer/delete/${id}`)
         console.log(data)
-        if(status == 200)
-            questionsByCategory.value.splice(index,1)
-        return null
+        if(status == 200){
+            answersByQuestion.value.splice(index,1)
+            message.value = data.message
+        }
+        
     } catch (error) {
-        console.log(error)
+        isError.value = true
+        message.value = error.response.message
+        
+    }finally{
+        setTimeout(() => {
+            loading.value = false
+            message.value = ''    
+        }, 3500);
+        
     }
 }
 
-const getQuestionToEdit = async (id) => {
+const getAnswerToEdit = async (id) => {
     try {
-        const {data,error,status} = await axios.get(`${apiHost}question/show-one/${id}`)
+        const {data,error,status} = await axios.get(`${apiHost}answer/show-one/${id}`)
         if(status==200){
             
             form.value[0].name = data.name
             form.value[0].order = data.order
             isModalOpen.value = true
             operation_name.value = 'Editar'
-            questionSelectedId.value = id
+            answerSelectedId.value = id
         }
         
     } catch (error) {
@@ -218,10 +233,10 @@ const getQuestionToEdit = async (id) => {
     }
 }
 
-const updateQuestion = async (id) => {
+const updateAnswer = async (id) => {
     try {
         loading.value = true
-        const {data,error,status} = await axios.put(`${apiHost}question/update/${id}`,form.value[0])
+        const {data,error,status} = await axios.put(`${apiHost}answer/update/${id}`,form.value[0])
         if(status == 200){
             
             message.value = data.message

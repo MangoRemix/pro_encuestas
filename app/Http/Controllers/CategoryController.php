@@ -239,7 +239,7 @@ class CategoryController extends Controller
                 })],
                 '*.survey_id' => 'required|integer|in:'.$survey_id,
                 '*.order'     => ['required','integer','distinct',Rule::unique('categories','order')->where(function ($query) use ($survey_id){
-                    $query->where('survey_id',$survey_id);
+                    $query->where('survey_id',$survey_id)->where('deleted_at',null);
                 })], // <--- "distinct" hace la magia
                 "*.created_at" => 'date',
                 "*.updated_at" => 'date',

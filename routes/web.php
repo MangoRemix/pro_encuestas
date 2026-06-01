@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::inertia('/', 'index')->name('home');
 
 
 Route::prefix('surveys')->group(function (){
@@ -24,6 +24,15 @@ Route::prefix('categories')->group(function (){
             'id' => $id
         ]);
     } )->name('category-details');
+});
+
+Route::prefix('questions')->group(function (){
+    
+    Route::get('/details/{id}', function($id){
+        return Inertia::render('questions/details',[
+            'id' => $id
+        ]);
+    } )->name('questions-details');
 });
 
 // Route::prefix('categories')->group(function (){

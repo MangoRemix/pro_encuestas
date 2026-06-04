@@ -25,7 +25,7 @@ export async function getAnswer(){
 export async function getAnswersByQuestion (question_id){
         try {
             const {data,error,status} = await axios.get(`${apiHost}answer/show-by-question/${question_id}`)
-            console.log(data)
+            
             if(status==200){
                 response.data = data.answers
 

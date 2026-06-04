@@ -158,7 +158,7 @@ const categoriesBySurvey = ref([])
             const response = await axios.put(`${apiHost}category/update/${idCategoryToEdit.value}`,form)
             
             if(response.status == 200){
-                console.log("update: ",response)
+                
                 categoriesBySurvey.value = await surveyCategories(parseInt(page.props.id))
                 isError.value = false
                 message.value = response.data.message
@@ -194,7 +194,7 @@ const categoriesBySurvey = ref([])
             const response = await axios.get(`${apiHost}category/show-one/${id}`)
             
             if(response.data.category){
-                console.log("form: ",form)
+                
                 form.name = response.data?.category.name
                 form.order = response.data?.category.order
             }
@@ -207,7 +207,7 @@ const categoriesBySurvey = ref([])
     const deleteCategory = async (id,index) =>{
         try {
             const response = await axios.delete(`${apiHost}category/delete/${id}`)
-            console.log(response)
+            
             if(response.status == 200)
                 categoriesBySurvey.value.splice(index,1)
             else

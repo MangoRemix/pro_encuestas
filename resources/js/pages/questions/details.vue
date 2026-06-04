@@ -152,7 +152,7 @@ const getAnswersByQuestion = async (id) => {
 
     try {
         const {data,error} = await axios.get(`${apiHost}answer/show-by-question/${id}`)
-        console.log(data)
+        
         if(data.answers)
             return data.answers
         return null
@@ -165,7 +165,7 @@ const createManyAnswers = async () => {
     try {
         loading.value = true
         const {data,error,status} = await axios.post(`${apiHost}answer/create-many`,form.value)
-        console.log(data)
+        
         if(status == 201){
             getAnswersByQuestion.value.splice(index,1)
             form.value = [{
@@ -193,7 +193,7 @@ const deleteAnswer = async (id,index) => {
     loading.value = true
     try {
         const {data,error,status} = await axios.delete(`${apiHost}answer/delete/${id}`)
-        console.log(data)
+        
         if(status == 200){
             answersByQuestion.value.splice(index,1)
             message.value = data.message
@@ -236,7 +236,7 @@ const updateAnswer = async (id) => {
         if(status == 200){
             
             message.value = data.message
-            console.log(data)
+
         }
     } catch (error) {
         isError.value = true

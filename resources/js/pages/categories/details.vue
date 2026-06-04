@@ -172,7 +172,7 @@ const createManyQuestions = async () => {
     try {
         loading.value = true
         const {data,error,status} = await axios.post(`${apiHost}question/create-many`,form.value)
-        console.log(data)
+        
         if(status == 201){
             questionsByCategory.value.splice(index,1)
             
@@ -195,7 +195,7 @@ const createManyQuestions = async () => {
 const deleteQuestion = async (id,index) => {
     try {
         const {data,error,status} = await axios.delete(`${apiHost}question/delete/${id}`)
-        console.log(data)
+        
         if(status == 200)
             questionsByCategory.value.splice(index,1)
         return null
@@ -228,7 +228,7 @@ const updateQuestion = async (id) => {
         if(status == 200){
             
             message.value = data.message
-            console.log(data)
+            
         }
     } catch (error) {
         isError.value = true

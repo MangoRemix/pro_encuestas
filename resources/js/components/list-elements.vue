@@ -5,7 +5,7 @@ import { onMounted } from 'vue';
     const {elements,defaultValue} = defineProps(['elements','defaultValue'])
     const selectedListValue = selectedListComponentValue
     onMounted(()=>{
-        console.log(defaultValue)
+        
         selectedListValue.value = defaultValue
         
     })

@@ -25,7 +25,7 @@ export async function getQuestion(){
 export async function getQuestionsByCategory (category_id){
         try {
             const {data,error,status} = await axios.get(`${apiHost}question/show-by-category/${category_id}`)
-            console.log(data)
+            
             if(status==200){
                 response.data = data.questions
 

@@ -84,12 +84,10 @@ const surveySelected = ref(0)
 const message = ref()
 const isError = ref(false)
 
-console.log(page.props)
-
 onMounted(async()=>{
 
     const {data,errorFlag} = await getSurveys()
-    console.log("props: ",page.props)
+    
     setTimeout(() => {
         if(page.props.categoryId){
             surveySelected.value = page.props.surveyId
@@ -134,7 +132,7 @@ watch(surveySelected,async (value)=>{
 })
 
 watch(categorySelected,async (value)=>{
-    console.log("category",value.id)
+
     router.get('/categories', {
         surveyId:surveySelected.value,
         categoryId:value
@@ -146,7 +144,6 @@ watch(categorySelected,async (value)=>{
 
     const {data,errorFlag,responseMessage} = await getQuestionsByCategory(value)
 
-    console.log(data)
     if(data){
         
         questions.value = data

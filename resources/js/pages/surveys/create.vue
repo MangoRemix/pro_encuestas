@@ -1,12 +1,14 @@
 <script setup>
-import SurveyForm from '@/components/survey-form.vue';
+
+import SurveyForm from '@/components/forms/survey-form.vue';
+import MainLayout from '@/layouts/main-layout.vue';
 import { onMounted } from 'vue';
 onMounted(()=>{
     document.title = 'Encuestas: crear-nueva'
 })
 </script>
 <template>
-    <div>
+    <MainLayout>
         <SurveyForm/>
-    </div>
+    </MainLayout>
 </template>

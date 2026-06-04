@@ -68,7 +68,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
-import notificationBox from '../notification-box.vue';
+import NotificationBox from '../notification-box.vue';
 import { apiHost } from '@/store/store.js';
 import { formatedDate } from '@/composables/shared.js';
 

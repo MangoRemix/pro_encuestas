@@ -11,7 +11,6 @@ const props = defineProps({
     type: Object,
     default: () => ({
       name: 'Usuario Invitado',
-      photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'
     })
   },
   items: {
@@ -26,8 +25,16 @@ const props = defineProps({
         label: 'Encuestas',
         icon: 'ic:baseline-assignment',
         children: [
-          { label: 'Ver todas', link: '/surveys' },
-          { label: 'Crear nueva', link: '/surveys/create' }
+          { label: 'Ver todas', link: '/surveys' , permission:'all'},
+          { label: 'Crear nueva', link: '/surveys/create' , permission:'ADMIN'},
+          { label: 'Nuevo Encuestado', link: '/surveys/create' , permission:'POLLSTER'},
+        ]
+      },
+      {
+        label: 'Categorías',
+        icon: 'ic:outline-question-mark',
+        children: [
+          { label: 'Crear nueva', link: '/categories' , permission:'ADMIN'},
         ]
       },
       {
@@ -106,10 +113,10 @@ onUnmounted(() => {
         <div class="flex flex-col items-center justify-center p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div class="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-md mb-3">
             <img 
-              :src="user.photo" 
+              src="" 
               :alt="user.name" 
               class="w-full h-full object-cover"
-              @error="(e) => e.target.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80'"
+              @error="(e) => e.target.src = '/images/logoAlcaldia.png'"
             />
           </div>
           <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-wide text-center">

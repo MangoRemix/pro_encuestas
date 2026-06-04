@@ -3,6 +3,7 @@
     
     <MainLayout>
         <NotificationBox v-if="message || isError? true:false" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100"/>
+        
         <div class="min-h-100 w-170 py-10 mx-auto">
             <div class="text-white text-center">
                 <h1 class="text-3xl mb-3 underline font-bold">{{ category?.name }}</h1>
@@ -120,9 +121,11 @@ const form = ref([
 ])
 
 onMounted(async ()=>{
-    category.value = await getCategory(parseInt(page.props.id))
-    if(category.value.id)
-        questionsByCategory.value = await getQuestionsByCategory(category.value.id)
+    if(page.props.id){
+        category.value = await getCategory(parseInt(page.props.id))
+        if(category.value.id)
+            questionsByCategory.value = await getQuestionsByCategory(category.value.id)
+    }
 })
 
 const newQuestions = ()=>{

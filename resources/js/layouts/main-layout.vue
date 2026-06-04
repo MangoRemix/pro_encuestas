@@ -41,7 +41,6 @@ const isMenuOpen = ref(false);
 // Datos del usuario para mostrar en el menú
 const currentUser = ref({
     name: 'Ing. Luis Rodríguez',
-    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
 });
 
 // Ítems del menú con soporte para dropdowns
@@ -60,6 +59,13 @@ const menuItems = ref([
             { label: 'Categorías', link: '/categories' }
         ]
     },
+    {
+        label: 'Categorías',
+        icon: 'ic:baseline-category',
+        children: [
+          { label: 'Detalles', link: '/categories' , permission:'ADMIN'},
+        ]
+      },
     {
         label: 'Estadísticas',
         icon: 'ic:baseline-bar-chart',

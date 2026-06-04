@@ -3,49 +3,45 @@
     
     <MainLayout>
         <NotificationBox v-if="message || isError? true:false" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100"/>
-        <div class="min-h-100 w-170 py-10 mx-auto">
+        <div class="min-h-100 w-270 py-10 mx-auto">
             <div class="text-white text-center">
                 <h1 class="text-3xl mb-3 underline font-bold">{{ question?.name }}</h1>
             </div>
-            <h3 class="text-lg text-white font-bold underline text-center mt-5">Respuestas registradas</h3>
-            <div class="flex items-center justify-end w-full">
-                <button @click="newAnswers()" >
-                <Icon class="h-9 w-9 p-1 rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300" icon="ic:outline-plus" />
-            </button>
-            </div>
-            
-            <div class="mt-5 w-full">
-                <div id="table-header" class="w-full">
-                    <table class="table-auto text-center w-full">
-                        <thead class="bg-blue-900">
-                            <tr class="border-b border-neutral-300">
-                                
-                                <th class="p-2 w-20 text-white">Orden</th>
-                                <th class="p-2 text-white">Nombre</th>
-                                <th class="p-2 w-45 text-white">Acciones</th>
+            <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full">
+                <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de respuestas</h3>
+                <div class="flex items-center justify-end w-full mb-2">
+                    <button @click="newAnswers()" >
+                        <Icon class="h-9 w-9 p-1 rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300" icon="ic:outline-plus" />
+                    </button>
+                </div>
+                
+                <div id="table-header" class="h-10 w-full">
+                    <table class="table-fixed w-full text-left">
+                        <thead>
+                            <tr class="border-b border-white/30 text-white text-lg">
+                                <th class="w-30">Orden</th>
+                                <th>Nombre</th>
+                                <th class="w-55 text-center">Acciones</th>
                             </tr>
                         </thead>
                     </table>
                 </div>
-                <div id="tale-body" class="w-full max-h-75 overflow-y-scroll">
-                    <table class="w-full">
-                        <tbody class="bg-white">
-                            <tr class="hover:bg-blue-800 transition-all duration-90 hover:text-white border border-neutral-300" v-for="(answer,index) in answersByQuestion">
-                                
-                                <td class="p-2">{{ answer.order }}</td>
-                                <td class="p-2">{{ answer.name }}</td>
-                                <td class="p-2 ">
-                                    <div class="w-full flex gap-x-5 justify-center align-center">
+                <div id="table-body" class="w-full max-h-75 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                    <table class="table-fixed w-full">
+                        <tbody class="text-white">
+                            <tr class="border-b border-neutral-400" v-for="(answer,index) in answersByQuestion" :key="answer.id">
+                                <td class="py-2 w-30">{{ answer.order }}</td>
+                                <td class="py-2">{{ answer.name }}</td>
+                                <td class="py-2 w-55">
+                                    <div class="flex items-center justify-center gap-x-3 w-full">
                                         <Icon @click="getAnswerToEdit(answer.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
                                         <Icon @click="deleteAnswer(answer.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                     </div>
-                                    
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                
             </div>
             <Modal :show="isModalOpen" @close="isModalOpen = false">
                 <!-- FORMULARIO RESPUESTAS -->

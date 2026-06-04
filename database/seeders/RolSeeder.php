@@ -13,6 +13,9 @@ class RolSeeder extends Seeder
      */
     private $values = [
         [
+            'name' => 'ADMIN'
+        ],
+        [
             'name' => 'POLLSTER'
         ],
         [

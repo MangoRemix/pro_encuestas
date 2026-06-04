@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -24,6 +25,16 @@ Route::prefix('categories')->group(function (){
             'id' => $id
         ]);
     } )->name('category-details');
+
+    Route::get('/',function (Request $request) {
+
+        return Inertia::render('categories/index',[
+            'surveyId' => $request->query('surveyId'),
+            'categoryId' => $request->query('categoryId'),
+        ]);
+
+    })->name('categories');
+    //Route::inertia('/', 'categories/index')->name('categories');
 });
 
 Route::prefix('questions')->group(function (){
@@ -33,6 +44,7 @@ Route::prefix('questions')->group(function (){
             'id' => $id
         ]);
     } )->name('questions-details');
+
 });
 
 // Route::prefix('categories')->group(function (){

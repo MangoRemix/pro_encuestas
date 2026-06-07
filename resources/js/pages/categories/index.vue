@@ -10,12 +10,22 @@
                 
             </select>
         </div>
+        <div class="flex items-center justify-end w-full mb-3">
+            <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 bg-yellow-400 cursor-pointer hover:bg-yellow-300 rounded-2xl px-2">
+                Crear preguntas
+                <Icon class="h-9 w-9 p-1 " icon="ic:outline-plus" />
+            </button>
+
+        </div>
         <div class="flex space-x-2">
             <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
             w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
             h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                 <ul class="text-blue-100 mt-2">
-                    <li @click="categorySelected = category.id" v-for="category in categories" class="cursor-pointer hover:underline hover:text-yellow-400 hover:font-bold transition-all duration-75 py-1">
+                    <li @click="categorySelected = category.id" v-for="category in categories" 
+                    :class="`cursor-pointer hover:underline hover:text-yellow-400 hover:font-bold transition-all duration-75 py-1
+                    ${categorySelected==category.id?'text-yellow-400':''}
+                    `">
                         {{ category.name }}
                     </li>
                 </ul>
@@ -52,7 +62,7 @@
                                             <Icon class="text-lg md:text-2xl text-blue-600 hover:text-blue-500 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
                                         </Link>
                                         
-                                        <Icon @click="" class="text-lg md:text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
+                                        <Icon @click="getQuestionToEdit(question.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
                                         <Icon class="text-lg md:text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                     </div>
                                 </td>
@@ -63,16 +73,62 @@
                 </div>
             </div>
         </div>
+
+        <Modal :show="isModalOpen" @close="isModalOpen = false">
+            <!-- FORMULARIO CATEGORIES -->
+            
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+                {{ operation_name }} preguntas
+            </h2>
+            
+            
+            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class=" w-150 h-70">
+                <div class="flex item-center justify-end space-x-3">
+                    <button @click.prevent="incrementFormRow" class="" v-if="operation_name!='Editar'">
+                        <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
+                    </button>
+                    
+                    <button type="submit" class="cursor-pointer">
+                        <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
+                    </button>
+                    
+                </div>
+                <div class="w-full h-full max-h-full overflow-y-scroll">
+                    <div v-for="(formRow,index) in formQuestion" class="mb-3 ">
+                        <div class="text-center font-bold mb-3">
+                            <span>Pregunta {{ index+1 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between space-x-2">
+                            <div class="w-35 flex items-center space-x-2">
+                                <label for="" class="text-sm font-bold">Orden: </label>
+                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
+                            </div>
+
+                            <div class="w-full flex items-center space-x-2">
+                                <label for="" class="text-sm font-bold">Nombre: </label>
+                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </form>
+        </Modal>
     </MainLayout>
 </template>
 <script setup>
 import NotificationBox from '@/components/notification-box.vue';
-import { getQuestionsByCategory } from '@/composables/api/questions';
+import Modal from '@/components/modal.vue';
+import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
 import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
 import MainLayout from '@/layouts/main-layout.vue';
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
+
+const operation_name = ref('create')
+const isModalOpen = ref(false)
 
 const questions = ref([])
 const categories = ref([])
@@ -80,6 +136,15 @@ const surveys = ref([])
 const page = usePage()
 const categorySelected = ref(0)
 const surveySelected = ref(0)
+const questionSelected = ref(0)
+
+const formQuestion = ref([
+    {
+        name:'',
+        order:0,
+        category_id:parseInt(page.props.categoryId)
+    }
+])
 
 const message = ref()
 const isError = ref(false)
@@ -160,25 +225,74 @@ watch(categorySelected,async (value)=>{
     }
 })
 
+const incrementFormRow = () =>{
+    formQuestion.value.push({
+        name:'',
+        order:0,
+        category_id:parseInt(page.props.categoryId)
+    })
+}
+
+const getQuestionToEdit = async (id) => {
+    try {
+        const {data,errorFlag,responseMessage} = await getQuestion(id)
+        console.log("question: ",data)
+        if(data){
+            
+            formQuestion.value[0].name = data.name
+            formQuestion.value[0].order = data.order
+            isModalOpen.value = true
+            operation_name.value = 'Editar'
+            questionSelected.value = id
+        }
+
+        if(errorFlag){
+            isError.value = true
+            message.value = responseMessage
+            setTimeout(() => {
+                message.value = ''
+            }, 3500);
+        }
+        
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const createManyQuestions = async () => {
+    try {
+        
+        const {data,errorFlag,status} = await createMany(formQuestion.value)
+        
+        if(data){
+            categories.value = await getQuestionsByCategory(page.props.categoryId)
+            message.value = data
+            formQuestion.value = [
+                {
+                    name:'',
+                    order:0,
+                    category_id:parseInt(page.props.categoryId)
+                }
+            ]
+
+        }
+        if(errorFlag){
+            isError.value = true
+            message.value = responseMessage
+            setTimeout(() => {
+                message.value = ''
+            }, 3500);
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const newQuestions = ()=>{
+    isModalOpen.value = true; operation_name.value = 'Crear'
+    formQuestion.value[0].name = ''
+    formQuestion.value[0].order = 0
+}
+
 </script>
-<style scoped>
-    /* #table-body tbody tr:nth-child(odd) {
-        background-color: rgba(255, 255, 255, 0.03);
-    }
-
-    
-    #table-body tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.15);
-        transition: background-color 0.2s ease-in-out;
-    }
-
-    
-    #table-body tbody tr {
-        cursor: pointer;
-    }
-
-    #table-body tbody tr:hover td:nth-child(2) {
-        color:oklch(85.2% 0.199 91.936);
-    } */
-
-</style>

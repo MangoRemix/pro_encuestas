@@ -6,11 +6,27 @@ const response = {
     data:null
 }
 
-export async function getQuestion(){
+export async function getQuestions(){
     try {
         const {data,error,status} = await axios.get(`${apiHost}question/show-all`)
         if(status==200){
             response.data = data
+            return response
+        }
+            
+    } catch (error) {
+        response.errorFlag = true
+        response.responseMessage = error.response.data.message
+
+        return response
+    }
+}
+
+export async function getQuestion(id){
+    try {
+        const {data,error,status} = await axios.get(`${apiHost}question/show-one/${id}`)
+        if(status==200){
+            response.data = data.question
             return response
         }
             
@@ -32,6 +48,26 @@ export async function getQuestionsByCategory (category_id){
             return response
         }
             
+    } catch (error) {
+        response.errorFlag = true
+        response.responseMessage = error.response.data.message
+
+        return response
+    }
+}
+
+export async function createMany(questions = []) {
+    try {
+        
+        const {data,error,status} = await axios.post(`${apiHost}question/create-many`,questions)
+        
+        if(status == 201){
+            response.data = data.message
+            
+            return response
+        }
+            
+        return null
     } catch (error) {
         response.errorFlag = true
         response.responseMessage = error.response.data.message

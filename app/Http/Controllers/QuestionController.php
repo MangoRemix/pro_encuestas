@@ -262,7 +262,7 @@ class QuestionController extends Controller
 
             return response()->json([
                 "message" => "se han creado exitosamente los ".count($validator->validated())
-            ],200);
+            ],201);
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json([

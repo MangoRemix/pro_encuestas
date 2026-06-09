@@ -22,6 +22,22 @@ export async function getSurveys(){
     }
 }
 
+export async function getSurvey(id){
+    try {
+        const {data,error,status} = await axios.get(`${apiHost}survey/show-one/${id}`)
+        if(status==200){
+            response.data = data
+            return response
+        }
+            
+    } catch (error) {
+        response.errorFlag = true
+        response.responseMessage = error.response.data.message
+
+        return response
+    }
+}
+
 export async function getCategoriesBySurvey (survey_id){
         try {
             const {data,error,status} = await axios.get(`${apiHost}category/show-by-survey/${survey_id}`)

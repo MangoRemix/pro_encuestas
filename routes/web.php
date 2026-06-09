@@ -47,6 +47,12 @@ Route::prefix('questions')->group(function (){
 
 });
 
+Route::get('/poll-user/survey/{id}', function ($id) {
+    return Inertia::render('poll-users/index',[
+        'id' => $id,
+    ]);
+})->name('poll-user');
+
 // Route::prefix('categories')->group(function (){
 //     Route::inertia('create', 'categories/create')->name('category-create');
     

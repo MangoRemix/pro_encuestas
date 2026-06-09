@@ -81,7 +81,7 @@ class SurveyController extends Controller
     {   
         try {
             //code...
-            $survey = Survey::query()->where('id',$id)->get();
+            $survey = Survey::query()->where('id',$id)->first();
 
             if(!$survey){
                 throw new Exception("Not found register", 404);    

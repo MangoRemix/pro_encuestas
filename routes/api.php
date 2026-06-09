@@ -39,6 +39,7 @@ Route::prefix('survey')->group(function (){
     Route::post('create',[SurveyController::class, 'store']);
     Route::get('show-all',[SurveyController::class, 'index']);
     Route::get('show-one/{id}',[SurveyController::class, 'show']);
+    Route::get('show-full/{id}',[SurveyController::class, 'showFull']);
     Route::put('update/{id}',[SurveyController::class, 'update']);
     Route::delete('delete/{id}',[SurveyController::class, 'destroy']);
 });

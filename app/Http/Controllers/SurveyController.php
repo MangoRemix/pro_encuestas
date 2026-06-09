@@ -99,6 +99,26 @@ class SurveyController extends Controller
     }
 
     /**
+     * Mostrar encuesta completa con categorías, preguntas y respuestas.
+     */
+    public function showFull(int $id): JsonResponse
+    {
+        try {
+            $survey = Survey::with([
+                'categories' => fn($query) => $query->orderBy('order', 'asc'),
+                'categories.questions' => fn($query) => $query->orderBy('order', 'asc'),
+                'categories.questions.answers' => fn($query) => $query->orderBy('order', 'asc'),
+            ])->findOrFail($id);
+            return response()->json($survey, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "error" => "No se pudo cargar la estructura de la encuesta.",
+                "details" => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
      * Actualizar una encuesta existente.
      */
     public function update(Request $request,int $id): JsonResponse

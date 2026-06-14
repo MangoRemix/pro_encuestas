@@ -48,6 +48,16 @@ const counts = ref({
 })
 const disabledForward=ref(false)
 const disabledRewind = ref (true)
+
+const showPerson = async (id) => {
+    try {
+        const response = await axios.get(`/api/person/respondent/show/${id}`);
+        console.log('Persona obtenida:', response.data);
+    } catch (error) {
+        console.error('Error al obtener persona:', error);
+    }
+};
+
 onMounted(async () => {
     try {
         const response = await axios.get('/api/survey/show-full/2');

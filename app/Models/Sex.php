@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['abbreviation','description'])]
 class Sex extends Model
 {
+    protected $table = 'sexes';
+
     //
     use SoftDeletes;
 
@@ -19,3 +21,4 @@ class Sex extends Model
 
     }
 }
+

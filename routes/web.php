@@ -47,6 +47,17 @@ Route::prefix('questions')->group(function (){
 
 });
 
+Route::prefix('poll-users')->group(function (){
+
+    Route::get('/new-user-respondent', function (Request $request) {
+        return Inertia::render('poll-users/new-user-respondent',[
+            "id" => $request->query('id'),
+        ]);    
+
+    })->name('new-user-respondent');
+    
+});
+
 Route::get('/poll-user/survey/{id}', function ($id) {
     return Inertia::render('poll-users/index',[
         'id' => $id,

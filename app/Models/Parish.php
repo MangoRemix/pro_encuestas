@@ -11,9 +11,12 @@ class Parish extends Model
     //
     use SoftDeletes;
     
+    protected $fillable = ['name'];
+
     public function persons(): HasMany {
 
         return $this->hasMany(Person::class);
 
     }
 }
+

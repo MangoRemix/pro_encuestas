@@ -14,6 +14,7 @@ class Rol extends Model
     * get persons by roles
     * 
     */
+    protected $table = 'roles';
     use SoftDeletes;
     
     public function persons(): HasMany {

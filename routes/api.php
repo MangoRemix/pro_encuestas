@@ -4,8 +4,10 @@ use App\Http\Controllers\AgeRangeController;
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ParishController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\SexController;
 use App\Http\Controllers\SurveyController;
 use App\Models\Answer;
 use Illuminate\Http\Request;
@@ -20,7 +22,9 @@ Route::prefix('person')->group(function (){
 
     /** ENCUESTADO RESOURCES */
     Route::prefix('respondent')->group(function () {
-        Route::post('create',[PersonController::class, 'store']);
+        Route::get('pre-create', [PersonController::class, 'preCreate']);
+        Route::patch('update/{id}', [PersonController::class, 'update']);
+        Route::get('show/{id}', [PersonController::class, 'show']);
     });
     
 });
@@ -28,9 +32,9 @@ Route::prefix('person')->group(function (){
 /** AGE RANGE RESOURCES  **/
 Route::prefix('age-range')->group(function (){
     Route::post('create',[AgeRangeController::class, 'create']);
-    Route::get('show-all',[CategoryController::class, 'index']);
-    Route::get('show-one/{id}',[CategoryController::class, 'show']);
-    Route::put('update/{id}',[CategoryController::class, 'update']);
+    Route::get('show-all',[AgeRangeController::class, 'index']);
+    Route::get('show-one/{id}',[AgeRangeController::class, 'show']);
+    Route::put('update/{id}',[AgeRangeController::class, 'update']);
     Route::delete('delete/{id}',[AgeRangeController::class, 'destroy']);
 });
 
@@ -62,7 +66,7 @@ Route::prefix('question')->group(function (){
     Route::post('create-many',[QuestionController::class, 'createMany']);
     /** CREAR UN METODO PARA CREAR ARRAY DE  QUESTIONS FALTANTE*/
     Route::get('show-all',[QuestionController::class, 'index']);
-    Route::get('show-one/{id}',[QuestionController::class, 'show']);
+    Route::get('show-one/{idal',[QuestionController::class, 'show']);
     Route::get('show-by-category/{id}',[QuestionController::class, 'showByCategory']);
     Route::put('update/{id}',[QuestionController::class, 'update']);
     Route::delete('delete/{id}',[QuestionController::class, 'destroy']);
@@ -88,4 +92,15 @@ Route::prefix('result')->group(function (){
     Route::get('show-one/{id}',[ResultController::class, 'show']);
     Route::put('update/{id}',[ResultController::class, 'update']);
     Route::delete('delete/{id}',[ResultController::class, 'destroy']);
+});
+
+/**SEX RESOURCES */
+Route::prefix('sex')->group(function(){
+    Route::get('show-all',[SexController::class, 'index']);
+});
+
+/**PARISH RESOURCES */
+Route::prefix('parish')->group(function(){
+    Route::get('show-all',[ParishController::class, 'index']);
+    Route::post('create',[ParishController::class, 'store']);
 });

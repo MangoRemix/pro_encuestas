@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use LDAP\Result;
 
-#[Fillable(['name', 'email', 'password','sex_id','age_range_id','parish_id'])]
+#[Fillable(['name', 'email', 'password','sex_id','age_range_id','parish_id','rol_id'])]
 
 #[Hidden(['password', 'remember_token'])]
 class Person extends Authenticatable

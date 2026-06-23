@@ -71,6 +71,7 @@ import axios from 'axios';
 import NotificationBox from '../notification-box.vue';
 import { apiHost } from '@/store/store.js';
 import { formatedDate } from '@/composables/shared.js';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 
 const {surveyId} = defineProps(['surveyId'])
 
@@ -126,8 +127,20 @@ const handleSubmit = async () => {
       response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
     
     message.value = '¡Encuesta creada con éxito!';
-    if(response.status == 200)
+    if(response.status == 200){
       getSurvey(surveyId)
+      
+    }else{
+      if(response.status == 201){
+        console.log(response)
+        setTimeout(() => {
+          if(response.data.data.id)
+          router.get('/categories/create',{
+            surveyId:response.data.data.id
+          })
+        }, 750);
+      }
+    }
     // Limpiar el formulario
     form.name = '';
     form.init_date = '';

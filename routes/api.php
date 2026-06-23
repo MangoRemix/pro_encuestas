@@ -66,7 +66,7 @@ Route::prefix('question')->group(function (){
     Route::post('create-many',[QuestionController::class, 'createMany']);
     /** CREAR UN METODO PARA CREAR ARRAY DE  QUESTIONS FALTANTE*/
     Route::get('show-all',[QuestionController::class, 'index']);
-    Route::get('show-one/{idal',[QuestionController::class, 'show']);
+    Route::get('show-one/{id}',[QuestionController::class, 'show']);
     Route::get('show-by-category/{id}',[QuestionController::class, 'showByCategory']);
     Route::put('update/{id}',[QuestionController::class, 'update']);
     Route::delete('delete/{id}',[QuestionController::class, 'destroy']);

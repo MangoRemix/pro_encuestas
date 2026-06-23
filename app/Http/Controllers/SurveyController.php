@@ -63,7 +63,7 @@ class SurveyController extends Controller
             return response()->json([
                 'message' => 'Encuesta creada con éxito',
                 'data'    => $survey
-            ], 210); // 201 Created
+            ], 201); // 201 Created
         }
         catch(Exception $e){
             return response()->json([

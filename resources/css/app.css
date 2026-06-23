@@ -39,6 +39,6 @@
         cursor: pointer;
     }
 
-    #table-body tbody tr:hover td:nth-child(2) {
+    #table-body tbody tr:hover td:nth-child(N) {
         color:oklch(85.2% 0.199 91.936);
     }

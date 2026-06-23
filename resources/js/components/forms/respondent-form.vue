@@ -99,8 +99,12 @@ const handleSubmit = async () => {
   isError.value = false;
 
   try {
-    const response = await updatePerson(form);
-    console.log('Persona creada:', response.data);
+    const {data,status} = await updatePerson(form);
+    if(status == 200){
+      setTimeout(() => {
+        router.get(`/poll-users/step-3/${page.props.id}/survey/${page.props.surveyId}`)
+      }, 2000);
+    }
     message.value = 'Participante registrado con éxito.';
     
     // Limpiar el formulario

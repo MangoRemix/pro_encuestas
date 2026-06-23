@@ -4,10 +4,11 @@
         <h3 class="mb-5">{{ question.order }}. {{ question.name }}</h3>
         
         <div class="flex flex-wrap gap-y-5 gap-x-2 justify-around">
-            <div v-for="answer in answers"
+            <div v-for="(answer,index) in answers"
                 @click="selectedAnswer = answer.id"
                 class="answer-option w-100 h-20 cursor-pointer border border-neutral-500 flex items-center gap-x-2 px-2 hover:bg-blue-500 hover:text-white transition-all duration-100 rounded-lg" 
             >
+            
                 <input type="radio" v-model="selectedAnswer" :value="answer.id" :id="'answer-' + answer.id" name="answer">
                 <label :for="'answer-' + answer.id">{{ answer.name }}</label>
             </div>
@@ -18,10 +19,17 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+
+const emits = defineEmits(['sendAnswer'])
 
     const {question,answers} = defineProps(['question','answers'])
+    
     const selectedAnswer = ref(0)
+
+    watch(selectedAnswer,(value)=>{
+        emits('sendAnswer',value)
+    })
 </script>
 <style scoped>
     .answer-option:has(input:checked){

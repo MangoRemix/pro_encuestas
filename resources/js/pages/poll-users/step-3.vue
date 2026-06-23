@@ -1,10 +1,12 @@
 <template>
     <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 h-screen items-center">
-        <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 h-full md:h-120 flex flex-col justify-around rounded-3xl pb-3">
-            <h1 class="text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl">{{ c?.name }}</h1>
+        <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl pb-3 pt-0 md:min-h-120">
+            <h1 class="text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl mt-0">{{ c?.name }}</h1>
 
             <!-- Questions and Answer Component -->
-            <QuestionsAndAnswer class="mx-auto p-5 w-full max-w-11/12 h-full md:h-2/3 shadow-lg shadow-neutral-500" v-if="q" :question="q" :answers="a"/>
+            <QuestionsAndAnswer
+            @send-answer="getAnswer"
+            class="mx-auto p-5 w-full max-w-11/12 h-full md:h-2/3 shadow-lg shadow-neutral-500" v-if="q" :question="q" :answers="a"/>
             
             <!-- Centered Buttons -->
             <div class="flex justify-around w-10/12  mt-8 mx-auto">
@@ -32,20 +34,31 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
+import {router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import QuestionsAndAnswer from '@/components/poll/QuestionsAndAnswer.vue';
+
+const page = usePage()
 
 const survey = ref(null);
 
 const q = ref([])
 const a = ref([])
 const c = ref()
+const selectedAnswer = ref()
 const counts = ref({
     actual_category:0,
     actual_question:0,
     total_categories:0,
     total_questions:0
 })
+
+const result = ref({
+    person_id:0,
+    questions_id:0,
+    answer_id:0
+})
+
 const disabledForward=ref(false)
 const disabledRewind = ref (true)
 
@@ -66,8 +79,10 @@ onMounted(async () => {
     } catch (error) {
         console.error("Error cargando la encuesta completa:", error);
     }
+
+    
 });
-watch(survey, (value)=>{
+watch(survey, async (value)=>{
     
     if(value.categories.length>0){
         counts.value.total_categories = value.categories.length
@@ -79,9 +94,18 @@ watch(survey, (value)=>{
 
         q.value = rest
         a.value = answers
-        c.value = category
+        c.value = category        
+
     }
     
+})
+
+watch(q,(value)=>{
+    
+    router.get(`/poll-users/step-3/${page.props.userId}/survey/${page.props.id}`,{
+        category: c.value.id ,
+        question: value?.id,
+    }, {preserveState:true})
 })
 
 const incrementQuestion = () => {
@@ -91,6 +115,7 @@ const incrementQuestion = () => {
         let questions_compare
         
         if(counts.value.actual_question  < counts.value.total_questions-1){
+            storageResults()
             counts.value.actual_question++    
             if(survey.value.categories[counts.value.actual_category]?.questions[counts.value.actual_question]?.answers){
                 const {answers,...rest} = survey.value.categories[counts.value.actual_category].questions[counts.value.actual_question]
@@ -175,6 +200,30 @@ const decrementQuestion = () => {
     }
     
 }
+
+const storageResults = ()=>{
+    let historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
+
+    const index = historial.findIndex(item => item.questions_id === result.value.questions_id);
+
+    if (index !== -1) {
+        historial[index] = { ...result.value };
+    } else {
+        historial.push({ ...result.value });
+    }
+
+    localStorage.setItem('miHistorialData', JSON.stringify(historial));
+}
+
+const getAnswer = (answer)=>{
+    console.log(answer)
+    selectedAnswer.value = answer
+}
+watch(selectedAnswer,(value)=>{
+    result.value.answer_id = value
+    result.value.questions_id = parseInt(page.props.question)
+    result.value.person_id = parseInt(page.props.userId)
+})
 </script>
 
 <style scoped>

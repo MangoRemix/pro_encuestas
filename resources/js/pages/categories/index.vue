@@ -46,7 +46,7 @@
                         </thead>
                     </table>
                 </div>
-                <div id="table-body" class="w-full max-h-100 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                <div id="table-body" class="w-full max-h-90 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                     <table class="table-fixed w-full">
                         <tbody class="">
                             <tr :id="`question-${index}`" v-for="(question,index) in questions" class="text-white border-b border-neutral-400">

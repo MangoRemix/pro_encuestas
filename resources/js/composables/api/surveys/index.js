@@ -54,3 +54,21 @@ export async function getCategoriesBySurvey (survey_id){
         return response
     }
 }
+
+export async function showFullSurvey(id){
+    
+    try {
+            const {data,error,status} = await axios.get(`${apiHost}survey/show-full/${id}`)
+            if(status==200){
+                response.data = data
+
+            return response
+        }
+            
+    } catch (error) {
+        response.errorFlag = true
+        response.responseMessage = error.response.data.message
+
+        return response
+    }
+}

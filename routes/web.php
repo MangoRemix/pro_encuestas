@@ -8,7 +8,23 @@ Route::inertia('/', 'index')->name('home');
 
 
 Route::prefix('surveys')->group(function (){
-    Route::inertia('create', 'surveys/create')->name('survey-create');
+    Route::prefix('/create-survey')->group(function(){
+        Route::inertia('/step-1', 'create-survey/step-1')->name('survey-create-step1');
+
+        Route::get('/step-2',function (Request $request){
+            return Inertia::render('create-survey/step-2',[
+                "surveyId" => $request->query("surveyId")
+            ]);
+        })->name('survey-create-step2');
+
+        Route::get('/step-3',function (Request $request){
+            return Inertia::render('create-survey/step-3',[
+                "surveyId" => $request->query("surveyId"),
+                "categoryId" => $request->query("categoryId")
+            ]);
+        })->name('survey-create-step3');
+    });
+    
     Route::inertia('/', 'surveys/index')->name('survey-index');
     
     Route::get('/details/{id}', function($id){

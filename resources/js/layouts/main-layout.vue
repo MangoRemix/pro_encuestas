@@ -55,7 +55,7 @@ const menuItems = ref([
         icon: 'ic:baseline-assignment',
         children: [
             { label: 'Ver todas', link: '/surveys' },
-            { label: 'Crear nueva', link: '/surveys/create' },
+            { label: 'Crear nueva', link: '/surveys/create-survey/step-1' },
             { label: 'Categorías', link: '/categories' }
         ]
     },

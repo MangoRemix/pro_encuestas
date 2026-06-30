@@ -1,11 +1,29 @@
 <template>
-    <Head title="Categorias: crear-nueva" />
+    <Head title="Paso2: crear-categorías" />
     <MainLayout>
         <NotificationBox class="w-120 absolute right-0 top-10" 
         v-if="message" :is-error="isError" :message="message" ></NotificationBox>
+        <div class="w-200 flex items-center mx-auto">
+            <StepNavigation :items="steps" :current="current" />
+        </div>
         <div class="max-w-2xl mx-auto py-10 px-4">
             <CategoryForm :survey_id="page.props.surveyId" @update-categories="updateCategories" />
         </div>
+
+        <div class="w-full flex items-center justify-between h-15">
+            <span class="text-white">Categorias existentes ({{ categories.length }})</span>
+
+            <div class="w-fit">
+                <button @click="NextStep()"  class="yellow-button-app cursor-pointer" :disabled="!categories.length>0">
+                    
+                    Cargar preguntas
+                    
+                </button>
+            </div>
+            
+        </div>
+        
+
         <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
             w-full
             h-125">
@@ -56,16 +74,22 @@ import { onMounted, ref } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import CategoryForm from '@/components/forms/category-form.vue';
 import { Icon } from '@iconify/vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { getCategoriesBySurvey } from '@/composables/api/surveys';
 import NotificationBox from '@/components/notification-box.vue';
+import { currentStep, stepsBreadcrumb } from '@/store/store';
+import StepNavigation from '@/components/StepNavigation.vue';
 
 const page = usePage()
 const categories = ref([])
+const steps = stepsBreadcrumb
+const current = currentStep;
+
 onMounted(async() => {
     const {data,errorFlag} = await getCategoriesBySurvey(parseInt(page.props.surveyId))
 
     categories.value = data
+    current.value = 'Categorías'
 });
 
 const updateCategories = async (status)=>{
@@ -81,7 +105,12 @@ const updateCategories = async (status)=>{
     }
     } catch (error) {
         console.error(error)
+    }
 }
+const NextStep = ()=>{
+    router.get('/surveys/create-survey/step-3',{
+        surveyId:page.props.surveyId
+    })
 }
 </script>
 

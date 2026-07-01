@@ -23,13 +23,20 @@ Route::prefix('surveys')->group(function (){
                 "categoryId" => $request->query("categoryId")
             ]);
         })->name('survey-create-step3');
+
+        Route::get('/step-4',function (Request $request){
+            return Inertia::render('create-survey/step-4',[
+                "surveyId" => $request->query("surveyId"),
+            ]);
+        })->name('survey-create-step4');
     });
     
     Route::inertia('/', 'surveys/index')->name('survey-index');
     
-    Route::get('/details/{id}', function($id){
+    Route::get('/details/{id}', function(Request $request,$id){
         return Inertia::render('surveys/details',[
-            'id' => $id
+            'id' => $id,
+            'categoryId' => $request->query('categoryId')
         ]);
     } )->name('survey-details');
 });

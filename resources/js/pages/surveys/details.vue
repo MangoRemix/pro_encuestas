@@ -1,219 +1,295 @@
 <template>
-    <Head title="Encuestas: detalle"/>
+    <Head :title="'Categorías'" />
     <MainLayout>
-        <div class="min-h-100 w-170 py-10 mx-auto">
-            <div class="text-white text-center">
-                <h1 class="text-3xl mb-3 underline font-bold">{{ survey?.name }}</h1>
-                <div class="flex items-center justify-center space-x-5">
-                    <span>Fecha de Inicio: <b>{{ formatedDate(survey?.init_date) }}</b> </span> 
-                    <span>Fecha de Fin: <b>{{ formatedDate(survey?.finish_date) }}</b> </span> 
-                </div>
+        <NotificationBox v-if="message || isError? true:false" :message="message" :is-error="isError" class="absolute z-10 right-0 top-0 w-100"/>
+        <div class="w-100 min-h-10 mx-auto my-3 flex flex-col ">
+            <h3 class="text-white underline text-2xl font-bold mx-auto mb-2">Encuestas</h3>
+            <select name="" v-model="surveySelected" id="" class="inputs-form bg-white ">
+                <option :value="0">Seleccione encuesta</option>
+                <option :value="survey.id" class="p-2 text-neutral-800" v-for="survey in surveys"> {{ survey.name }}</option>
                 
-                
-            </div>
-            <h3 class="text-lg text-white font-bold underline text-center mt-5">Categorías registradas</h3>
-            <button @click="resetFormToCreate() " class="flex items-center justify-end w-full">
-                <Icon class="h-9 w-9 p-1 rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300" icon="ic:outline-plus" />
+            </select>
+        </div>
+        <div class="flex items-center justify-end w-full mb-3">
+            <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 bg-yellow-400 cursor-pointer hover:bg-yellow-300 rounded-2xl px-2">
+                Crear preguntas
+                <Icon class="h-9 w-9 p-1 " icon="ic:outline-plus" />
             </button>
-            
-            <div class="mt-5 w-full">
-                <div id="table-header" class="w-full">
-                    <table class="table-auto text-center w-full">
-                        <thead class="bg-blue-900">
-                            <tr class="border-b border-neutral-300">
-                                
-                                <th class="p-2 w-20 text-white">Orden</th>
-                                <th class="p-2 text-white">Nombre</th>
-                                <th class="p-2 w-45 text-white">Acciones</th>
+
+        </div>
+        <div class="flex space-x-2">
+            <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
+            w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
+            h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                <ul class="text-blue-100 mt-2">
+                    <li @click="categorySelected = category.id" v-for="category in categories" 
+                    :class="`cursor-pointer hover:underline hover:text-yellow-400 hover:font-bold transition-all duration-75 py-1
+                    ${categorySelected==category.id?'text-yellow-400':''}
+                    `">
+                        {{ category.name }}
+                    </li>
+                </ul>
+            </div>
+                
+            <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
+            w-full
+            h-125">
+                <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de preguntas</h3>
+                <div id="table-header" class="h-10 w-full">
+                    <table class="table-fixed w-full text-left">
+                        <thead>
+                            <tr class="border-b border-white/30 text-white text-lg">
+                                <th class="w-30">Orden</th>
+                                <th>Nombre</th>
+                                <th class="w-55 text-center">Acciones</th>
                             </tr>
                         </thead>
                     </table>
                 </div>
-                <div id="tale-body" class="w-full max-h-75 overflow-y-scroll">
-                    <table class="w-full">
-                        <tbody class="bg-white">
-                            <tr class="hover:bg-blue-800 transition-all duration-90 hover:text-white border border-neutral-300" v-for="(category,index) in categoriesBySurvey">
-                                
-                                <td class="p-2">{{ category.order }}</td>
-                                <td class="p-2">{{ category.name }}</td>
-                                <td class="p-2 ">
-                                    <div class="w-full flex gap-x-5 justify-center align-center">
-                                        <Icon @click="getCategoryToEdit(category.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                        <Icon @click="deleteCategory(category.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                <div id="table-body" class="w-full max-h-90 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                    <table class="table-fixed w-full">
+                        <tbody class="">
+                            <tr :id="`question-${index}`" v-for="(question,index) in questions" class="text-white border-b border-neutral-400">
+                                <td class="py-2 w-30">{{ question.order }}</td>
+                                <td class="py-2">
+                                    <Link :href="`/questions/details/${question.id}`">
+                                        {{ question.name }}
+                                    </Link>
+                                </td>
+                                <td class="py-2 w-45">
+                                    <div class="flex items-center justify-center gap-x-3 w-full">
+                                        <Link :href="`/questions/details/${question.id}`">
+                                            <Icon class="text-lg md:text-2xl text-blue-600 hover:text-blue-500 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
+                                        </Link>
+                                        
+                                        <Icon @click="getQuestionToEdit(question.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
+                                        <Icon class="text-lg md:text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                     </div>
-                                    
                                 </td>
                             </tr>
+                            
                         </tbody>
                     </table>
                 </div>
-                
             </div>
-            <Modal :show="isModalOpen" @close="isModalOpen = false">
-                <!-- FORMULARIO CATEGORIES -->
-                
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-                    {{ operation_name }} categoría
-                </h2>
-                <form @submit.prevent="operation_name == 'Crear'?createCategory():updateCategory()" class="flex flex-col space-y-5 w-full h-full mt-10">
-                    <div>
-                        <label class="font-bold text-md ">Nombre categoría:</label>
-                        <input v-model="form.name" required class="inputs-form " type="text" name="" id="">
+        </div>
 
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <label class="font-bold text-md ">Orden de categoría:</label>
-                        <div class="w-20">
-                            <input v-model="form.order" required class="inputs-form text-center " type="number" name="" id="">
+        <Modal :show="isModalOpen" @close="isModalOpen = false">
+            <!-- FORMULARIO CATEGORIES -->
+            
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+                {{ operation_name }} preguntas
+            </h2>
+            
+            
+            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class=" w-150 h-70">
+                <div class="flex item-center justify-end space-x-3">
+                    <button @click.prevent="incrementFormRow" class="" v-if="operation_name!='Editar'">
+                        <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
+                    </button>
+                    
+                    <button type="submit" class="cursor-pointer">
+                        <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
+                    </button>
+                    
+                </div>
+                <div class="w-full h-full max-h-full overflow-y-scroll">
+                    <div v-for="(formRow,index) in formQuestion" class="mb-3 ">
+                        <div class="text-center font-bold mb-3">
+                            <span>Pregunta {{ index+1 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between space-x-2">
+                            <div class="w-35 flex items-center space-x-2">
+                                <label for="" class="text-sm font-bold">Orden: </label>
+                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
+                            </div>
+
+                            <div class="w-full flex items-center space-x-2">
+                                <label for="" class="text-sm font-bold">Nombre: </label>
+                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
+                            </div>
                         </div>
                         
-
-                    </div>            
-                    
-                    <div class="flex justify-center w-1/3 mx-auto">
-                        <button type="submit" class="primary-button-app cursor-pointer">Guardar</button>
                     </div>
-                </form>
-            </Modal>
-            
-            <NotificationBox :message="message" :isError="isError" />
-        </div>
+                </div>
+                
+            </form>
+        </Modal>
     </MainLayout>
-    
-    
 </template>
 <script setup>
-
-import axios from 'axios';
-import { Icon } from "@iconify/vue";
-import { onMounted, reactive, ref } from 'vue';
-import {apiHost} from '../../store/store'
 import NotificationBox from '@/components/notification-box.vue';
-import { Head, usePage } from '@inertiajs/vue3';
-import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
-import {formatedDate} from '@/composables/shared'
+import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
+import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
+import MainLayout from '@/layouts/main-layout.vue';
+import { Icon } from '@iconify/vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { onMounted, ref, watch } from 'vue';
 
-const isModalOpen = ref(false);
+const operation_name = ref('create')
+const isModalOpen = ref(false)
+
+const questions = ref([])
+const categories = ref([])
+const surveys = ref([])
 const page = usePage()
+const categorySelected = ref(0)
+const surveySelected = ref(0)
+const questionSelected = ref(0)
+
+const formQuestion = ref([
+    {
+        name:'',
+        order:0,
+        category_id:parseInt(page.props.categoryId)
+    }
+])
+
+const message = ref()
 const isError = ref(false)
-const message = ref ('')
-const form = reactive({
-    name:'',
-    order:0,
-    survey_id:parseInt(page.props.id)
+
+onMounted(async()=>{
+
+    const {data,errorFlag} = await getSurveys()
+    
+    setTimeout(() => {
+        if(page.props.categoryId){
+            surveySelected.value = page.props.id
+            categorySelected.value = parseInt(page.props.categoryId)
+        }
+        else{
+            if(page.props.id)
+                surveySelected.value = page.props.id
+        }
+    }, 750);   
+
+    if(data)
+        surveys.value = data
 })
-const resetFormToCreate = () =>{
-    isModalOpen.value = true
-    operation_name.value = 'Crear'
-    form.name = ''
-    form.order = 0
-}
-const operation_name = ref('')
-const idCategoryToEdit = ref(0)
-const survey = ref()
 
+watch(surveySelected,async (value)=>{
+    
+    router.get(`/surveys/details/${page.props.id}`, {
+    }, {
+        preserveState: true, // Evita que Vue destruya el estado del componente
+        replace: true        // No satura el historial del botón "Atrás" del navegador
+    });
 
-const categoriesBySurvey = ref([])
-
-    onMounted(async ()=>{
+    const {data,errorFlag,responseMessage} = await getCategoriesBySurvey(value)
+    
+    if(data){
         
-        survey.value = await getSurvey(parseInt(page.props.id))
-        categoriesBySurvey.value = await surveyCategories(survey?.value?.id) 
-    })  
-
-    const surveyCategories = async (survey_id)=>{
-        try {
-            const response = await axios.get(`${apiHost}category/show-by-survey/${survey_id}`)
-            
-            if(response.data.length>0)
-                return response.data
-        } catch (error) {
-            console.log(error)         
-        }
+        categories.value = data
+        
     }
-    const createCategory = async () => {
-        try {
-            const response = await axios.post(`${apiHost}category/create`,form)
-            
-            if(response.status == 201){
-                       
-                categoriesBySurvey.value.push(response.data.category)
-                isError.value = false
-                message.value = response.data.message
-            }
-            else{
-                console.log("response error",response)
-            }
-        } catch (error) {
-            console.log(error.response)
+    else{
+        if(errorFlag){
             isError.value = true
-            message.value = `Error: ${error.response.data.error}`;
-            console.log(error)   
+            message.value = responseMessage
+            setTimeout(() => {
+                message.value = ''
+            }, 3500);
         }
     }
+})
 
-    const updateCategory = async () => {
-        try {
-            const response = await axios.put(`${apiHost}category/update/${idCategoryToEdit.value}`,form)
-            
-            if(response.status == 200){
-                
-                categoriesBySurvey.value = await surveyCategories(parseInt(page.props.id))
-                isError.value = false
-                message.value = response.data.message
-            }
-            else{
-                console.log("response error",response)
-            }
-        } catch (error) {
-            console.log(error.response)
+watch(categorySelected,async (value)=>{
+
+    router.get(`/surveys/details/${page.props.id}`, {
+        categoryId:value
+        //page: page.value,
+    }, {
+        preserveState: true, // Evita que Vue destruya el estado del componente
+        replace: true        // No satura el historial del botón "Atrás" del navegador
+    });
+
+    const {data,errorFlag,responseMessage} = await getQuestionsByCategory(value)
+
+    if(data){
+        
+        questions.value = data
+        
+    }
+    else{
+        if(errorFlag){
             isError.value = true
-            message.value = `Error: ${error.response.data.error}`;
-            console.log(error)   
+            message.value = responseMessage
+            setTimeout(() => {
+                message.value = ''
+            }, 3500);
         }
     }
+})
 
-    const getSurvey = async (id) => {
-        try {
-            const response = await axios.get(`${apiHost}survey/show-one/${id}`)
-            
-            if(response.data.length > 0)
-                return response.data[0]
-            else
-                return 'No hay encuestas registradas.'
-        } catch (error) {
-            console.log(error)   
-        }
-    }
-    const getCategoryToEdit = async (id) => {
-        isModalOpen.value = true
-        operation_name.value = 'Editar'
-        idCategoryToEdit.value = id
-        try {
-            const response = await axios.get(`${apiHost}category/show-one/${id}`)
-            
-            if(response.data.category){
-                
-                form.name = response.data?.category.name
-                form.order = response.data?.category.order
-            }
-                
-        } catch (error) {
-            console.log(error)
-        }
-    }
+const incrementFormRow = () =>{
+    formQuestion.value.push({
+        name:'',
+        order:0,
+        category_id:parseInt(page.props.categoryId)
+    })
+}
 
-    const deleteCategory = async (id,index) =>{
-        try {
-            const response = await axios.delete(`${apiHost}category/delete/${id}`)
+const getQuestionToEdit = async (id) => {
+    try {
+        const {data,errorFlag,responseMessage} = await getQuestion(id)
+        console.log("question: ",data)
+        if(data){
             
-            if(response.status == 200)
-                categoriesBySurvey.value.splice(index,1)
-            else
-                return 'No hay encuestas registradas.'
-        } catch (error) {
-            console.log(error)   
+            formQuestion.value[0].name = data.name
+            formQuestion.value[0].order = data.order
+            isModalOpen.value = true
+            operation_name.value = 'Editar'
+            questionSelected.value = id
         }
+
+        if(errorFlag){
+            isError.value = true
+            message.value = responseMessage
+            setTimeout(() => {
+                message.value = ''
+            }, 3500);
+        }
+        
+    } catch (error) {
+        console.log(error)
     }
+}
+
+const createManyQuestions = async () => {
+    try {
+        
+        const {data,errorFlag,status} = await createMany(formQuestion.value)
+        
+        if(data){
+            categories.value = await getQuestionsByCategory(page.props.categoryId)
+            message.value = data
+            formQuestion.value = [
+                {
+                    name:'',
+                    order:0,
+                    category_id:parseInt(page.props.categoryId)
+                }
+            ]
+
+        }
+        if(errorFlag){
+            isError.value = true
+            message.value = responseMessage
+            setTimeout(() => {
+                message.value = ''
+            }, 3500);
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+const newQuestions = ()=>{
+    isModalOpen.value = true; operation_name.value = 'Crear'
+    formQuestion.value[0].name = ''
+    formQuestion.value[0].order = 0
+}
+
 </script>

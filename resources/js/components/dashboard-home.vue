@@ -13,9 +13,6 @@
                 <li @click="callCategories(survey.id)" v-for="survey in surveys" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
                     {{ survey.name }}
                 </li>
-                <li @click="callCategories(survey.id)" v-for="survey in surveys" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                    {{ survey.name }}
-                </li>
             </ul>
         </div>
 
@@ -30,15 +27,6 @@
                         <li @click="callQuestions(category.id)" v-for="category in categories" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
                             {{ category.name }}
                         </li>
-                        <li @click="callQuestions(category.id)" v-for="category in categories" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ category.name }}
-                        </li>
-                        <li @click="callQuestions(category.id)" v-for="category in categories" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ category.name }}
-                        </li>
-                        <li @click="callQuestions(category.id)" v-for="category in categories" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ category.name }}
-                        </li>
                     </ul>
                 </div>
                 <div class="w-full lg:w-1/3
@@ -48,18 +36,12 @@
                         <li @click="callAnswers(question.id)" v-for="question in questions" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
                             {{ question.name }}
                         </li>
-                        <li @click="callAnswers(question.id)" v-for="question in questions" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ question.name }}
-                        </li>
                     </ul>
                 </div>
                 <div class="w-full lg:w-1/3
                 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
                     <h2 class="underline text-white font-bold text-lg">Respuestas</h2>
                     <ul class="text-blue-100 mt-2">
-                        <li v-for="answer in answers" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ answer.name }}
-                        </li>
                         <li v-for="answer in answers" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
                             {{ answer.name }}
                         </li>

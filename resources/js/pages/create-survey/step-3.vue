@@ -215,7 +215,7 @@
                 
         </div>
         <div class="mx-auto w-1/2 mb-3">
-            <button class="green-button-app cursor-pointer" :disabled="nextStepFlag">
+            <button @click="NextStep()" class="green-button-app cursor-pointer" :disabled="nextStepFlag">
                 Finalizar
             </button>    
         </div>
@@ -291,14 +291,6 @@ onMounted(async()=>{
 })
 
 watch(surveySelected,async (value)=>{
-    
-    // router.get('/categories', {
-    //     surveyId:value,
-    //     //page: page.value,
-    // }, {
-    //     preserveState: true, // Evita que Vue destruya el estado del componente
-    //     replace: true        // No satura el historial del botón "Atrás" del navegador
-    // });
 
     const {data,errorFlag,responseMessage} = await getCategoriesBySurvey(value)
     
@@ -473,4 +465,10 @@ const validateQuestionsAnswers = async () => {
         ) ?? true
     );
 };
+
+const NextStep = () =>{
+    router.get('/surveys/create-survey/step-4',{
+        surveyId:page.props.surveyId
+    })
+}
 </script>

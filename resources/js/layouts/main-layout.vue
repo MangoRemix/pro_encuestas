@@ -56,16 +56,16 @@ const menuItems = ref([
         children: [
             { label: 'Ver todas', link: '/surveys' },
             { label: 'Crear nueva', link: '/surveys/create-survey/step-1' },
-            { label: 'Categorías', link: '/categories' }
+            //{ label: 'Categorías', link: '/categories' }
         ]
     },
     {
-        label: 'Categorías',
+        label: 'Encuestados',
         icon: 'ic:baseline-category',
         children: [
-          { label: 'Detalles', link: '/categories' , permission:'ADMIN'},
+            { label: 'Nuevo encuestado', link: '/poll-users/step-1' , permission:'POLLSTER'},
         ]
-      },
+    },
     {
         label: 'Estadísticas',
         icon: 'ic:baseline-bar-chart',

@@ -6,7 +6,7 @@
         </div>
         <div class="w-11/12 flex justify-end mb-3">
             <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
-                <Link href="/surveys/create" class="flex items-center">
+                <Link href="/surveys/create-survey/step-1" class="flex items-center">
                     <Icon class="text-2xl " icon="ic:outline-plus" /> 
                     Crear encuesta
                 </Link>

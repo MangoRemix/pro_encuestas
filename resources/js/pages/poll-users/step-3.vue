@@ -1,6 +1,7 @@
 <template>
     <Head title="Encuestado en curso"/>
     <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 h-screen items-center">
+        <SuccessModal :show="showSuccess" />
         <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl pb-3 pt-0 md:min-h-120">
             <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl mt-0">{{ c?.name }}</h1>
 
@@ -50,10 +51,12 @@ import { onMounted, ref, watch } from 'vue';
 import {Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import QuestionsAndAnswer from '@/components/poll/QuestionsAndAnswer.vue';
+import SuccessModal from '@/Components/SuccessModal.vue';
 
 const page = usePage()
 
 const survey = ref(null);
+const showSuccess = ref(false);
 
 const q = ref([])
 const a = ref([])
@@ -255,7 +258,14 @@ const finishSurvey = async () => {
     try {
         await axios.post('/api/result/batch', { results: historial });
         localStorage.removeItem('miHistorialData');
-        //router.visit('/poll-users/finished');
+
+        showSuccess.value = true;
+        setTimeout(() => {
+            showSuccess.value = false;
+            // router.visit('/poll-users/finished');
+            router.visit('/poll-users/step-1')
+        }, 2000);
+        
     } catch (error) {
         console.error("Error al finalizar la encuesta:", error);
     }

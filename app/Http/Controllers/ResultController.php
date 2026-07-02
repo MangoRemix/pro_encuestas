@@ -9,6 +9,7 @@ use App\Models\Result;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ResultController extends Controller
 {
@@ -78,6 +79,33 @@ class ResultController extends Controller
         //
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function storeBatch(Request $request)
+    {
+        try {
+            $results = $request->input('results');
+
+            if (!is_array($results) || empty($results)) {
+                return response()->json(['message' => 'No hay resultados para guardar'], 400);
+            }
+
+            DB::transaction(function () use ($results) {
+                foreach ($results as $item) {
+                    Result::create([
+                        'person_id' => $item['person_id'],
+                        'question_id' => $item['questions_id'],
+                        'answer_id' => $item['answer_id'],
+                    ]);
+                }
+            });
+
+            return response()->json(['message' => 'Encuesta finalizada con éxito'], 201);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
     /**
      * Display the specified resource.
      */
@@ -167,3 +195,4 @@ class ResultController extends Controller
         }
     }
 }
+

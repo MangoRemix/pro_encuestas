@@ -1,30 +1,43 @@
 <template>
+    <Head title="Encuestado en curso"/>
     <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 h-screen items-center">
         <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl pb-3 pt-0 md:min-h-120">
-            <h1 class="text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl mt-0">{{ c?.name }}</h1>
+            <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl mt-0">{{ c?.name }}</h1>
 
             <!-- Questions and Answer Component -->
             <QuestionsAndAnswer
+            :key="q.id"
             @send-answer="getAnswer"
             class="mx-auto p-5 w-full max-w-11/12 h-full md:h-2/3 shadow-lg shadow-neutral-500" v-if="q" :question="q" :answers="a"/>
             
             <!-- Centered Buttons -->
-            <div class="flex justify-around w-10/12  mt-8 mx-auto">
+            <div class="flex space-x-3 md:space-x-0 justify-around w-10/12  mt-8 mx-auto">
                 <button
                     :disabled="disabledRewind"
                     type="button"
-                    class="bg-green-700 text-white cursor-pointer rounded py-2 px-4 hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-600"
+                    class=" text-white cursor-pointer rounded py-2 px-4 yellow-button-app basis-xs"
                     @click="decrementQuestion"
                 >
                     Anterior
                 </button>
                 <button
-                    :disabled="disabledForward"
+                    v-if="!visibilityFinishButton"
+                    :disabled="!disabledForward && !selectedAnswer"
                     type="button"
-                    class="bg-blue-900 text-white cursor-pointer rounded py-2 px-4 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-600"
+                    class=" text-white cursor-pointer rounded py-2 px-4 primary-button-app basis-xs"
                     @click="incrementQuestion"
                 >
                     Siguiente
+                </button>
+
+                <button
+                    v-if="visibilityFinishButton"
+                    type="button"
+                    class=" text-white cursor-pointer rounded py-2 px-4 green-button-app basis-xs"
+                    @click="finishSurvey"
+                    :disabled="!selectedAnswer"
+                >
+                    Finalizar
                 </button>
             </div>
 
@@ -34,7 +47,7 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
-import {router, usePage } from '@inertiajs/vue3';
+import {Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import QuestionsAndAnswer from '@/components/poll/QuestionsAndAnswer.vue';
 
@@ -62,10 +75,12 @@ const result = ref({
 const disabledForward=ref(false)
 const disabledRewind = ref (true)
 
+const visibilityFinishButton = ref(false)
+
 const showPerson = async (id) => {
     try {
         const response = await axios.get(`/api/person/respondent/show/${id}`);
-        console.log('Persona obtenida:', response.data);
+        
     } catch (error) {
         console.error('Error al obtener persona:', error);
     }
@@ -73,7 +88,8 @@ const showPerson = async (id) => {
 
 onMounted(async () => {
     try {
-        const response = await axios.get('/api/survey/show-full/2');
+        const response = await axios.get(`/api/survey/show-full/${page.props.id}`);
+        
         survey.value = response.data;
         
     } catch (error) {
@@ -108,24 +124,27 @@ watch(q,(value)=>{
     }, {preserveState:true})
 })
 
-const incrementQuestion = () => {
+const incrementQuestion = async () => {
     try {
 
         let categories_compare
         let questions_compare
-        
+        selectedAnswer.value = null
+        await storageResults()
         if(counts.value.actual_question  < counts.value.total_questions-1){
-            storageResults()
+
             counts.value.actual_question++    
+            
             if(survey.value.categories[counts.value.actual_category]?.questions[counts.value.actual_question]?.answers){
                 const {answers,...rest} = survey.value.categories[counts.value.actual_category].questions[counts.value.actual_question]
                 if(rest)
                     q.value = rest
-                if(answers)
+                if(answers){
                     a.value = answers
+                    
+                }
             }
-            if(counts.value.actual_question>0 && counts.value.actual_category>=0)
-                disabledRewind.value = false
+            
         }else{
             if(counts.value.actual_question >= counts.value.total_questions-1){
                 if(counts.value.actual_category < counts.value.total_categories){
@@ -138,10 +157,11 @@ const incrementQuestion = () => {
                         const {questions,...category} = survey.value.categories[counts.value.actual_category]
         
                         c.value = category
-                        if(counts.value.total_questions.length>0){
-                            
-                            q.value = questions? questions[counts.value.actual_question] : []
                         
+                        if(questions && questions.length>0){
+                            
+                            q.value = questions[counts.value.actual_question]
+                            
                             a.value = questions[counts.value.actual_question]?.answers ? questions[counts.value.actual_question]?.answers : []
                             
                         }
@@ -151,10 +171,15 @@ const incrementQuestion = () => {
             }
         }
         
+        
+        disabledRewind.value = false
+
         categories_compare = counts.value.actual_category == counts.value.total_categories-1
         questions_compare = counts.value.actual_question == counts.value.total_questions
-        if(categories_compare && questions_compare)
+        if(categories_compare && questions_compare){
             disabledForward.value = categories_compare
+            visibilityFinishButton.value = categories_compare
+        }
         
     } catch (error) {
         console.log({error})
@@ -190,10 +215,13 @@ const decrementQuestion = () => {
         }
 
         disabledRewind.value = !counts.value.actual_category && !counts.value.actual_question?true:false
+
         categories_compare = counts.value.actual_category <= counts.value.total_categories
         questions_compare = counts.value.actual_question < counts.value.total_questions
-        if(categories_compare && questions_compare)
+        if(categories_compare && questions_compare){
             disabledForward.value = false
+            visibilityFinishButton.value = false
+        }
             
     } catch (error) {
         console.log({error})
@@ -202,6 +230,7 @@ const decrementQuestion = () => {
 }
 
 const storageResults = ()=>{
+    
     let historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
 
     const index = historial.findIndex(item => item.questions_id === result.value.questions_id);
@@ -211,18 +240,37 @@ const storageResults = ()=>{
     } else {
         historial.push({ ...result.value });
     }
-
+    
     localStorage.setItem('miHistorialData', JSON.stringify(historial));
 }
 
+const finishSurvey = async () => {
+    // Aseguramos guardar el último resultado antes de enviar
+    await storageResults();
+
+    const historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
+
+    if (historial.length === 0) return;
+
+    try {
+        await axios.post('/api/result/batch', { results: historial });
+        localStorage.removeItem('miHistorialData');
+        //router.visit('/poll-users/finished');
+    } catch (error) {
+        console.error("Error al finalizar la encuesta:", error);
+    }
+}
+
 const getAnswer = (answer)=>{
-    console.log(answer)
+
     selectedAnswer.value = answer
 }
 watch(selectedAnswer,(value)=>{
+    
     result.value.answer_id = value
     result.value.questions_id = parseInt(page.props.question)
     result.value.person_id = parseInt(page.props.userId)
+    
 })
 </script>
 

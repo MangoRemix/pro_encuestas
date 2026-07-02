@@ -21,11 +21,17 @@
 <script setup>
 import { ref, watch } from 'vue';
 
+
 const emits = defineEmits(['sendAnswer'])
 
-    const {question,answers} = defineProps(['question','answers'])
+    const props = defineProps(['question','answers'])
     
-    const selectedAnswer = ref(0)
+    const selectedAnswer = ref(null)
+
+    // Reiniciar la selección cuando la pregunta cambie
+    watch(() => props.question, () => {
+        selectedAnswer.value = null
+    }, { deep: true })
 
     watch(selectedAnswer,(value)=>{
         emits('sendAnswer',value)

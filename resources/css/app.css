@@ -17,7 +17,7 @@
 
 .primary-button-app{
     /*@apply w-full mt-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:cursor-not-allowed*/
-    @apply w-full mt-2 px-4 py-2.5 bg-blue-800 hover:bg-blue-900 disabled:bg-gray-300 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:cursor-not-allowed
+    @apply w-full mt-2 px-4 py-2.5 bg-blue-800 hover:bg-blue-900 disabled:bg-gray-400 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:cursor-not-allowed
 }
 .yellow-button-app{
     /*@apply w-full mt-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:cursor-not-allowed*/

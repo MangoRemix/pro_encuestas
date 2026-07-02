@@ -149,8 +149,9 @@ const getParishList = async () => {
 const preCreatePerson = async ()=>{
   try {
     const response = await axios.get(`${apiHost}person/respondent/pre-create`)
-    router.get('/poll-users/new-user-respondent',{
-      id:response.data.id
+    router.get('/poll-users/step-2',{
+      id:response.data.id,
+      surveyId:page.props.surveyId
     })
     console.log(response.data.id)
     return response.data

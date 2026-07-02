@@ -87,7 +87,7 @@ Route::prefix('answer')->group(function (){
 /** RESULTS RESOURES */
 Route::prefix('result')->group(function (){
     Route::post('create',[ResultController::class, 'create']);
-    
+    Route::post('batch', [ResultController::class, 'storeBatch']);
     Route::get('show-all',[ResultController::class, 'index']);
     Route::get('show-one/{id}',[ResultController::class, 'show']);
     Route::put('update/{id}',[ResultController::class, 'update']);
@@ -104,3 +104,4 @@ Route::prefix('parish')->group(function(){
     Route::get('show-all',[ParishController::class, 'index']);
     Route::post('create',[ParishController::class, 'store']);
 });
+

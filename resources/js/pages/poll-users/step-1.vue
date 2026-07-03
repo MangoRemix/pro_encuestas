@@ -10,6 +10,7 @@
         <div class="w-80 mx-auto">
             <button @click="redirectToStep2()"
                 class="primary-button-app w-full cursor-pointer"
+                :disabled="!survey_selected"
             >
                 Iniciar
             </button>
@@ -19,7 +20,9 @@
 <script setup>
 import { getSurveys } from '@/composables/api/surveys';
 import MainLayout from '@/layouts/main-layout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { apiHost } from '@/store/store';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import { onMounted, ref } from 'vue';
 
     const surveys = ref([])
@@ -30,10 +33,26 @@ import { onMounted, ref } from 'vue';
             surveys.value = data
     })
 
-    function redirectToStep2(){
-        router.get(`/poll-users/step-2`,{
-            surveyId:survey_selected.value
-        })
+    async function redirectToStep2  (){
+        await preCreatePerson()
+        // router.get(`/poll-users/step-2`,{
+        //     surveyId:survey_selected.value
+        // })
+    }
+
+    const preCreatePerson = async ()=>{
+        console.log(survey_selected.value)
+        try {
+            const response = await axios.get(`${apiHost}person/respondent/pre-create`)
+                router.get('/poll-users/step-2',{
+                id:response.data.id,
+                surveyId:survey_selected.value
+            })
+            console.log(response.data.id)
+            return response.data
+        } catch (error) {
+            console.error(error)
+        }
     }
 </script>
 <style scoped>

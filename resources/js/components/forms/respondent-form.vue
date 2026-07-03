@@ -1,7 +1,7 @@
 <template>
-  <div class="w-1/2 flex items-center justify-center mx-auto">
+  <!-- <div class="w-1/2 flex items-center justify-center mx-auto">
     <button @click="preCreatePerson()" class="yellow-button-app cursor-pointer" >Nuevo Participante</button>
-  </div>
+  </div> -->
   <div v-if="page.props.id" class="max-w-md mx-auto my-8 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
     <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
       Registrar Participante

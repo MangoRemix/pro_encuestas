@@ -6,7 +6,6 @@ use Inertia\Inertia;
 
 Route::inertia('/', 'index')->name('home');
 
-
 Route::prefix('surveys')->group(function (){
     Route::prefix('/create-survey')->group(function(){
         Route::inertia('/step-1', 'create-survey/step-1')->name('survey-create-step1');
@@ -50,12 +49,10 @@ Route::prefix('categories')->group(function (){
     } )->name('category-details');
 
     Route::get('/',function (Request $request) {
-
         return Inertia::render('categories/index',[
             'surveyId' => $request->query('surveyId'),
             'categoryId' => $request->query('categoryId'),
         ]);
-
     })->name('categories');
 
     Route::get('/create',function (Request $request){
@@ -63,31 +60,24 @@ Route::prefix('categories')->group(function (){
             "surveyId" => $request->query("surveyId")
         ]);
     })->name('category-create');
-    
-    //Route::inertia('/', 'categories/index')->name('categories');
 });
 
 Route::prefix('questions')->group(function (){
-    
     Route::get('/details/{id}', function($id){
         return Inertia::render('questions/details',[
             'id' => $id
         ]);
     } )->name('questions-details');
-
 });
 
 Route::prefix('poll-users')->group(function (){
-
-    
     Route::inertia('step-1','poll-users/step-1')->name('step-1');
 
     Route::get('step-2', function (Request $request) {
         return Inertia::render('poll-users/new-user-respondent',[
             "id" => $request->query('id'),
             "surveyId" => $request->query('surveyId')
-        ]);    
-
+        ]);
     })->name('new-user-respondent');
 
     Route::get('step-3/{userId}/survey/{id}', function ($userId,$id, Request $request) {
@@ -98,11 +88,8 @@ Route::prefix('poll-users')->group(function (){
             'question' => $request->query('question')
         ]);
     })->name('poll-user');   
-    
 });
 
-
-
-
-
-
+Route::prefix('users')->group(function () {
+    Route::inertia('/create', 'users/create')->name('users-create');
+});

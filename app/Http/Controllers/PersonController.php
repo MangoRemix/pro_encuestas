@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Person;
+use Illuminate\Support\Facades\Hash;
 
 class PersonController extends Controller
 {
-    //
     public function preCreate(){
         $new_respondent = new Person();
 
@@ -29,10 +29,38 @@ class PersonController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $person = Person::where('id',$id)->update($request->all());
+        Person::where('id',$id)->update($request->all());
         return response()->json([
             "message" => 'Actualización exitosa'
         ], 200);
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:persons,email',
+            'password' => 'required|string|min:8',
+            'sex_id'   => 'required|integer',
+            'rol_id'   => 'required|integer|in:1,3',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
+        }
+
+        $person = Person::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'sex_id'   => $request->sex_id,
+            'rol_id'   => $request->rol_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Usuario creado con éxito',
+            'person'  => $person
+        ], 201);
     }
 
     public function show($id)
@@ -44,3 +72,4 @@ class PersonController extends Controller
         return response()->json($person);
     }
 }
+

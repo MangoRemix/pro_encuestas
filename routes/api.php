@@ -26,7 +26,9 @@ Route::prefix('person')->group(function (){
         Route::patch('update/{id}', [PersonController::class, 'update']);
         Route::get('show/{id}', [PersonController::class, 'show']);
     });
-    
+    Route::prefix('pollster-admin')->group(function () {
+        Route::post('create', [PersonController::class, 'store']);
+    });
 });
 
 /** AGE RANGE RESOURCES  **/

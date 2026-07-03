@@ -22,13 +22,22 @@ const props = defineProps({
         link: '/'
       },
       {
-        label: 'Encuestas',
-        icon: 'ic:baseline-assignment',
+        label: 'Gestión de usuarios',
+        icon: 'ic:baseline-people',
         children: [
-          { label: 'Ver todas', link: '/surveys' , permission:'all'},
-          { label: 'Crear nueva', link: '/surveys/create' , permission:'ADMIN'},
-          { label: 'Nuevo Encuestado', link: '/surveys/create' , permission:'POLLSTER'},
+          {
+            label: 'Encuestadores/Admins',
+        children: [
+              { label: 'Nuevo Encuestador/Admin', link: '/users/create', permission: 'ADMIN' },
         ]
+      },
+      {
+            label: 'Encuestados',
+        children: [
+              { label: 'Nuevo Encuestado', link: '/surveys/create', permission: 'POLLSTER' },
+        ]
+      }
+    ]
       },
       {
         label: 'Categorías',
@@ -150,25 +159,53 @@ onUnmounted(() => {
                 <Transition name="expand">
                   <ul v-show="openDropdowns[index]" class="mt-1 pl-11 pr-2 space-y-1 overflow-hidden">
                     <li v-for="(subItem, subIndex) in item.children" :key="subIndex">
-                      <a 
-                        v-if="subItem.link" 
+                      <!-- NIVEL 2: Item con hijos (Sub-dropdown) -->
+                      <div v-if="subItem.children && subItem.children.length > 0">
+                        <button
+                          @click="toggleDropdown(`${index}-${subIndex}`)"
+                          class="w-full flex items-center justify-between py-2 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200 cursor-pointer"
+                        >
+                          <span>{{ subItem.label }}</span>
+                          <Icon
+                            icon="ic:round-keyboard-arrow-down"
+                            class="text-lg transition-transform duration-200"
+                            :class="{ 'rotate-180': openDropdowns[`${index}-${subIndex}`] }"
+                          />
+                        </button>
+
+                        <!-- NIVEL 3: Hijos del subItem -->
+                        <Transition name="expand">
+                          <ul v-show="openDropdowns[`${index}-${subIndex}`]" class="mt-1 pl-4 space-y-1 overflow-hidden border-l border-slate-100 dark:border-slate-800 ml-1">
+                            <li v-for="(nestedItem, nestedIndex) in subItem.children" :key="nestedIndex">
+                              <a
+                                :href="nestedItem.link"
+                                class="block px-3 py-2 rounded-lg text-xs text-slate-400 dark:text-slate-500 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200"
+                @click="emit('close')"
+              >
+                                {{ nestedItem.label }}
+              </a>
+            </li>
+          </ul>
+    </Transition>
+  </div>
+
+                      <!-- NIVEL 2: Enlace normal -->
+                      <a
+                        v-else-if="subItem.link"
                         :href="subItem.link"
                         class="block px-3 py-2 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200"
                         @click="emit('close')"
                       >
                         {{ subItem.label }}
                       </a>
-                      <span v-else class="block px-3 py-2 text-sm text-slate-400">
-                        {{ subItem.label }}
-                      </span>
                     </li>
                   </ul>
                 </Transition>
               </div>
 
               <!-- Item Enlace Normal (No tiene hijos) -->
-              <a 
-                v-else-if="item.link" 
+              <a
+                v-else-if="item.link"
                 :href="item.link"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-950 dark:hover:text-white transition-all duration-200"
                 @click="emit('close')"
@@ -208,8 +245,8 @@ onUnmounted(() => {
 /* Transición para expandir el dropdown de submenús */
 .expand-enter-active,
 .expand-leave-active {
-  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-  max-height: 200px;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  max-height: 600px;
 }
 .expand-enter-from,
 .expand-leave-to {

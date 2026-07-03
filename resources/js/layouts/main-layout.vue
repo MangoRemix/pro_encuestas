@@ -60,6 +60,20 @@ const menuItems = ref([
         ]
     },
     {
+        label: 'Gestión de usuarios',
+        icon: 'ic:baseline-people',
+        children: [
+            {
+                label: 'Encuestadores/Admins',
+                children: [
+                    { 
+                        label: 'Nuevo Encuestador/Admin', link: '/users/create', permission: 'ADMIN' 
+                    },
+                ]
+            },
+        ]
+    },
+    {
         label: 'Encuestados',
         icon: 'ic:baseline-category',
         children: [

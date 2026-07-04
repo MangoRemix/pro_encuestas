@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Person;
 use Illuminate\Support\Facades\Hash;
+use App\Services\PersonService;
 
 class PersonController extends Controller
 {
+
     public function preCreate(){
         $new_respondent = new Person();
 
@@ -70,6 +72,12 @@ class PersonController extends Controller
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
         return response()->json($person);
+    }
+
+    public function getStaff()
+    {
+        $staff = Person::whereIn('rol_id', [1, 3])->get();
+        return response()->json($staff, 200);
     }
 }
 

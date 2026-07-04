@@ -92,4 +92,5 @@ Route::prefix('poll-users')->group(function (){
 
 Route::prefix('users')->group(function () {
     Route::inertia('/create', 'users/create')->name('users-create');
+    Route::inertia('/', 'users/index')->name('users-all');
 });

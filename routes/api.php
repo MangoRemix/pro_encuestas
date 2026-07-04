@@ -28,6 +28,7 @@ Route::prefix('person')->group(function (){
     });
     Route::prefix('pollster-admin')->group(function () {
         Route::post('create', [PersonController::class, 'store']);
+        Route::get('list', [PersonController::class, 'getStaff']);
     });
 });
 

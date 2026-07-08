@@ -5,6 +5,13 @@
             <h2 class="text-3xl text-white font-bold mt-8">Usuarios</h2>
         </div>
 
+        <div class="w-full flex justify-end mb-3">
+            <button @click="isModalOpen = true" class="flex items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
+                <Icon class="text-2xl" icon="ic:outline-plus" />
+                Crear usuario
+            </button>
+        </div>
+
         <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full h-135 mt-6">
             <div id="table-header" class="h-10 w-full mb-3">
                 <table class="table-fixed w-full text-left">
@@ -31,29 +38,39 @@
                 </table>
             </div>
         </div>
+
+        <Modal :show="isModalOpen" @close="isModalOpen = false">
+            <UserForm class="w-100" @created="handleUserCreated" />
+        </Modal>
     </MainLayout>
 </template>
 
 <script setup>
 import { Head } from '@inertiajs/vue3';
+import { Icon } from "@iconify/vue";
 import axios from 'axios';
 import { apiHost } from '../../store/store';
 import { onMounted, ref } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
+import Modal from '@/components/modal.vue';
+import UserForm from '@/components/forms/user-form.vue';
 
 const staff = ref([]);
-
-onMounted(async () => {
-    staff.value = await getStaff();
-});
+const isModalOpen = ref(false);
 
 const getStaff = async () => {
     try {
         const response = await axios.get(`${apiHost}person/pollster-admin/list`);
-        return response.data || [];
+        staff.value = response.data || [];
     } catch (error) {
         console.error("Error al cargar personal:", error);
-        return [];
     }
 };
+
+const handleUserCreated = () => {
+    isModalOpen.value = false;
+    getStaff();
+};
+
+onMounted(getStaff);
 </script>

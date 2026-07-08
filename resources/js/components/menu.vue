@@ -157,13 +157,13 @@ onUnmounted(() => {
 
                 <!-- Submenú con transición de colapso -->
                 <Transition name="expand">
-                  <ul v-show="openDropdowns[index]" class="mt-1 pl-11 pr-2 space-y-1 overflow-hidden">
+                  <ul v-show="openDropdowns[index]" class="mt-1 pl-4 space-y-1 overflow-hidden">
                     <li v-for="(subItem, subIndex) in item.children" :key="subIndex">
                       <!-- NIVEL 2: Item con hijos (Sub-dropdown) -->
                       <div v-if="subItem.children && subItem.children.length > 0">
                         <button
                           @click="toggleDropdown(`${index}-${subIndex}`)"
-                          class="w-full flex items-center justify-between py-2 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200 cursor-pointer"
+                          class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 cursor-pointer"
                         >
                           <span>{{ subItem.label }}</span>
                           <Icon
@@ -175,25 +175,25 @@ onUnmounted(() => {
 
                         <!-- NIVEL 3: Hijos del subItem -->
                         <Transition name="expand">
-                          <ul v-show="openDropdowns[`${index}-${subIndex}`]" class="mt-1 pl-4 space-y-1 overflow-hidden border-l border-slate-100 dark:border-slate-800 ml-1">
+                          <ul v-show="openDropdowns[`${index}-${subIndex}`]" class="mt-1 pl-4 space-y-1 overflow-hidden border-l border-slate-200 dark:border-slate-700 ml-3">
                             <li v-for="(nestedItem, nestedIndex) in subItem.children" :key="nestedIndex">
                               <a
                                 :href="nestedItem.link"
-                                class="block px-3 py-2 rounded-lg text-xs text-slate-400 dark:text-slate-500 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200"
-                @click="emit('close')"
-              >
+                                class="block px-3 py-2 rounded-lg text-xs text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200"
+                                @click="emit('close')"
+                              >
                                 {{ nestedItem.label }}
-              </a>
-            </li>
-          </ul>
-    </Transition>
-  </div>
+                              </a>
+                            </li>
+                          </ul>
+                        </Transition>
+                      </div>
 
                       <!-- NIVEL 2: Enlace normal -->
                       <a
                         v-else-if="subItem.link"
                         :href="subItem.link"
-                        class="block px-3 py-2 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-200"
+                        class="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-950 dark:hover:text-white transition-all duration-200"
                         @click="emit('close')"
                       >
                         {{ subItem.label }}

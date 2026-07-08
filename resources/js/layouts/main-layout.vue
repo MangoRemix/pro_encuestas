@@ -71,6 +71,10 @@ const menuItems = ref([
                     },
                 ]
             },
+            {
+                label: 'Mostrar usuarios',
+                link: '/users',
+            },
         ]
     },
     {

@@ -1,8 +1,22 @@
 <template>
     <Head title="Encuestado en curso"/>
-    <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 h-screen items-center">
+    <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 min-h-screen items-center">
         <SuccessModal :show="showSuccess" />
         <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl pb-3 pt-0 md:min-h-120">
+
+            <!-- Barra de Progreso -->
+            <div class="w-full px-8 pt-6 mb-2">
+                <div class="flex justify-between text-sm text-gray-500 mb-1">
+                    <span>Progreso</span>
+                    <span>{{ currentQuestionIndex }} / {{ totalQuestionsCount }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-blue-900 h-2.5 rounded-full transition-all duration-500"
+                        :style="{ width: `${(currentQuestionIndex / totalQuestionsCount) * 100}%` }">
+                    </div>
+                </div>
+            </div>
+
             <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl mt-0">{{ c?.name }}</h1>
 
             <!-- Questions and Answer Component -->
@@ -23,7 +37,7 @@
                 </button>
                 <button
                     v-if="!visibilityFinishButton"
-                    :disabled="!disabledForward && !selectedAnswer"
+                    :disabled="!disabledRewind && !selectedAnswer"
                     type="button"
                     class=" text-white cursor-pointer rounded py-2 px-4 primary-button-app basis-xs"
                     @click="incrementQuestion"
@@ -47,7 +61,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import {Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import QuestionsAndAnswer from '@/components/poll/QuestionsAndAnswer.vue';
@@ -79,6 +93,20 @@ const disabledForward=ref(false)
 const disabledRewind = ref (true)
 
 const visibilityFinishButton = ref(false)
+
+const totalQuestionsCount = computed(() => {
+    if (!survey.value) return 0;
+    return survey.value.categories.reduce((acc, cat) => acc + (cat.questions?.length || 0), 0);
+});
+
+const currentQuestionIndex = computed(() => {
+    if (!survey.value) return 0;
+    let index = 0;
+    for (let i = 0; i < counts.value.actual_category; i++) {
+        index += survey.value.categories[i].questions?.length || 0;
+    }
+    return index + counts.value.actual_question + 1;
+});
 
 const showPerson = async (id) => {
     try {

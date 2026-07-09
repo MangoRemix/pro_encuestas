@@ -1,16 +1,17 @@
 <template >
-    <div class="border border-neutral-800 rounded-xl p-2 ">
+    <div class="border border-neutral-200 rounded-xl p-6 bg-white shadow-sm">
 
-        <h3 class="mb-5">{{ question.order }}. {{ question.name }}</h3>
+        <h3 class="mb-6 text-xl font-semibold text-gray-800">{{ question.order }}. {{ question.name }}</h3>
         
-        <div class="flex flex-wrap gap-y-5 gap-x-2 justify-around">
+        <div class="flex flex-col gap-y-3">
             <div v-for="(answer,index) in answers"
+                :key="answer.id"
                 @click="selectedAnswer = answer.id"
-                class="answer-option w-100 h-20 cursor-pointer border border-neutral-500 flex items-center gap-x-2 px-2 hover:bg-blue-500 hover:text-white transition-all duration-100 rounded-lg" 
+                class="answer-option w-full h-16 cursor-pointer border border-gray-200 flex items-center px-4 hover:border-blue-500 transition-all duration-200 rounded-lg"
             >
             
-                <input type="radio" v-model="selectedAnswer" :value="answer.id" :id="'answer-' + answer.id" name="answer">
-                <label :for="'answer-' + answer.id">{{ answer.name }}</label>
+                <input type="radio" v-model="selectedAnswer" :value="answer.id" :id="'answer-' + answer.id" name="answer" class="w-5 h-5 text-blue-600">
+                <label :for="'answer-' + answer.id" class="ml-3 cursor-pointer text-gray-700 w-full">{{ answer.name }}</label>
             </div>
         </div>
         
@@ -39,16 +40,17 @@ const emits = defineEmits(['sendAnswer'])
 </script>
 <style scoped>
     .answer-option:has(input:checked){
-        background-color: oklch(62.3% 0.214 259.815);
+        background-color: #eff6ff;
+        border-color: #3b82f6;
     }
     .answer-option:has(input:checked) label {
-        font-weight: bold;
-        color: white;
+        font-weight: 600;
+        color: #1e3a8a;
         
     }
 
     .answer-option:has(input:checked):hover label {
-        color:white
+        color:#1e3a8a
     }
 </style>
 

@@ -4,7 +4,10 @@
         <div class=" text-center">
             <h2 class="text-3xl text-white font-bold mt-8">Encuestas</h2>
         </div>
-        <div class="w-11/12 flex justify-end mb-3">
+        <div class="w-full flex justify-between items-center mb-3">
+            <div class="w-1/3 ">
+                <input v-model="searchQuery" type="text" class="inputs-form bg-white">
+            </div>
             <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
                 <Link href="/surveys/create-survey/step-1" class="flex items-center">
                     <Icon class="text-2xl " icon="ic:outline-plus" /> 
@@ -25,6 +28,7 @@
                             <th class="text-sm p-2 lg:text-lg w-70 lg:w-100">Nombre</th>
                             <th class="text-sm p-2 lg:text-lg w-fit lg:w-50">Fecha de inicio</th>
                             <th class="text-sm p-2 lg:text-lg w-fit lg:w-50 text-nowrap">Fecha de finalización</th>
+                            <th class="text-sm p-2 lg:text-lg w-fit lg:w-30">Encuestados</th>
                             <th class="text-sm p-2 lg:text-lg w-fit lg:w-55 text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -33,7 +37,7 @@
             <div id="table-body" class="w-full max-h-100 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                 <table class="table-fixed w-full">
                     <tbody class="">
-                        <tr  v-for="survey in surveys" class="text-white border-b border-neutral-400">
+                        <tr  v-for="survey in filteredSurveys" class="text-white border-b border-neutral-400">
                             <td class="py-2 w-70 lg:w-105">
                                 {{ survey.name }}
                             </td>
@@ -43,9 +47,12 @@
                             <td class="py-2 w-fit lg:w-50">
                                 {{ formatedDate(survey.finish_date) }}
                             </td>
-                            <td class="py-2 w-25 lg:w-55">
+                            <td class="py-2 w-fit lg:w-20 text-center">
+                                {{ survey.results_count }}
+                            </td>
+                            <td class="py-2 w-25 lg:w-55 text-center">
                                 <div class="w-full flex gap-x-1 lg:gap-x-3 justify-center align-center">
-                                    <Link :href="`/categories`" :data="{surveyId:survey.id}">
+                                    <Link :href="`/surveys/details/${survey.id}`">
                                         <Icon class="text-lg md:text-2xl text-blue-600 hover:text-blue-500 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
                                     </Link>
                                     
@@ -67,11 +74,11 @@
     </MainLayout>
 </template>
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Icon } from "@iconify/vue";
 import {apiHost} from '../../store/store'
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
@@ -81,25 +88,38 @@ import SurveyForm from '@/components/forms/survey-form.vue';
 
 const isModalOpen = ref(false);
 const surveys = ref([])
+
 const idSurveyToEdit = ref(0)
+const searchQuery = ref('')
+
+const page = usePage()
 
 onMounted(async ()=>{
     surveys.value = await getSurveys()
 })
 
+const filteredSurveys = computed(() => {
+    return surveys.value.filter(survey => 
+        survey.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+
 const getSurveys = async () => {
+    
     try {
-        const response = await axios.get(`${apiHost}survey/show-all`)
+        const response = await axios.get(`${apiHost}survey/show-all`,{ 
+            params:{
+                page:page.props.page
+            }
+        })
         
-        if(response.data.length > 0)
-            return response.data
-        else
-            return 'No hay encuestas registradas.'
+        if(response.data.data.length > 0)
+            return response.data.data
     } catch (error) {
         console.log(error)   
     }
-}
-    
+}   
+
 </script>
 <style lang="">
     

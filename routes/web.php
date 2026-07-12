@@ -30,7 +30,11 @@ Route::prefix('surveys')->group(function (){
         })->name('survey-create-step4');
     });
     
-    Route::inertia('/', 'surveys/index')->name('survey-index');
+    Route::get('/',function (Request $request){
+        return Inertia::render('surveys/index',[
+            "page" => $request->query("page"),
+        ]);
+    })->name('survey-index');
     
     Route::get('/details/{id}', function(Request $request,$id){
         return Inertia::render('surveys/details',[
@@ -71,6 +75,9 @@ Route::prefix('questions')->group(function (){
 });
 
 Route::prefix('poll-users')->group(function (){
+
+    Route::inertia('/','poll-users/index')->name('poll-users-home');
+
     Route::inertia('step-1','poll-users/step-1')->name('step-1');
 
     Route::get('step-2', function (Request $request) {
@@ -94,3 +101,5 @@ Route::prefix('users')->group(function () {
     Route::inertia('/create', 'users/create')->name('users-create');
     Route::inertia('/', 'users/index')->name('users-all');
 });
+
+Route::inertia('login','login/index')->name('login');

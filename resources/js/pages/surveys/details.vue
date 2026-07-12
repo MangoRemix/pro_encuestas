@@ -2,15 +2,17 @@
     <Head :title="'Categorías'" />
     <MainLayout>
         <NotificationBox v-if="message || isError? true:false" :message="message" :is-error="isError" class="absolute z-10 right-0 top-0 w-100"/>
-        <div class="w-100 min-h-10 mx-auto my-3 flex flex-col ">
-            <h3 class="text-white underline text-2xl font-bold mx-auto mb-2">Encuestas</h3>
-            <select name="" v-model="surveySelected" id="" class="inputs-form bg-white ">
-                <option :value="0">Seleccione encuesta</option>
-                <option :value="survey.id" class="p-2 text-neutral-800" v-for="survey in surveys"> {{ survey.name }}</option>
-                
-            </select>
+
+        <div class="w-full text-center">
+            <h1 class="text-white underline text-2xl font-bold mx-auto mb-2">{{ survey.name }}</h1>
         </div>
-        <div class="flex items-center justify-end w-full mb-3">
+        
+        
+        <div class="flex items-center justify-between w-full mb-3">
+            <div class="space-x-2 text-xl">
+                <span class="text-white font-bold">Total encuestados:</span>
+            <span class="text-white">{{ survey.results_count }}</span>
+            </div>
             <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 bg-yellow-400 cursor-pointer hover:bg-yellow-300 rounded-2xl px-2">
                 Crear preguntas
                 <Icon class="h-9 w-9 p-1 " icon="ic:outline-plus" />
@@ -21,6 +23,7 @@
             <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
             w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
             h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de Categorías</h3>
                 <ul class="text-blue-100 mt-2">
                     <li @click="categorySelected = category.id" v-for="category in categories" 
                     :class="`cursor-pointer hover:underline hover:text-yellow-400 hover:font-bold transition-all duration-75 py-1
@@ -121,7 +124,7 @@
 import NotificationBox from '@/components/notification-box.vue';
 import Modal from '@/components/modal.vue';
 import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
-import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
+import { getCategoriesBySurvey, getSurvey, getSurveys } from '@/composables/api/surveys';
 import MainLayout from '@/layouts/main-layout.vue';
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
@@ -132,7 +135,7 @@ const isModalOpen = ref(false)
 
 const questions = ref([])
 const categories = ref([])
-const surveys = ref([])
+const survey = ref([])
 const page = usePage()
 const categorySelected = ref(0)
 const surveySelected = ref(0)
@@ -151,7 +154,7 @@ const isError = ref(false)
 
 onMounted(async()=>{
 
-    const {data,errorFlag} = await getSurveys()
+    const {data,errorFlag} = await getSurvey(page.props.id)
     
     setTimeout(() => {
         if(page.props.categoryId){
@@ -165,7 +168,7 @@ onMounted(async()=>{
     }, 750);   
 
     if(data)
-        surveys.value = data
+        survey.value = data
 })
 
 watch(surveySelected,async (value)=>{

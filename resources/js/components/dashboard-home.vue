@@ -38,7 +38,7 @@
                 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
                     <h2 class="underline text-white font-bold text-lg">Categorías</h2>
                     <ul class="text-blue-100 mt-2">
-                        <li @click="callQuestions(category.id)"
+                        <li @click="callQuestions(category.id)" v-if="categories.length>0"
                             v-for="category in categories"
                             class="cursor-pointer py-1 px-2 rounded-md transition-colors duration-200"
                             :key="category.id"
@@ -50,13 +50,14 @@
                             ]">
                             {{ category.name }}
                         </li>
+                        <li v-else> No Hay Elementos</li>
                     </ul>
                 </div>
                 <div class="w-full lg:w-1/3
                 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
                     <h2 class="underline text-white font-bold text-lg">Preguntas</h2>
                     <ul class="text-blue-100 mt-2">
-                        <li @click="callAnswers(question.id)"
+                        <li @click="callAnswers(question.id)" v-if="questions.length>0"
                             v-for="question in questions"
                             :key="question.id"
                             :class="[
@@ -67,15 +68,17 @@
                             ]">
                             {{ question.name }}
                         </li>
+                        <li v-else> No Hay Elementos</li>
                     </ul>
                 </div>
                 <div class="w-full lg:w-1/3
                 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
                     <h2 class="underline text-white font-bold text-lg">Respuestas</h2>
                     <ul class="text-blue-100 mt-2">
-                        <li v-for="answer in answers" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
+                        <li v-if="answers.length>0" v-for="answer in answers" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
                             {{ answer.name }}
                         </li>
+                        <li v-else> No Hay Elementos</li>
                     </ul>
                 </div>
             </div> 
@@ -118,7 +121,8 @@ const filteredSurveys = computed(() => {
                 isError.value = errorFlag
                 message.value = responseMessage
             }
-            surveys.value = data    
+            console.log(data)
+            surveys.value = data.data   
         } catch (error) {
             console.log("error",{error})
         }finally{

@@ -7,6 +7,7 @@ use Exception;
 use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class SurveyController extends Controller
@@ -36,9 +37,26 @@ class SurveyController extends Controller
         ];
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $surveys = Survey::orderBy('created_at','DESC')->get();
+        //$age_range = intval($request->query('age_range'));
+        
+        $perPage = $request->query('per_page', 10);
+        
+        
+        $surveys = Survey::query()
+        ->orderBy('created_at', 'DESC')
+        ->addSelect([
+            'results_count' => DB::table('results')
+                ->join('persons', 'persons.id', '=', 'results.person_id')
+                ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
+                ->join('questions', 'questions.id', '=', 'results.question_id')
+                ->join('categories', 'categories.id', '=', 'questions.category_id')
+                ->whereColumn('categories.survey_id', 'surveys.id')
+                //->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
+                ->selectRaw('count(DISTINCT persons.id)')
+        ])
+        ->paginate($perPage);
         return response()->json($surveys, 200);
     }
 
@@ -77,11 +95,22 @@ class SurveyController extends Controller
     /**
      * Mostrar una encuesta específica.
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id, Request $request): JsonResponse
     {   
         try {
+            $age_range = intval($request->query('age_range'));
             //code...
-            $survey = Survey::query()->where('id',$id)->first();
+            $survey = Survey::query()->where('id',$id)
+            ->addSelect([
+            'results_count' => DB::table('results')
+                ->join('persons', 'persons.id', '=', 'results.person_id')
+                ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
+                ->join('questions', 'questions.id', '=', 'results.question_id')
+                ->join('categories', 'categories.id', '=', 'questions.category_id')
+                ->whereColumn('categories.survey_id', 'surveys.id')
+                ->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
+                ->selectRaw('count(DISTINCT persons.id)')
+            ])->first();
 
             if(!$survey){
                 throw new Exception("Not found register", 404);    
@@ -178,3 +207,4 @@ class SurveyController extends Controller
         
     }
 }
+

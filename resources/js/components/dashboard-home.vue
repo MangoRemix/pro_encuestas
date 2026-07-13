@@ -92,8 +92,10 @@
 import { onMounted, ref, computed } from 'vue';
 import {getSurveys,getCategoriesBySurvey} from '../composables/api/surveys'
 import {getQuestionsByCategory} from '../composables/api/questions'
-import {getAnswersByQuestion} from '../composables/api/answers'
+import { useAnswers} from '../composables/api/answers'
 import NotificationBox from './notification-box.vue';
+
+const {getAnswersByQuestion} = useAnswers
 
 const isError = ref(false)
 const message = ref('')

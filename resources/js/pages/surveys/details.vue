@@ -13,16 +13,27 @@
                 <span class="text-white font-bold">Total encuestados:</span>
             <span class="text-white">{{ survey.results_count }}</span>
             </div>
-            <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 bg-yellow-400 cursor-pointer hover:bg-yellow-300 rounded-2xl px-2">
-                Crear preguntas
-                <Icon class="h-9 w-9 p-1 " icon="ic:outline-plus" />
-            </button>
+            <div class="w-fit">
+                <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 yellow-button-app rounded-2xl px-2"
+                :disabled="!categorySelected"
+                >
+                    Crear preguntas
+                    <Icon class="h-9 w-9 p-1 " icon="ic:outline-plus" />
+                </button>
+            </div>
 
         </div>
         <div class="flex space-x-2">
             <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
             w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
             h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                <div class="self-end bg-red-400">
+                    <button @click="newQuestions()" class="yellow-button-app flex items-center justify-center"
+                    :disabled="!categorySelected"
+                    >
+                        <Icon class="h-6 w-6 " icon="ic:outline-plus" />
+                    </button>
+                </div>
                 <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de Categorías</h3>
                 <ul class="text-blue-100 mt-2">
                     <li @click="categorySelected = category.id" v-for="category in categories" 
@@ -118,7 +129,7 @@
 
         <!-- aqui iran los modales -->
         <Modal :show="isModalOpen" @close="isModalOpen = false">
-            <!-- FORMULARIO CATEGORIES -->
+            <!-- FORMULARIO QUESTIONS -->
             
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
                 {{ operation_name }} preguntas
@@ -201,23 +212,47 @@
                 </form>
             </Modal>
 
+            <!-- MODAL PARA CREAR CATEGORIES -->
+             <Modal :show="isModalOpen_categories" @close="isModalOpen_categories = false">
+                <div class="max-w-2xl mx-auto py-10 px-4">
+                    <CategoryForm :survey_id="page.props.surveyId" @update-categories="updateCategories" />
+                </div>
+             </Modal>
+
     </MainLayout>
 </template>
 <script setup>
+import MainLayout from '@/layouts/main-layout.vue';
 import NotificationBox from '@/components/notification-box.vue';
 import Modal from '@/components/modal.vue';
-import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
-import { getCategoriesBySurvey, getSurvey, getSurveys } from '@/composables/api/surveys';
-import MainLayout from '@/layouts/main-layout.vue';
-import { Icon } from '@iconify/vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import CategoryForm from '@/components/forms/category-form.vue';
+
 import { onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { apiHost } from '@/store/store';
 
+import { Icon } from '@iconify/vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+
+import { useAnswers } from '@/composables/api/answers';
+import { useNotification } from '@/composables/useNotification';
+import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
+import { getCategoriesBySurvey, getSurvey } from '@/composables/api/surveys';
+
+
+const { message, isError, notify } = useNotification();
+const {
+    loading: loadingAnswers,
+    getAnswersByQuestion: getAnswersByQuestionApi,
+    deleteAnswer: deleteAnswerApi,
+    createManyAnswers: createManyAnswersApi,
+    updateAnswer: updateAnswerApi
+} = useAnswers();
+
 const operation_name = ref('create')
 const isModalOpen = ref(false)
 const isModalOpen_answers = ref(false)
+const isModalOpen_categories = ref(false)
 const questions = ref([])
 const categories = ref([])
 const survey = ref([])
@@ -244,20 +279,16 @@ const formAnswer = ref([
     }
 ])
 
-const message = ref()
-const isError = ref(false)
-
 onMounted(async()=>{
 
-    const {data,errorFlag} = await getSurvey(page.props.id)
+    const {data} = await getSurvey(page.props.id)
     
     setTimeout(() => {
         if(page.props.categoryId){
             surveySelected.value = page.props.id
             categorySelected.value = parseInt(page.props.categoryId)
         }
-        else{
-            if(page.props.id)
+        else if(page.props.id){
                 surveySelected.value = page.props.id
         }
     }, 750);   
@@ -274,24 +305,8 @@ watch(surveySelected,async (value)=>{
         replace: true        // No satura el historial del botón "Atrás" del navegador
     });
 
-    const {data,errorFlag,responseMessage} = await getCategoriesBySurvey(value)
-    
-    if(data){
-        
-        categories.value = data
-        
-    }
-    else{
-        if(errorFlag){
-            isError.value = true
-            message.value = responseMessage
-            setTimeout(() => {
-                message.value = ''
-            }, 3500);
-        }
-    }
+    await updateCategories()
 })
-
 watch(categorySelected,async (value)=>{
 
     router.get(`/surveys/details/${page.props.id}`, {
@@ -309,17 +324,10 @@ watch(categorySelected,async (value)=>{
         questions.value = data
         answersByQuestion.value = []
     }
-    else{
-        if(errorFlag){
-            isError.value = true
-            message.value = responseMessage
-            setTimeout(() => {
-                message.value = ''
-            }, 3500);
-        }
+    else if(errorFlag){
+        notify(responseMessage, true);
     }
 })
-
 const incrementFormRow = () =>{
     formQuestion.value.push({
         name:'',
@@ -329,9 +337,7 @@ const incrementFormRow = () =>{
 }
 
 const getQuestionToEdit = async (id) => {
-    try {
         const {data,errorFlag,responseMessage} = await getQuestion(id)
-        console.log("question: ",data)
         if(data){
             
             formQuestion.value[0].name = data.name
@@ -339,30 +345,16 @@ const getQuestionToEdit = async (id) => {
             isModalOpen.value = true
             operation_name.value = 'Editar'
             questionSelected.value = id
+    } else if(errorFlag) notify(responseMessage, true);
         }
-
-        if(errorFlag){
-            isError.value = true
-            message.value = responseMessage
-            setTimeout(() => {
-                message.value = ''
-            }, 3500);
-        }
-        
-    } catch (error) {
-        console.log(error)
-    }
-}
 
 const createManyQuestions = async () => {
-    try {
-        
-        const {data,errorFlag,status} = await createMany(formQuestion.value)
+    const {data,errorFlag,responseMessage} = await createMany(formQuestion.value)
         
         if(data){
-            categories.value = await getQuestionsByCategory(page.props.categoryId)
-            message.value = data
-            formQuestion.value = [
+        questions.value = await getQuestionsByCategory(page.props.categoryId)
+        notify(data);
+        formQuestion.value = [
                 {
                     name:'',
                     order:0,
@@ -370,20 +362,8 @@ const createManyQuestions = async () => {
                 }
             ]
 
+    } else if(errorFlag) notify(responseMessage, true);
         }
-        if(errorFlag){
-            isError.value = true
-            message.value = responseMessage
-            setTimeout(() => {
-                message.value = ''
-            }, 3500);
-        }
-
-    } catch (error) {
-        console.log(error)
-    }
-}
-
 const newQuestions = ()=>{
     isModalOpen.value = true; operation_name.value = 'Crear'
     formQuestion.value[0].name = ''
@@ -391,124 +371,88 @@ const newQuestions = ()=>{
 }
 
 watch(questionSelected,async (value)=>{
-    answersByQuestion.value = await getAnswersByQuestion(value)
+    if(value) answersByQuestion.value = await getAnswersByQuestionApi(value)
 })
 
 //ANSWERS METHODS
 
-const getAnswersByQuestion = async (id) => {
+// const getAnswersByQuestion = async (id) => {
 
-    try {
-        const {data,error} = await axios.get(`${apiHost}answer/show-by-question/${id}`)
+//     try {
+//         const {data,error} = await axios.get(`${apiHost}answer/show-by-question/${id}`)
         
-        if(data.answers)
-            return data.answers
-        return null
-    } catch (error) {
-        console.log(error)
-    }
-}
-
+//         if(data.answers)
+//             return data.answers
+//         return null
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
 const createManyAnswers = async () => {
-    try {
-        loading.value = true
-        const {data,error,status} = await axios.post(`${apiHost}answer/create-many`,formAnswer.value)
-        
-        if(status == 201){
-            getAnswersByQuestion.value.splice(index,1)
-            formAnswer.value = [{
-                name:'',
-                order:0,
-                question_id:parseInt(page.props.id)
+    const { success } = await createManyAnswersApi(formAnswer.value)
+    if(success){
+        answersByQuestion.value = await getAnswersByQuestionApi(questionSelected.value)
+        formAnswer.value = [{
+            name:'',
+            order:0,
+            question_id:questionSelected.value
             }]
-            message.value = data.message
+        notify("Respuestas creadas correctamente");
+        isModalOpen_answers.value = false;
+    } else notify("Error al crear respuestas", true);
         }
             
-        return null
-    } catch (error) {
-        console.log(error)
-        isError.value = true
-        message.value = error.response.data
-    }finally{
-        loading.value = false
-        setTimeout(() => {
-            message.value = ''
-        }, 3500);
-    }
-}
-
 const deleteAnswer = async (id,index) => {
-    loading.value = true
-    try {
-        const {data,error,status} = await axios.delete(`${apiHost}answer/delete/${id}`)
-        
-        if(status == 200){
+    const success = await deleteAnswerApi(id)
+    if(success){
             answersByQuestion.value.splice(index,1)
-            message.value = data.message
+        notify("Respuesta eliminada");
+    } else notify("Error al eliminar", true);
         }
         
-    } catch (error) {
-        isError.value = true
-        message.value = error.response.message
-        
-    }finally{
-        setTimeout(() => {
-            loading.value = false
-            message.value = ''    
-        }, 3500);
-        
-    }
-}
-
 const getAnswerToEdit = async (id) => {
     try {
-        const {data,error,status} = await axios.get(`${apiHost}answer/show-one/${id}`)
+        const {data, status} = await axios.get(`${apiHost}answer/show-one/${id}`)
         if(status==200){
-            console.log(data)
-            console.log(formAnswer.value)
             formAnswer.value[0].name = data.answer.name
             formAnswer.value[0].order = data.answer.order
             formAnswer.value[0].question_id = data.answer.question_id
-            console.log(formAnswer.value[0])
             isModalOpen_answers.value = true
             operation_name.value = 'Editar'
             answerSelectedId.value = id
         }
         
-    } catch (error) {
-        console.log(error)
+    } catch (error) { console.log(error) }
     }
-}
-
 const updateAnswer = async (id) => {
-    try {
-        loading.value = true
-        const {data,error,status} = await axios.put(`${apiHost}answer/update/${id}`,formAnswer.value[0])
-        if(status == 200){
-            
-            message.value = data.message
-
-        }
-    } catch (error) {
-        isError.value = true
-        const {response} = error
-        message.value = response?.data
-        
-    }finally{
-        loading.value = false
-        setTimeout(() => {
-            message.value = ''
-        }, 3500);
-        
-    }
+    const { success } = await updateAnswerApi(id, formAnswer.value[0])
+    if(success){
+        notify("Respuesta actualizada");
+        answersByQuestion.value = await getAnswersByQuestionApi(questionSelected.value)
+        isModalOpen_answers.value = false;
+    } else notify("Error al actualizar", true);
 }
-
 const incrementFormRow_answer = () =>{
-    form.value.push({
+    formAnswer.value.push({
         name:'',
         order:0,
-        question_id:parseInt(page.props.id)
+        question_id:questionSelected.value
     })
+}
+
+
+// CATEGORIES METHODS
+const updateCategories = async () => {
+    const {data,errorFlag,responseMessage} = await getCategoriesBySurvey(page.props.id)
+    
+    if(data){
+        
+        categories.value = data
+        
+    }
+    else if(errorFlag){
+        notify(responseMessage, true);
+    }
 }
 
 </script>

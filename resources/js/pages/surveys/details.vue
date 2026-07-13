@@ -27,9 +27,8 @@
             <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
             w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
             h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                <div class="self-end bg-red-400">
-                    <button @click="newQuestions()" class="yellow-button-app flex items-center justify-center"
-                    :disabled="!categorySelected"
+                <div class="flex w-full justify-end">
+                    <button @click="newQuestions()" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
                     >
                         <Icon class="h-6 w-6 " icon="ic:outline-plus" />
                     </button>
@@ -66,7 +65,9 @@
                             <tr :id="`question-${index}`" v-for="(question,index) in questions" class="text-white border-b border-neutral-400">
                                 <td class="py-2 w-30">{{ question.order }}</td>
                                 <td class="py-2">
-                                    <span @click="questionSelected=question.id">
+                                    <span @click="questionSelected=question.id"
+                                    :class="`${questionSelected==question.id?'text-yellow-400':''}`"
+                                    >
                                         {{ question.name }}
                                     </span>
                                 </td>
@@ -93,8 +94,9 @@
         <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full mt-10 h-100">
                 <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de respuestas</h3>
                 <div class="flex items-center justify-end w-full mb-2">
-                    <button @click="newAnswers()" >
-                        <Icon class="h-9 w-9 p-1 rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300" icon="ic:outline-plus" />
+                    <button @click="newAnswers()" class="cursor-pointer btn-circle btn-circle-yellow h-10 w-10"
+                    :disabled="!questionSelected">
+                        <Icon class="h-6 w-6" icon="ic:outline-plus" />
                     </button>
                 </div>
                 
@@ -371,6 +373,16 @@ const newQuestions = ()=>{
 }
 
 watch(questionSelected,async (value)=>{
+
+    router.get(`/surveys/details/${page.props.id}`, {
+        categoryId:page.props.categoryId,
+        questionId:value
+        //page: page.value,
+    }, {
+        preserveState: true, // Evita que Vue destruya el estado del componente
+        replace: true        // No satura el historial del botón "Atrás" del navegador
+    });
+
     if(value) answersByQuestion.value = await getAnswersByQuestionApi(value)
 })
 

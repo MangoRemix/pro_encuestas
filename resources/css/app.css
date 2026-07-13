@@ -29,6 +29,22 @@
     @apply w-full mt-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-gray-400 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-300 disabled:cursor-not-allowed
 }
 
+.btn-circle {
+    @apply rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100;
+}
+
+.btn-circle-yellow {
+    @apply bg-yellow-400 text-white hover:bg-yellow-500 disabled:bg-gray-400 disabled:text-white;
+}
+
+.btn-circle-green {
+    @apply bg-emerald-500 text-white hover:bg-emerald-600 disabled:bg-gray-400;
+}
+
+.btn-circle-blue {
+    @apply bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400;
+}
+
     #table-body tbody tr:nth-child(odd) {
         background-color: rgba(255, 255, 255, 0.03);
     }
@@ -47,3 +63,4 @@
     #table-body tbody tr:hover td:nth-child(N) {
         color:oklch(85.2% 0.199 91.936);
     }
+

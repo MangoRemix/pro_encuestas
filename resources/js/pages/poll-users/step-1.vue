@@ -28,7 +28,7 @@ import { onMounted, ref } from 'vue';
     const surveys = ref([])
     const survey_selected = ref()
     onMounted(async ()=>{
-        const {data} = await getSurveys()
+        const {data} = await getSurveys({all:true})
         if(data)
             surveys.value = data
     })

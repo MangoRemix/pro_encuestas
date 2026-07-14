@@ -7,11 +7,14 @@ export function useAnswers() {
     const error = ref(null);
     const message = ref(null);
 
-    const getAnswersByQuestion = async (questionId) => {
+        const getAnswersByQuestion = async (questionId) => {
         try {
             loading.value = true;
             const { data } = await axios.get(`${apiHost}answer/show-by-question/${questionId}`);
-            return data.answers || [];
+            
+            return {
+                data:data.answers || []
+            };
         } catch (e) {
             error.value = e;
             return [];

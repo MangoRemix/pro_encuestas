@@ -151,7 +151,7 @@ const isError = ref(false)
 
 onMounted(async()=>{
 
-    const {data,errorFlag} = await getSurveys()
+    const {data,errorFlag} = await getSurveys({})
     
     setTimeout(() => {
         if(page.props.categoryId){

@@ -95,7 +95,9 @@ import {getQuestionsByCategory} from '../composables/api/questions'
 import { useAnswers} from '../composables/api/answers'
 import NotificationBox from './notification-box.vue';
 
-const {getAnswersByQuestion} = useAnswers
+const {
+    getAnswersByQuestion: getAnswersByQuestionApi
+} = useAnswers()
 
 const isError = ref(false)
 const message = ref('')
@@ -118,12 +120,13 @@ const filteredSurveys = computed(() => {
 
     onMounted(async ()=>{
         try {
-            const {data,errorFlag,responseMessage} = await getSurveys()
+            const {data,errorFlag,responseMessage} = await getSurveys({})
+            
             if(errorFlag){
                 isError.value = errorFlag
                 message.value = responseMessage
             }
-            console.log(data)
+            
             surveys.value = data.data   
         } catch (error) {
             console.log("error",{error})
@@ -184,7 +187,8 @@ const filteredSurveys = computed(() => {
         answers.value = []
         questionSelected.value = questionId
         try {
-            const {data,errorFlag,responseMessage} = await getAnswersByQuestion (questionId)
+            const {data,errorFlag,responseMessage} = await getAnswersByQuestionApi(questionId)
+            console.log("data-answers", data )
             if(errorFlag){
                 isError.value = errorFlag
                 message.value = responseMessage

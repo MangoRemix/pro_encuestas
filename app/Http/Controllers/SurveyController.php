@@ -42,21 +42,29 @@ class SurveyController extends Controller
         //$age_range = intval($request->query('age_range'));
         
         $perPage = $request->query('per_page', 10);
+        $surveys = [];
+
+        if($request->query('all')=='true'){
+            $surveys = Survey::query()
+            ->orderBy('created_at', 'DESC')->get();
+        }else{
+            
+            $surveys = Survey::query()
+            ->orderBy('created_at', 'DESC')
+            ->addSelect([
+                'results_count' => DB::table('results')
+                    ->join('persons', 'persons.id', '=', 'results.person_id')
+                    ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
+                    ->join('questions', 'questions.id', '=', 'results.question_id')
+                    ->join('categories', 'categories.id', '=', 'questions.category_id')
+                    ->whereColumn('categories.survey_id', 'surveys.id')
+                    //->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
+                    ->selectRaw('count(DISTINCT persons.id)')
+            ])
+            ->paginate($perPage);
+        }
         
         
-        $surveys = Survey::query()
-        ->orderBy('created_at', 'DESC')
-        ->addSelect([
-            'results_count' => DB::table('results')
-                ->join('persons', 'persons.id', '=', 'results.person_id')
-                ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
-                ->join('questions', 'questions.id', '=', 'results.question_id')
-                ->join('categories', 'categories.id', '=', 'questions.category_id')
-                ->whereColumn('categories.survey_id', 'surveys.id')
-                //->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
-                ->selectRaw('count(DISTINCT persons.id)')
-        ])
-        ->paginate($perPage);
         return response()->json($surveys, 200);
     }
 

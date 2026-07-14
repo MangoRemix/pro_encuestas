@@ -6,9 +6,15 @@ const response = {
     data:null
 }
 
-export async function getSurveys(){
+export async function getSurveys({all = false}){
     try {
-        const {data,error,status} = await axios.get(`${apiHost}survey/show-all`)
+        
+        const {data,error,status} = await axios.get(`${apiHost}survey/show-all`,{
+            params:{
+                all
+            }
+        })
+        console.log(data)
         if(status==200){
             response.data = data
             return response

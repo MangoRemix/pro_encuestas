@@ -5,7 +5,11 @@
             <h2 class="text-3xl text-white font-bold mt-8">Usuarios</h2>
         </div>
 
-        <div class="w-full flex justify-end mb-3">
+        
+        <div class="w-full flex justify-between mb-3">
+            <div class="w-1/3 ">
+                <input v-model="searchQuery" type="text" class="inputs-form bg-white">
+            </div>
             <button @click="isModalOpen = true" class="flex items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
                 <Icon class="text-2xl" icon="ic:outline-plus" />
                 Crear usuario
@@ -28,7 +32,7 @@
             <div id="table-body" class="w-full max-h-100 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                 <table class="table-fixed w-full">
                     <tbody>
-                        <tr v-for="user in staff" :key="user.id" class="text-white border-b border-neutral-400">
+                        <tr v-for="user in filteredStaff" :key="user.id" class="text-white border-b border-neutral-400">
                             <td class="py-3 px-2 w-1/3 truncate">{{ user.name }}</td>
                             <td class="py-3 px-2 w-1/3 truncate">{{ user.email }}</td>
                             <td class="py-3 px-2 w-1/6">{{ user.sex_id === 1 ? 'M' : 'F' }}</td>
@@ -50,13 +54,32 @@ import { Head } from '@inertiajs/vue3';
 import { Icon } from "@iconify/vue";
 import axios from 'axios';
 import { apiHost } from '../../store/store';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
 import UserForm from '@/components/forms/user-form.vue';
 
+onMounted(async ()=>{
+    await getStaff()
+});
+
 const staff = ref([]);
+const searchQuery = ref('');
 const isModalOpen = ref(false);
+
+const filteredStaff = computed(() => {
+    const query = searchQuery.value.toLowerCase();
+    if (!query) return staff.value;
+    
+    return staff.value.filter(user => {
+        const roleName = user.rol_id === 3 ? 'admin' : 'encuestador';
+        return (
+            user.name.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            roleName.includes(query)
+        );
+    });
+});
 
 const getStaff = async () => {
     try {
@@ -71,6 +94,4 @@ const handleUserCreated = () => {
     isModalOpen.value = false;
     getStaff();
 };
-
-onMounted(getStaff);
 </script>

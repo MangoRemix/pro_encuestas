@@ -86,10 +86,11 @@ class ResultController extends Controller
     {
             $results = $request->input('results');
             $report = [];
-            
+            $now = now();
         foreach ($results as $index => $item) {
             try {
-                    Result::insert($item);
+                $item['created_at'] = $now;
+                Result::insert($item);
                 $report[$index] = 'GUARDADA';
             } catch (\Throwable) {
                 $report[$index] = 'FALLIDO';

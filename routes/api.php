@@ -9,8 +9,9 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SexController;
 use App\Http\Controllers\SurveyController;
-use App\Models\Answer;
-use Illuminate\Http\Request;
+//use App\Models\Answer;
+//use App\Http\Controllers\Auth\LoginController;
+//use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 //Route::get('/user', function (Request $request) {
@@ -63,7 +64,7 @@ Route::prefix('category')->group(function (){
     Route::delete('delete/{id}',[CategoryController::class, 'destroy']);
 });
 
-/** QUESTIONS RESOURES */
+/**QUESTIONS RESOURES */
 Route::prefix('question')->group(function (){
     Route::post('create',[QuestionController::class, 'store']);
     Route::post('create-many',[QuestionController::class, 'createMany']);

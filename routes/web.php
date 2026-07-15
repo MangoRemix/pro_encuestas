@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::inertia('/', 'index')->name('home');
 
@@ -103,3 +104,5 @@ Route::prefix('users')->group(function () {
 });
 
 Route::inertia('login','login/index')->name('login');
+Route::post('/login', [LoginController::class, 'store']);
+

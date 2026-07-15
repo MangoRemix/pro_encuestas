@@ -85,7 +85,7 @@ const counts = ref({
 
 const result = ref({
     person_id:0,
-    questions_id:0,
+    question_id:0,
     answer_id:0
 })
 
@@ -264,7 +264,7 @@ const storageResults = ()=>{
     
     let historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
 
-    const index = historial.findIndex(item => item.questions_id === result.value.questions_id);
+    const index = historial.findIndex(item => item.question_id === result.value.question_id);
 
     if (index !== -1) {
         historial[index] = { ...result.value };
@@ -314,7 +314,7 @@ const getAnswer = (answer)=>{
 watch(selectedAnswer,(value)=>{
     
     result.value.answer_id = value
-    result.value.questions_id = parseInt(page.props.question)
+    result.value.question_id = parseInt(page.props.question)
     result.value.person_id = parseInt(page.props.userId)
     
 })

@@ -84,27 +84,19 @@ class ResultController extends Controller
      */
     public function storeBatch(Request $request)
     {
-        try {
             $results = $request->input('results');
-
-            if (!is_array($results) || empty($results)) {
-                return response()->json(['message' => 'No hay resultados para guardar'], 400);
+            $report = [];
+            
+        foreach ($results as $index => $item) {
+            try {
+                    Result::insert($item);
+                $report[$index] = 'GUARDADA';
+            } catch (\Throwable) {
+                $report[$index] = 'FALLIDO';
             }
-
-            DB::transaction(function () use ($results) {
-                foreach ($results as $item) {
-                    Result::create([
-                        'person_id' => $item['person_id'],
-                        'question_id' => $item['questions_id'],
-                        'answer_id' => $item['answer_id'],
-                    ]);
-                }
-            });
-
-            return response()->json(['message' => 'Encuesta finalizada con éxito'], 201);
-        } catch (\Throwable $th) {
-            return response()->json(['error' => $th->getMessage()], 500);
         }
+
+        return response()->json(['report' => $report], 200);
     }
     /**
      * Display the specified resource.

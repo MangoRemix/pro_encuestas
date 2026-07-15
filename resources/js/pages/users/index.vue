@@ -2,7 +2,7 @@
     <Head title="Gestión de Personal" />
     <MainLayout>
         <div class="text-center">
-            <h2 class="text-3xl text-white font-bold mt-8">Usuarios</h2>
+            <h2 class="text-3xl text-white font-bold mt-8 underline">Usuarios</h2>
         </div>
 
         

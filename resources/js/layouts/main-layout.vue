@@ -83,6 +83,7 @@ const menuItems = ref([
         icon: 'ic:baseline-category',
         children: [
             { label: 'Nuevo encuestado', link: '/poll-users/step-1' , permission:'POLLSTER'},
+            { label: 'Encuestas Realizadas', link: '/poll-users/finished-list' },
         ]
     },
     {

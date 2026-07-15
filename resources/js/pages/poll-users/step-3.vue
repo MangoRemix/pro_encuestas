@@ -276,21 +276,29 @@ const storageResults = ()=>{
 }
 
 const finishSurvey = async () => {
-    // Aseguramos guardar el último resultado antes de enviar
     await storageResults();
 
     const historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
 
     if (historial.length === 0) return;
 
+    const allSurveys = JSON.parse(localStorage.getItem('allSurveysPending')) || [];
+    const surveyToSave = {
+        data: historial,
+        status: 'PENDIENTE',
+        survey:survey.value,
+        created_at: new Date().toISOString()
+    };
+    allSurveys.push(surveyToSave);
+    localStorage.setItem('allSurveysPending', JSON.stringify(allSurveys));
+
     try {
-        await axios.post('/api/result/batch', { results: historial });
+        //await axios.post('/api/result/batch', { results: historial });
         localStorage.removeItem('miHistorialData');
 
         showSuccess.value = true;
         setTimeout(() => {
             showSuccess.value = false;
-            // router.visit('/poll-users/finished');
             router.visit('/poll-users/step-1')
         }, 2000);
         

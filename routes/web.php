@@ -81,6 +81,8 @@ Route::prefix('poll-users')->group(function (){
 
     Route::inertia('step-1','poll-users/step-1')->name('step-1');
 
+    Route::inertia('finished-list', 'poll-users/finished-list')->name('poll-users-finished-list');
+
     Route::get('step-2', function (Request $request) {
         return Inertia::render('poll-users/new-user-respondent',[
             "id" => $request->query('id'),

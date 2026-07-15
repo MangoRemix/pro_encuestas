@@ -65,7 +65,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import {Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import QuestionsAndAnswer from '@/components/poll/QuestionsAndAnswer.vue';
-import SuccessModal from '@/Components/SuccessModal.vue';
+import SuccessModal from '@/components/SuccessModal.vue';
 
 const page = usePage()
 

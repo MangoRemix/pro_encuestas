@@ -188,7 +188,7 @@ const filteredSurveys = computed(() => {
         questionSelected.value = questionId
         try {
             const {data,errorFlag,responseMessage} = await getAnswersByQuestionApi(questionId)
-            console.log("data-answers", data )
+            
             if(errorFlag){
                 isError.value = errorFlag
                 message.value = responseMessage

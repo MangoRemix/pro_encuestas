@@ -65,7 +65,7 @@ const submit = async () => {
         <div class="flex justify-end mt-6">
             <button 
                 type="submit" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+                class="primary-button-app cursor-pointer"
             >
                 Guardar Categoría
             </button>

@@ -28,7 +28,7 @@
             w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
             h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                 <div class="flex w-full justify-end">
-                    <button @click="newQuestions()" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
+                    <button @click="isModalOpen_categories = true" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
                     >
                         <Icon class="h-6 w-6 " icon="ic:outline-plus" />
                     </button>
@@ -216,8 +216,8 @@
 
             <!-- MODAL PARA CREAR CATEGORIES -->
              <Modal :show="isModalOpen_categories" @close="isModalOpen_categories = false">
-                <div class="max-w-2xl mx-auto py-10 px-4">
-                    <CategoryForm :survey_id="page.props.surveyId" @update-categories="updateCategories" />
+                <div class="min-w-150 max-w-2xl mx-auto">
+                    <CategoryForm :survey_id="page.props.id" @update-categories="updateCategories" />
                 </div>
              </Modal>
 

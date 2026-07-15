@@ -14,7 +14,7 @@ export async function getSurveys({all = false}){
                 all
             }
         })
-        console.log(data)
+        
         if(status==200){
             response.data = data
             return response

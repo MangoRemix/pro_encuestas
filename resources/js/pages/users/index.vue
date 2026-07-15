@@ -8,7 +8,9 @@
         
         <div class="w-full flex justify-between mb-3">
             <div class="w-1/3 ">
-                <input v-model="searchQuery" type="text" class="inputs-form bg-white">
+                <input v-model="searchQuery" type="text" class="inputs-form bg-white"
+                placeholder="Nombre, rol, email....."
+                >
             </div>
             <button @click="isModalOpen = true" class="flex items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
                 <Icon class="text-2xl" icon="ic:outline-plus" />

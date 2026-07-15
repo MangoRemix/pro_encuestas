@@ -14,7 +14,7 @@
             <span class="text-white">{{ survey.results_count }}</span>
             </div>
             <div class="w-fit">
-                <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 yellow-button-app rounded-2xl px-2"
+                <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 yellow-button-app rounded-2xl px-2 cursor-pointer"
                 :disabled="!categorySelected"
                 >
                     Crear preguntas
@@ -352,9 +352,10 @@ const getQuestionToEdit = async (id) => {
 
 const createManyQuestions = async () => {
     const {data,errorFlag,responseMessage} = await createMany(formQuestion.value)
-        
+            console.log(data)
         if(data){
-        questions.value = await getQuestionsByCategory(page.props.categoryId)
+        const {data: questions_} = await getQuestionsByCategory(page.props.categoryId)
+        questions.value = questions_
         notify(data);
         formQuestion.value = [
                 {
@@ -383,7 +384,10 @@ watch(questionSelected,async (value)=>{
         replace: true        // No satura el historial del botón "Atrás" del navegador
     });
 
-    if(value) answersByQuestion.value = await getAnswersByQuestionApi(value)
+    if(value) {
+        const {data } = await getAnswersByQuestionApi(value)
+        answersByQuestion.value = data
+    }
 })
 
 //ANSWERS METHODS
@@ -440,6 +444,7 @@ const updateAnswer = async (id) => {
     const { success } = await updateAnswerApi(id, formAnswer.value[0])
     if(success){
         notify("Respuesta actualizada");
+        
         answersByQuestion.value = await getAnswersByQuestionApi(questionSelected.value)
         isModalOpen_answers.value = false;
     } else notify("Error al actualizar", true);

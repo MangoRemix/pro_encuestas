@@ -4,7 +4,7 @@
         <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 h-135 
         overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
             
-            <h2 class="text-2xl font-bold text-white mb-6">Resumen de la Encuesta</h2>
+            <h2 class="text-2xl font-bold text-white mb-6 underline">Resumen de la Encuesta</h2>
 
             <div v-if="fullSurvey" class="space-y-4">
                 <div v-for="category in fullSurvey.categories" :key="category.id" class="border border-blue-800/50 rounded-xl overflow-hidden bg-blue-950/40">

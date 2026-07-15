@@ -2,7 +2,7 @@
     
     <NotificationBox v-if="message || isError? true:false" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100"/>
 
-    <h1 class="text-3xl text-blue-100 font-extrabold text-center my-5">Resumen de encuestas</h1>
+    <h1 class="text-3xl text-blue-100 font-extrabold text-center my-5 underline">Resumen de encuestas</h1>
     <div class="w-full flex flex-wrap md:flex-nowrap items-center space-x-2">
         <!-- Listado de encuestas -->
         <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 

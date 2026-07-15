@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Icon } from '@iconify/vue';
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
   show: {
@@ -59,6 +60,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+const handleLogout = () => {
+  router.post('/logout');
+};
 
 // Almacena el estado de apertura de los submenús por índice o identificador único
 const openDropdowns = ref({});
@@ -213,6 +218,17 @@ onUnmounted(() => {
                 <Icon v-if="item.icon" :icon="item.icon" class="text-xl text-slate-500" />
                 <span class="font-medium text-sm">{{ item.label }}</span>
               </a>
+            </li>
+
+            <!-- Botón de Cerrar Sesión -->
+            <li class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <button
+                @click="handleLogout"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 cursor-pointer"
+              >
+                <Icon icon="ic:round-logout" class="text-xl" />
+                <span class="font-medium text-sm">Cerrar sesión</span>
+              </button>
             </li>
           </ul>
         </div>

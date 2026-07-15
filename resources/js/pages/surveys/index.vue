@@ -2,7 +2,7 @@
     <Head title="Encuestas: detalles" />
     <MainLayout>
         <div class=" text-center">
-            <h2 class="text-3xl text-white font-bold mt-8">Encuestas</h2>
+            <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas</h2>
         </div>
         <div class="w-full flex justify-between items-center mb-3">
             <div class="w-1/3 ">

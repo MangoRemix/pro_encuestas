@@ -105,4 +105,5 @@ Route::prefix('users')->group(function () {
 
 Route::inertia('login','login/index')->name('login');
 Route::post('/login', [LoginController::class, 'store']);
+Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth');
 

@@ -102,6 +102,9 @@ const menuItems = ref([
 </script>
 <style>
     #main{
-        background-image: url('../../../public/images/vanishing-stripes.svg');
+        /*background-image: url('../../../public/images/vanishing-stripes.svg');*/
+        /*background-color: #111827;*/ /*POSIBLE*/
+        /*background-color: #031B33;*/ /*POSIBLE 2*/
+        background-color: #0B1E36;   /*POSIBLE 3*/
     }
 </style>

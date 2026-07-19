@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['person_id','question_id','answer_id',])]
+#[Fillable(['person_id','question_id','answer_id','pollster_id'])]
 
 class Result extends Model
 {
@@ -30,4 +30,8 @@ class Result extends Model
 
     }
 
+    public function pollster(): BelongsTo {
+        return $this->belongsTo(Person::class, 'pollster_id');
+    }
 }
+

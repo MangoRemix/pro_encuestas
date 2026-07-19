@@ -84,9 +84,10 @@ const counts = ref({
 })
 
 const result = ref({
-    person_id:0,
-    question_id:0,
-    answer_id:0
+    person_id: 0,
+    question_id: 0,
+    answer_id: 0,
+    pollster_id: page.props.auth.user.id
 })
 
 const disabledForward=ref(false)

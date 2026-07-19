@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessResultBatch;
 use App\Models\Answer;
 use App\Models\Person;
 use App\Models\Question;
@@ -10,6 +11,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class ResultController extends Controller
 {
@@ -18,6 +21,7 @@ class ResultController extends Controller
             "person_id" => "required|integer|min:1|exists:persons,id",
             "question_id" => "required|integer|min:1|exists:questions,id",
             "answer_id" => "required|integer|min:1|exists:answers,id",
+            "pollster_id" => "required|integer|min:1|exists:persons,id",
         ];
     }
 
@@ -26,6 +30,7 @@ class ResultController extends Controller
             "person_id" => "integer|min:1|exists:persons,id",
             "question_id" => "integer|min:1|exists:questions,id",
             "answer_id" => "integer|min:1|exists:answers,id",
+            "pollster_id" => "integer|min:1|exists:persons,id",
         ];
     }
     /**
@@ -85,19 +90,16 @@ class ResultController extends Controller
     public function storeBatch(Request $request)
     {
             $results = $request->input('results');
-            $report = [];
-            $now = now();
-        foreach ($results as $index => $item) {
-            try {
-                $item['created_at'] = $now;
-                Result::insert($item);
-                $report[$index] = 'GUARDADA';
-            } catch (\Throwable) {
-                $report[$index] = 'FALLIDO';
-            }
-        }
 
-        return response()->json(['report' => $report], 200);
+            if (!is_array($results) || empty($results)) {
+                return response()->json(['error' => 'Formato de datos inválido o vacío'], 422);
+            }
+            
+            $batchId = (string) Str::uuid();
+
+            ProcessResultBatch::dispatch($results, $batchId)->delay(now()->addSecond(10));
+
+            return response()->json(['batch_id' => $batchId], 202);
     }
     /**
      * Display the specified resource.
@@ -186,6 +188,12 @@ class ResultController extends Controller
                 "code" => $th->getCode()
             ]);
         }
+    }
+
+    public function getBatchStatus($batchId)
+    {
+        $report = Cache::get("batch_status_{$batchId}");
+        return response()->json(['report' => $report, 'finished' => !is_null($report)]);
     }
 }
 

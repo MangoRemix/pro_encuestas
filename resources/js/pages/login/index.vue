@@ -26,8 +26,8 @@
                         <input v-model="form.password" type="password" placeholder="********" class="w-full px-3 py-2 bg-transparent focus:outline-none text-gray-700 placeholder-gray-500 font-bold" required>
                     </div>
 
-                    <button class="w-full primary-button-app py-3 font-bold uppercase tracking-wider text-white rounded" :disabled="disabledLoginButton">
-                        Login
+                    <button class="w-full primary-button-app py-3 font-bold uppercase tracking-wider text-white rounded cursor-pointer" :disabled="disabledLoginButton">
+                        Entrar
                     </button>
                 </form>
 

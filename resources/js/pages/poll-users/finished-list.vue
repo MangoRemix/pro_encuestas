@@ -10,10 +10,10 @@
                 <table class="table-fixed w-full text-left">
                     <thead>
                         <tr class="border-b border-white/30 text-white text-lg">
-                            <th class="p-2 w-1/4">Fecha</th>
-                            <th class="p-2 w-1/4">Encuesta</th>
-                            <th class="p-2 w-1/4">Cantidad Respuestas</th>
-                            <th class="p-2 w-1/4">Estado</th>
+                            <th class="p-2 w-1/3">Fecha</th>
+                            <th class="p-2 w-1/3">Encuesta</th>
+                            <!-- <th class="p-2 w-1/4">Cantidad Respuestas</th> -->
+                            <th class="p-2 w-1/3 text-center">Estado</th>
                         </tr>
                     </thead>
                 </table>
@@ -22,10 +22,10 @@
                 <table class="table-fixed w-full">
                     <tbody>
                         <tr v-for="(survey, index) in pendingSurveys" :key="index" class="text-white border-b border-neutral-400">
-                            <td class="py-3 px-2 w-1/4">{{ new Date(survey.created_at).toLocaleString() }}</td>
-                            <td class="py-3 px-2 w-1/4">{{ survey?.survey?.name}}</td>
-                            <td class="py-3 px-2 w-1/4">{{ survey.data.length }}</td>
-                            <td class="py-3 px-2 w-1/4">
+                            <td class="py-3 px-2 w-1/3">{{ new Date(survey.created_at).toLocaleString() }}</td>
+                            <td class="py-3 px-2 w-1/3">{{ survey?.survey?.name}}</td>
+                            <!-- <td class="py-3 px-2 w-1/4">{{ survey.data.length }}</td> -->
+                            <td class="py-3 px-2 w-1/3 text-center">
                                 <span :class="`px-2 py-1 ${survey.status=='PENDIENTE'? 'bg-yellow-600':survey.status=='FALLIDO'?'bg-red-600':'bg-green-600'}  rounded text-xs`">{{ survey.status }}</span>
                             </td>
                         </tr>
@@ -33,9 +33,12 @@
                 </table>
             </div>
         </div>
-        <div class="w-1/5 mx-auto">
+        <div class="w-full md:w-1/3 mx-auto flex gap-2">
             <button @click="saveManyResults()" class="green-button-app cursor-pointer" :disabled="pendingSurveys.length==0">
                 Guardar Todas
+            </button>
+            <button @click="clearSavedSurveys()" class="cursor-pointer yellow-button-app">
+                Limpiar Guardadas
             </button>
         </div>
     </MainLayout>
@@ -58,26 +61,43 @@ onMounted(() => {
 
 const saveManyResults = async () => {
     try {
-        const allData = pendingSurveys.value
-        .filter(s => s.status !== 'GUARDADA')
-        .map(s => s.data);
-        
+        const surveysToProcess = pendingSurveys.value.filter(s => s.status !== 'GUARDADA');
+        const allData = surveysToProcess.map(s => s.data);
         const { data } = await axios.post('/api/result/batch', {
             results: allData
         });
 
-        let currentIndex = 0;
-        pendingSurveys.value.forEach(survey => {
-            
-            const surveyResults = Object.values(data.report).slice(currentIndex, currentIndex + pendingSurveys.value.length);
-            survey.status = surveyResults.includes('FALLIDO') ? 'FALLIDO' : 'GUARDADA';
-            currentIndex += pendingSurveys.value.length;
-        });
+        const batchId = data.batch_id;
 
-        localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
+        const interval = setInterval(async () => {
+            const { data: statusData } = await axios.get(`/api/result/batch-status/${batchId}`);
+
+            if (statusData.finished) {
+                clearInterval(interval);
+
+                // Actualizar estados
+                let reportIndex = 0;
+                pendingSurveys.value.forEach((survey) => {
+                    if (survey.status !== 'GUARDADA') {
+                        
+                        survey.status = statusData.report[reportIndex] === 'GUARDADA' ? 'GUARDADA' : 'FALLIDO';
+                        reportIndex++;
+                    }
+                });
+
+                localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
+                        alert("Procesamiento finalizado");
+            }
+        }, 2000);
+
     } catch (error) {
         console.error("Error en la petición batch:", error);
-    }
+}
+}
+
+const clearSavedSurveys = () => {
+    pendingSurveys.value = pendingSurveys.value.filter(s => s.status !== 'GUARDADA');
+    localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
 }
 </script>
 

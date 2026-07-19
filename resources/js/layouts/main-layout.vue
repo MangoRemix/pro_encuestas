@@ -23,7 +23,7 @@
         />
 
         <div class="w-full px-10 pl-14 xl:w-7xl mx-auto ">
-            <img src="../../../public/images/logoAlcaldia.png " class="bg-white rounded-full h-25 w-25 border-2 border-white mt-5" alt="">
+            <img src="/images/logoAlcaldia.png" class="bg-white rounded-full h-25 w-25 border-2 border-white mt-5" alt="">
         </div>
         
         <div class="w-full xl:w-7xl min-h-screen mx-auto mt-4 px-4 sm:px-6">

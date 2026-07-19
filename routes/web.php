@@ -45,8 +45,12 @@ Route::prefix('surveys')->group(function (){
     } )->name('survey-details');
 });
 
-Route::prefix('categories')->group(function (){
+Route::prefix('age-ranges')->group(function (){
+    Route::inertia('/', 'age-ranges/index')->name('age-ranges-index');
+});
     
+Route::prefix('categories')->group(function (){
+
     Route::get('/details/{id}', function($id){
         return Inertia::render('categories/details',[
             'id' => $id

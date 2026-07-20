@@ -71,10 +71,20 @@
         <Modal :show="isModalOpen" @close="isModalOpen = false;">
             <SurveyForm :surveyId="idSurveyToEdit" />
         </Modal>
+
+        <Pagination
+            v-if="pagination"
+            :current-page="pagination.current_page"
+            :last-page="pagination.last_page"
+            :total="pagination.total"
+            :from="pagination.from"
+            :to="pagination.to"
+            @page-change="getSurveys"
+        />
     </MainLayout>
 </template>
 <script setup>
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Icon } from "@iconify/vue";
 import {apiHost} from '../../store/store'
@@ -82,20 +92,21 @@ import { computed, onMounted, ref } from 'vue';
 
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
+import Pagination from '@/components/pagination.vue';
 
 import { formatedDate } from '@/composables/shared';
 import SurveyForm from '@/components/forms/survey-form.vue';
 
 const isModalOpen = ref(false);
 const surveys = ref([])
+const pagination = ref(null)
 
 const idSurveyToEdit = ref(0)
 const searchQuery = ref('')
-
-const page = usePage()
-
-onMounted(async ()=>{
-    surveys.value = await getSurveys()
+    
+onMounted(async () => {
+        const params = new URLSearchParams(window.location.search);
+    await getSurveys(parseInt(params.get('page')) || 1);
 })
 
 const filteredSurveys = computed(() => {
@@ -104,17 +115,20 @@ const filteredSurveys = computed(() => {
     );
 });
 
-const getSurveys = async () => {
-    
+const getSurveys = async (page = 1) => {
+    router.get(window.location.pathname, { page }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+
     try {
         const response = await axios.get(`${apiHost}survey/show-all`,{ 
-            params:{
-                page:page.props.page
-            }
+            params:{ page }
         })
         
-        if(response.data.data.length > 0)
-            return response.data.data
+        surveys.value = response.data.data
+        pagination.value = response.data
     } catch (error) {
         console.log(error)   
     }

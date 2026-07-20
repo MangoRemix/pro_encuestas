@@ -55,7 +55,7 @@ const menuItems = ref([
         label: 'Encuestas',
         icon: 'ic:baseline-assignment',
         children: [
-            { label: 'Ver todas', link: '/surveys' },
+            { label: 'Ver todas', link: '/surveys?page=1' },
             { label: 'Crear nueva', link: '/surveys/create-survey/step-1' },
             { label: 'Rangos de edad', link: '/age-ranges' }
         ]

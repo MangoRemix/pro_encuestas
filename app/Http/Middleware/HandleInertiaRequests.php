@@ -37,20 +37,29 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-    {
-        $sex = Sex::query()->where('id',$request->user()->sex_id)->first();
-        $role = Rol::query()->where('id',$request->user()->rol_id)->first();
-        // $parish = Parish::query()->where('id',$request->user()->parish_id)->first();
-        $user = [
-            "id" => $request->user()->id,
-            "email" => $request->user()->email,
-            "sex" => $sex->abbreviation,
-            "role" => $role->name,
-            //"parish" => $parish->name
-        ];
+    {   
+        $user = [];
+        if(
+            $request->user()?->sex_id &&
+            $request->user()?->rol_id
+        ){
+            $sex = Sex::query()->where('id',$request->user()->sex_id)->first();
+
+            $role = Rol::query()->where('id',$request->user()->rol_id)->first();
+            
+            // $parish = Parish::query()->where('id',$request->user()->parish_id)->first();
+            $user = [
+                "id" => $request->user()->id,
+                "email" => $request->user()->email,
+                "sex" => $sex->abbreviation,
+                "role" => $role->name,
+                //"parish" => $parish->name
+            ];
+        }
+        
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => "Gestión de encuestas.",//config('app.name'),
             'auth' => [
                 //'user' => $request->user(),
                 'user' => $user

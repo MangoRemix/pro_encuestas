@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 Route::inertia('/', 'index')->name('home');
 
 Route::prefix('surveys')->group(function (){
-    Route::prefix('/create-survey')->group(function(){
+    Route::prefix('/create-survey')->middleware(['auth', 'admin'])->group(function(){
         Route::inertia('/step-1', 'create-survey/step-1')->name('survey-create-step1');
 
         Route::get('/step-2',function (Request $request){
@@ -35,7 +35,7 @@ Route::prefix('surveys')->group(function (){
         return Inertia::render('surveys/index',[
             "page" => $request->query("page"),
         ]);
-    })->name('survey-index');
+    })->middleware(['auth', 'admin'])->name('survey-index');
     
     Route::get('/details/{id}', function(Request $request,$id){
         return Inertia::render('surveys/details',[
@@ -45,7 +45,7 @@ Route::prefix('surveys')->group(function (){
     } )->name('survey-details');
 });
 
-Route::prefix('age-ranges')->group(function (){
+Route::prefix('age-ranges')->middleware(['auth', 'admin'])->group(function (){
     Route::inertia('/', 'age-ranges/index')->name('age-ranges-index');
 });
     
@@ -104,7 +104,7 @@ Route::prefix('poll-users')->group(function (){
     })->name('poll-user');   
 });
 
-Route::prefix('users')->group(function () {
+Route::prefix('users')->middleware(['auth', 'admin'])->group(function () {
     Route::inertia('/create', 'users/create')->name('users-create');
     Route::inertia('/', 'users/index')->name('users-all');
 });

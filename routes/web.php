@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\LoginController;
 
-Route::inertia('/', 'index')->name('home');
+Route::inertia('/', 'index')->middleware(['auth'])->name('home');
 
 Route::prefix('surveys')->group(function (){
     Route::prefix('/create-survey')->middleware(['auth', 'admin'])->group(function(){
@@ -79,7 +79,7 @@ Route::prefix('questions')->group(function (){
     } )->name('questions-details');
 });
 
-Route::prefix('poll-users')->group(function (){
+Route::prefix('poll-users')->middleware(['auth'])->group(function (){
 
     Route::inertia('/','poll-users/index')->name('poll-users-home');
 

@@ -118,25 +118,25 @@ const filteredSurveys = computed(() => {
     );
 });
 
-    onMounted(async ()=>{
-        try {
-            const {data,errorFlag,responseMessage} = await getSurveys({})
-            
-            if(errorFlag){
-                isError.value = errorFlag
-                message.value = responseMessage
-            }
-            
-            surveys.value = data.data   
-        } catch (error) {
-            console.log("error",{error})
-        }finally{
-            setTimeout(() => {
-                message.value=''
-            }, 3500);
+onMounted(async ()=>{
+    try {
+        const {data,errorFlag,responseMessage} = await getSurveys({})
+        
+        if(errorFlag){
+            isError.value = errorFlag
+            message.value = responseMessage
         }
         
-    })
+        surveys.value = data.data   
+    } catch (error) {
+        console.log("error",{error})
+    }finally{
+        setTimeout(() => {
+            message.value=''
+        }, 3500);
+    }
+    
+})
 
     const callCategories = async (surveyId) => {
         categories.value = []

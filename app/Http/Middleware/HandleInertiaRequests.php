@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Parish;
+use App\Models\Rol;
+use App\Models\Sex;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,11 +38,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $sex = Sex::query()->where('id',$request->user()->sex_id)->first();
+        $role = Rol::query()->where('id',$request->user()->rol_id)->first();
+        // $parish = Parish::query()->where('id',$request->user()->parish_id)->first();
+        $user = [
+            "id" => $request->user()->id,
+            "email" => $request->user()->email,
+            "sex" => $sex->abbreviation,
+            "role" => $role->name,
+            //"parish" => $parish->name
+        ];
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                //'user' => $request->user(),
+                'user' => $user
             ],
         ];
     }

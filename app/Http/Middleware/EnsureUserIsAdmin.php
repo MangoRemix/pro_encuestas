@@ -10,7 +10,7 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->role === 'ADMIN') {
+        if ($request->user() && $request->user()->rol_id === 3) {
             return $next($request);
         }
 

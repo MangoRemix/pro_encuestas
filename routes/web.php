@@ -109,7 +109,17 @@ Route::prefix('users')->middleware(['auth', 'admin'])->group(function () {
     Route::inertia('/', 'users/index')->name('users-all');
 });
 
+Route::prefix('reports')->middleware(['auth', 'admin'])->group(function (){
+    Route::get('/', function (Request $request){
+        return Inertia::render('reports/index', [
+            'surveyId' => $request->query('surveyId'),
+            'categoryId' => $request->query('categoryId'),
+        ]);
+    })->name('reports-index');
+});
+
 Route::inertia('login','login/index')->name('login');
 Route::post('/login', [LoginController::class, 'store']);
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth');
+
 

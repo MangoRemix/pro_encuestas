@@ -195,5 +195,45 @@ class ResultController extends Controller
         $report = Cache::get("batch_status_{$batchId}");
         return response()->json(['report' => $report, 'finished' => !is_null($report)]);
     }
+
+    public function reportCountAnswersByQuestion(Request $request, int $surveyId)
+    {
+        try {
+            $categoryId = $request->query('category_id');
+
+            $query = Result::query()
+                ->join('questions as q', 'q.id', '=', 'results.question_id')
+                ->join('categories as c', 'c.id', '=', 'q.category_id')
+                ->join('surveys as s', 's.id', '=', 'c.survey_id')
+                ->join('answers as a', 'a.id', '=', 'results.answer_id')
+                ->select([
+                    'results.question_id',
+                    'q.name as question_name',
+                    'results.answer_id',
+                    'a.name as answer_name',
+                    'c.name as category_name',
+                    DB::raw('count(results.answer_id) as total')
+                ])
+                ->orderBy('c.id','ASC')
+                ->orderBy('total','DESC')
+                ->where('s.id', $surveyId);
+
+            if ($categoryId) {
+                $query->where('c.id', $categoryId);
+            }
+
+            $results = $query->groupBy([
+                'results.question_id',
+                'q.name',
+                'results.answer_id',
+                'a.name',
+                'c.id'
+            ])->get();
+
+            return response()->json($results, 200);
+        } catch (\Throwable $th) {
+            return response()->json(["error" => $th->getMessage()], 500);
+        }
+    }
 }
 

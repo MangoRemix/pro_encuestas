@@ -93,6 +93,7 @@ Route::prefix('result')->group(function (){
     Route::post('create',[ResultController::class, 'create']);
     Route::post('batch', [ResultController::class, 'storeBatch']);
     Route::get('batch-status/{batchId}', [ResultController::class, 'getBatchStatus']);
+    Route::get('report/{surveyId}', [ResultController::class, 'reportCountAnswersByQuestion']);
     Route::get('show-all',[ResultController::class, 'index']);
     Route::get('show-one/{id}',[ResultController::class, 'show']);
     Route::put('update/{id}',[ResultController::class, 'update']);

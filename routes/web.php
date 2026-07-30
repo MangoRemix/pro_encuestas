@@ -111,7 +111,7 @@ Route::prefix('users')->middleware(['auth', 'admin'])->group(function () {
 
 Route::prefix('reports')->middleware(['auth', 'admin'])->group(function (){
     Route::get('/', function (Request $request){
-        return Inertia::render('reports/index', [
+        return Inertia::render('reports/reports-layout', [
             'surveyId' => $request->query('surveyId'),
             'categoryId' => $request->query('categoryId'),
         ]);

@@ -38,7 +38,7 @@
             
 
         </div>
-        <h2 class="text-3xl text-white font-bold mt-8 mb-6 underline">{{ survey_selected?.name }} </h2>
+        <h2 class="text-3xl text-white font-bold mt-8 mb-6 underline text-center">{{ survey_selected?.name }} </h2>
         <Table v-if="selected_radio=='both' || selected_radio=='table'?true:false" :report-data="reportData"/>
         <Graphics v-if="selected_radio=='both' || selected_radio=='graphics'?true:false" :report-data="reportData"/>
     </MainLayout>

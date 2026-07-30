@@ -1,13 +1,18 @@
 <template>
     <div class="p-6">
         
-        <div v-if="Object.keys(groupedReportData).length > 0" >           
-          <div v-for="(questions, categoryName) in groupedReportData" :key="categoryName" class="mb-10">
+        <div v-if="Object.keys(groupedReportData).length > 0" 
+          class="flex flex-wrap items-center justify-center gap-2"
+          >           
+          <div v-for="(questions, categoryName) in groupedReportData" :key="categoryName" class="mb-10 w-140">
                 <h3 class="text-center text-blue-400 text-lg font-semibold mb-2 underline-offset-4 underline">{{ categoryName }}</h3>
                 
-                <div v-for="(answers, questionName) in questions" :key="questionName" class="bg-neutral-800 p-6 rounded-xl border border-blue-700/30 h-fit mt-5">
-                    <h3 class="text-lg text-white mb-4">{{ questionName }}</h3>
-                    <BarChart :chart-data="chartData(answers, questionName)" />
+                <div v-for="(answers, questionName) in questions" :key="questionName" class="bg-neutral-800 p-6 rounded-xl border border-blue-700/30 mt-5 h-120 overflow-x-scroll">
+                    
+                    
+                  <BarChart :chart-data="chartData(answers, questionName)" />
+                    
+                    
                 </div>
             </div>
         </div>
@@ -66,7 +71,7 @@ const chartData = (item, index) => {
         datasets: [{
             label: index,
             data: item.map(i => i.total),
-            backgroundColor: '#3b82f6',
+            backgroundColor: ['#3b82f6','#3b15f6','#3b8218', '#E582f6'],
             borderRadius: 4
         }]
     };

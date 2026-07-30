@@ -1,7 +1,7 @@
 <template>
     <div id="main" class="w-full overflow-x-scroll min-h-screen relative">
         <!-- Botón para abrir el Menú Lateral -->
-        <div class="fixed top-5 left-5 z-40">
+        <div v-if="user" class="fixed top-5 left-5 z-40">
             <button 
                 @click="isMenuOpen = true" 
                 class="flex items-center justify-center bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 hover:scale-110 active:scale-95 transition-all cursor-pointer group"
@@ -16,8 +16,9 @@
 
         <!-- Componente de Menú Lateral -->
         <Menu 
+            v-if="user"
             :show="isMenuOpen" 
-            :user="currentUser"
+            :user="user"
             :items="menuItems"
             @close="isMenuOpen = false" 
         />
@@ -33,16 +34,14 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Icon } from '@iconify/vue';
+import { usePage } from '@inertiajs/vue3';
 import Menu from '@/components/menu.vue';
 
 const isMenuOpen = ref(false);
-
-// Datos del usuario para mostrar en el menú
-const currentUser = ref({
-    name: 'Ing. Luis Rodríguez',
-});
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 
 // Ítems del menú con soporte para dropdowns
 const menuItems = ref([

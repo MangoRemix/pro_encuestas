@@ -129,7 +129,7 @@ onUnmounted(() => {
             <img 
               src="" 
               :alt="user.name" 
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover bg-white"
               @error="(e) => e.target.src = '/images/logoAlcaldia.png'"
             />
           </div>

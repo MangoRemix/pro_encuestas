@@ -38,8 +38,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {   
-        $user = [];
+        $user = null;
         if(
+            $request->user() &&
             $request->user()?->sex_id &&
             $request->user()?->rol_id
         ){
@@ -50,6 +51,7 @@ class HandleInertiaRequests extends Middleware
             // $parish = Parish::query()->where('id',$request->user()->parish_id)->first();
             $user = [
                 "id" => $request->user()->id,
+                "name" => $request->user()->name,
                 "email" => $request->user()->email,
                 "sex" => $sex->abbreviation,
                 "role" => $role->name,

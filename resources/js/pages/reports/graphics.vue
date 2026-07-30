@@ -10,7 +10,7 @@
                 <div v-for="(answers, questionName) in questions" :key="questionName" class="bg-neutral-800 p-6 rounded-xl border border-blue-700/30 mt-5 h-120 overflow-x-scroll">
                     
                     
-                  <BarChart :chart-data="chartData(answers, questionName)" />
+                  <BarChart title-color="#ffffff" legend-color="#ffffff" x-scale-color="#ffffff" y-scale-color="#ffffff" :chart-data="chartData(answers, questionName)" />
                     
                     
                 </div>

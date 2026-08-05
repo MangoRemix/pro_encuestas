@@ -39,7 +39,7 @@ const save = async () => {
 const remove = async (id) => {
     if (confirm('¿Eliminar esta parroquia?')) {
         await deleteParish(id);
-        fetchParishes();
+        await fetchParishes();
     }
 };
 </script>

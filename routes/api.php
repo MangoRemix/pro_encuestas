@@ -107,7 +107,12 @@ Route::prefix('sex')->group(function(){
 
 /**PARISH RESOURCES */
 Route::prefix('parish')->group(function(){
-    Route::get('show-all',[ParishController::class, 'index']);
-    Route::post('create',[ParishController::class, 'store']);
+    // ... existing code ...
+/**PARISH RESOURCES */
+
+    Route::get('show-all', [ParishController::class, 'index']);
+    Route::post('create', [ParishController::class, 'store']);
+    Route::put('{id}', [ParishController::class, 'update']);
+    Route::delete('{id}', [ParishController::class, 'destroy']);
 });
 

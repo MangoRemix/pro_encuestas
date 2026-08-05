@@ -15,7 +15,7 @@ export function useParishes() {
         }
     };
 
-    const storeParish = (data) => axios.post('/api/create', data);
+    const storeParish = (data) => axios.post('/api/parish/create', data);
     const updateParish = (id, data) => axios.put(`/api/parish/${id}`, data);
     const deleteParish = (id) => axios.delete(`/api/parish/${id}`);
 

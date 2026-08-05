@@ -27,5 +27,25 @@ class ParishController extends Controller
 
         return response()->json($parish, 201);
     }
+
+    public function update(Request $request, Parish $parish)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:300|unique:parishes,name,' . $parish->id,
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $parish->update($validator->validated());
+        return response()->json($parish, 200);
+    }
+
+    public function destroy(Parish $parish)
+    {
+        $parish->delete();
+        return response()->json(null, 204);
+    }
 }
 

@@ -150,6 +150,11 @@ Route::prefix('reports')->middleware(['auth', 'admin'])->group(function (){
     })->name('reports-index');
 });
 
+// ... existing code ...
+Route::get('/parishes', function () {
+    return Inertia::render('parishes/index');
+})->name('parishes.index');
+
 Route::inertia('login','login/index')->name('login');
 Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth');

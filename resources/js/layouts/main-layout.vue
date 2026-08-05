@@ -82,7 +82,7 @@ const menuItems = ref([
         icon: 'ic:baseline-category',
         children: [
             { label: 'Nuevo encuestado', link: '/poll-users/step-1' , permission:'POLLSTER'},
-            { label: 'Encuestas Realizadas', link: '/poll-users/finished-list' },
+            { label: 'Encuestas Realizadas', link: '/poll-users/finished-list' }
         ]
     },
     {
@@ -96,7 +96,10 @@ const menuItems = ref([
     {
         label: 'Configuración',
         icon: 'ic:baseline-settings',
-        link: '/settings'
+        children: [
+            { label: 'Configuración general', link: '/settings' },
+            { label: 'Gestión de parroquias', link: '/parishes' }
+        ]
     }
 ]);
 </script>

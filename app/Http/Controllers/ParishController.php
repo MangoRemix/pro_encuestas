@@ -23,8 +23,9 @@ class ParishController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $parish = Parish::create($request->all());
+        $parish = Parish::create($validator->validated());
 
         return response()->json($parish, 201);
     }
 }
+

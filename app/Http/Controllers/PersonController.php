@@ -11,12 +11,15 @@ use App\Services\PersonService;
 class PersonController extends Controller
 {
 
-    public function preCreate(){
-        $new_respondent = new Person();
+    public function preCreate(Request $request)
+    {
+        $request->validate([
+            'token' => 'required', // O algún mecanismo de validación
+        ]);
 
-        $new_respondent->save();
+        $new_respondent = Person::create([]);
 
-        return response()->json($new_respondent,201);
+        return response()->json($new_respondent, 201);
     }
 
     public function update(int $id, Request $request)
@@ -31,7 +34,7 @@ class PersonController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        Person::where('id',$id)->update($request->all());
+        Person::where('id',$id)->update($validator->validated());
         return response()->json([
             "message" => 'Actualización exitosa'
         ], 200);

@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\DB;
 class RolSeeder extends Seeder
 {
     private $values = [
-        ['name' => 'ADMIN'],
         ['name' => 'POLLSTER'],
-        ['name' => 'RESPONDENT']
+        ['name' => 'RESPONDENT'],
+        ['name' => 'ADMIN'],
     ];
 
     public function run(): void

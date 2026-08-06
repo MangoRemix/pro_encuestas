@@ -8,12 +8,18 @@
             <div class="w-1/3 ">
                 <input v-model="searchQuery" type="text" class="inputs-form bg-white">
             </div>
-            <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
-                <Link href="/surveys/create-survey/step-1" class="flex items-center">
-                    <Icon class="text-2xl " icon="ic:outline-plus" /> 
-                    Crear encuesta
-                </Link>
-            </button>
+            <div class="flex gap-2">
+                <button @click="importSurvey" class="flex items-center rounded-full text-white bg-green-600 cursor-pointer hover:bg-green-500 h-9 px-4 font-bold">
+                    <Icon class="text-xl mr-1" icon="ic:outline-file-upload" />
+                    Importar Excel
+                </button>
+                <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
+                    <Link href="/surveys/create-survey/step-1" class="flex items-center">
+                        <Icon class="text-2xl " icon="ic:outline-plus" />
+                        Crear encuesta
+                    </Link>
+                </button>
+            </div>
         </div>
 
         <!-- Nueva tabla -->
@@ -71,7 +77,6 @@
         <Modal :show="isModalOpen" @close="isModalOpen = false;">
             <SurveyForm :surveyId="idSurveyToEdit" />
         </Modal>
-
         <Pagination
             v-if="pagination"
             :current-page="pagination.current_page"
@@ -96,7 +101,10 @@ import Pagination from '@/components/pagination.vue';
 
 import { formatedDate } from '@/composables/shared';
 import SurveyForm from '@/components/forms/survey-form.vue';
+import { useNotification } from '@/composables/useNotification';
+import { importSurveyFromExcel } from '@/composables/api/surveys';
 
+const { notify } = useNotification();
 const isModalOpen = ref(false);
 const surveys = ref([])
 const pagination = ref(null)
@@ -134,6 +142,20 @@ const getSurveys = async (page = 1) => {
     }
 }   
 
+const importSurvey = async () => {
+    const result = await importSurveyFromExcel();
+
+    if (result.errorFlag) {
+        notify('Error', result.responseMessage, 'error');
+        return;
+    }
+
+    notify('Éxito', 'Encuesta importada correctamente', 'success');
+
+    router.get('/create-survey/step-4', {
+        surveyId: result.data.id
+    });
+}
 </script>
 <style lang="">
     

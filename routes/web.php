@@ -4,10 +4,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\SurveyImportController;
 
 Route::inertia('/', 'index')->middleware(['auth'])->name('home');
 
 Route::prefix('surveys')->group(function (){
+    Route::get('/import-excel', [SurveyImportController::class, 'importFromExcel'])->middleware(['auth', 'admin']);
+
     Route::prefix('/create-survey')->middleware(['auth', 'admin'])->group(function(){
         Route::inertia('/step-1', 'create-survey/step-1')->name('survey-create-step1');
 

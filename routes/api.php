@@ -9,6 +9,7 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SexController;
 use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\SurveyImportController;
 //use App\Models\Answer;
 //use App\Http\Controllers\Auth\LoginController;
 //use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ Route::prefix('age-range')->group(function (){
 /** SURVEY RESOURCES */
 Route::prefix('survey')->group(function (){
     Route::post('create',[SurveyController::class, 'store']);
+    Route::post('import-excel',[SurveyImportController::class, 'importFromExcel']);
     Route::get('show-all',[SurveyController::class, 'index']);
     Route::get('show-one/{id}',[SurveyController::class, 'show']);
     Route::get('show-full/{id}',[SurveyController::class, 'showFull']);

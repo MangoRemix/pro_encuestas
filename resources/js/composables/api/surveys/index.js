@@ -78,3 +78,17 @@ export async function showFullSurvey(id){
         return response
     }
 }
+
+export async function importSurveyFromExcel(){
+    try {
+        const {data, status} = await axios.post(`${apiHost}survey/import-excel`)
+        if(status === 201){
+            response.data = data
+            return response
+        }
+    } catch (error) {
+        response.errorFlag = true
+        response.responseMessage = error.response?.data?.message || error.response?.data?.error || 'Error al importar la encuesta'
+        return response
+    }
+}

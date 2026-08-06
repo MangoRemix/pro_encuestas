@@ -111,7 +111,7 @@
                         </thead>
                     </table>
                 </div>
-                <div id="table-body" class="w-full max-h-75 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+                <div id="table-body" class="w-full max-h-60 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                     <table class="table-fixed w-full">
                         <tbody class="text-white">
                             <tr class="border-b border-neutral-400" v-for="(answer,index) in answersByQuestion" :key="answer.id">

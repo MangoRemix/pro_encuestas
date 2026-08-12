@@ -19,7 +19,7 @@
             v-if="user"
             :show="isMenuOpen" 
             :user="user"
-            :items="menuItems"
+            :items="filteredMenuItems"
             @close="isMenuOpen = false" 
         />
 
@@ -42,6 +42,25 @@ import Menu from '@/components/menu.vue';
 const isMenuOpen = ref(false);
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
+const userRole = computed(() => user.value?.role);
+
+const filterMenuItems = (items) => {
+    return items
+        .map(item => {
+            if (item.children) {
+                return { ...item, children: filterMenuItems(item.children) };
+            }
+            return item;
+        })
+        .filter(item => {
+            if (item.children) {
+                return item.children.length > 0;
+            }
+            return !item.permission || item.permission === userRole.value;
+        });
+};
+
+const filteredMenuItems = computed(() => filterMenuItems(menuItems.value));
 
 // Ítems del menú con soporte para dropdowns
 const menuItems = ref([
@@ -54,9 +73,9 @@ const menuItems = ref([
         label: 'Encuestas',
         icon: 'ic:baseline-assignment',
         children: [
-            { label: 'Ver todas', link: '/surveys?page=1' },
-            { label: 'Crear nueva', link: '/surveys/create-survey/step-1' },
-            { label: 'Rangos de edad', link: '/age-ranges' }
+            { label: 'Ver todas', link: '/surveys?page=1', permission:'ADMIN' },
+            { label: 'Crear nueva', link: '/surveys/create-survey/step-1', permission:'ADMIN' },
+            { label: 'Registrar rangos de edad', link: '/age-ranges', permission:'ADMIN' }
         ]
     },
     {
@@ -65,15 +84,15 @@ const menuItems = ref([
         children: [
             {
                 label: 'Encuestadores/Admins',
-                children: [
-                    { 
-                        label: 'Nuevo Encuestador/Admin', link: '/users/create', permission: 'ADMIN' 
-                    },
-                ]
+        children: [
+    {
+                        label: 'Nuevo Encuestador/Admin', link: '/users/create', permission: 'ADMIN'
+    },
+        ]
             },
             {
                 label: 'Mostrar usuarios',
-                link: '/users',
+                link: '/users', permission:'ADMIN' ,
             },
         ]
     },
@@ -82,15 +101,15 @@ const menuItems = ref([
         icon: 'ic:baseline-category',
         children: [
             { label: 'Nuevo encuestado', link: '/poll-users/step-1' , permission:'POLLSTER'},
-            { label: 'Encuestas Realizadas', link: '/poll-users/finished-list' }
+            { label: 'Encuestas Realizadas', link: '/poll-users/finished-list',permission:'POLLSTER' }
         ]
     },
     {
         label: 'Estadísticas',
         icon: 'ic:baseline-bar-chart',
         children: [
-            { label: 'Reportes Generales', link: '/reports' },
-            { label: 'Respuestas Recientes', link: '/answers' }
+            { label: 'Reportes Generales', link: '/reports', permission:'ADMIN'},
+            { label: 'Respuestas Recientes', link: '/answers', permission:'ADMIN'}
         ]
     },
     {
@@ -105,9 +124,6 @@ const menuItems = ref([
 </script>
 <style>
     #main{
-        /*background-image: url('../../../public/images/vanishing-stripes.svg');*/
-        /*background-color: #111827;*/ /*POSIBLE*/
-        /*background-color: #031B33;*/ /*POSIBLE 2*/
-        background-color: #0B1E36;   /*POSIBLE 3*/
+        background-color: #0B1E36;
     }
 </style>

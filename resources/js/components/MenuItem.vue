@@ -13,9 +13,13 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const hasPermission = computed(() => {
-  if (!props.item.permission) return true;
-  return props.userRole === props.item.permission;
+const isVisible = computed(() => {
+  const hasPerm = !props.item.permission || props.userRole === props.item.permission;
+  if (!hasPerm) return false;
+  if (props.item.children) {
+    return visibleChildren.value.length > 0;
+  }
+  return !!props.item.link;
 });
 
 const visibleChildren = computed(() => {
@@ -28,9 +32,9 @@ const visibleChildren = computed(() => {
 </script>
 
 <template>
-  <li class="relative">
+  <li v-if="isVisible" class="relative">
     <!-- Item con hijos (dropdown) -->
-    <div v-if="hasPermission && item.children && visibleChildren.length > 0">
+    <div v-if="item.children && visibleChildren.length > 0">
       <button
         @click="toggleDropdown(item._key)"
         class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-950 dark:hover:text-white cursor-pointer transition-all duration-200"
@@ -65,7 +69,7 @@ const visibleChildren = computed(() => {
 
     <!-- Item enlace simple -->
     <Link
-      v-else-if="hasPermission && item.link"
+      v-else
       :href="item.link"
       class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-950 dark:hover:text-white transition-all duration-200"
       :class="{ 'pl-8 text-sm': depth > 0, 'text-xs': depth > 1 }"

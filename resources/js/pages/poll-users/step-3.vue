@@ -161,13 +161,66 @@ const incrementQuestion = async () => {
         await storageResults();
         selectedAnswer.value = null;
 
+
+
+
+
+
         const currentCat = survey.value.categories[counts.value.actual_category];
         const totalQuestionsInCat = currentCat.questions.length;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Si hay más preguntas en la categoría actual
         if (counts.value.actual_question < totalQuestionsInCat - 1) {
             counts.value.actual_question++;
         }
+
+
+
+
+
+
+
+
+
+
+
+
         // Si se acabó la categoría actual, pasar a la siguiente
         else if (counts.value.actual_category < survey.value.categories.length - 1) {
             counts.value.actual_category++;
@@ -190,12 +243,37 @@ const incrementQuestion = async () => {
 
         visibilityFinishButton.value = isLastCategory && isLastQuestion;
     } catch (error) {
+
         console.error(error);
     }
+
 }
 
 const decrementQuestion = () => {
     try {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         if (counts.value.actual_question > 0) {
             counts.value.actual_question--;
         } else if (counts.value.actual_category > 0) {
@@ -206,15 +284,25 @@ const decrementQuestion = () => {
         const prevCat = survey.value.categories[counts.value.actual_category];
         const prevQ = prevCat.questions[counts.value.actual_question];
 
+
         c.value = { ...prevCat, questions: undefined };
         q.value = { ...prevQ, answers: undefined };
         a.value = prevQ.answers;
 
+
+
+
+
+
+
+
         disabledRewind.value = (counts.value.actual_category === 0 && counts.value.actual_question === 0);
         visibilityFinishButton.value = false;
     } catch (error) {
+
         console.error(error);
     }
+
 }
 
 const storageResults = ()=>{

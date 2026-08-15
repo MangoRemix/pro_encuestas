@@ -13,9 +13,6 @@ class PersonController extends Controller
 
     public function preCreate(Request $request)
     {
-        $request->validate([
-            'token' => 'required', // O algún mecanismo de validación
-        ]);
 
         $new_respondent = Person::create([]);
 

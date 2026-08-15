@@ -7,21 +7,24 @@ use App\Models\Category;
 use App\Models\Question;
 use App\Models\Survey;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SurveyImportController extends Controller
 {
-    public function importFromExcel(): JsonResponse
+    public function importFromExcel(Request $request): JsonResponse
     {
-        $path = public_path('excel_examples/Encuesta_Percepcion.xlsx');
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
 
-        if (!file_exists($path)) {
-            return response()->json(['error' => 'Archivo no encontrado en la ruta especificada'], 404);
-        }
+        $path = $request->file('file')->store('temp');
+        $fullPath = Storage::path($path);
 
         try {
-            $spreadsheet = IOFactory::load($path);
+            $spreadsheet = IOFactory::load($fullPath);
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray();
 
@@ -30,7 +33,6 @@ class SurveyImportController extends Controller
             }
 
             $result = DB::transaction(function () use ($rows) {
-                // 1. Título de la encuesta (Fila 0, Columna 0)
                 $surveyName = trim((string) ($rows[0][0] ?? 'Encuesta Importada'));
                 
                 $survey = Survey::create([
@@ -39,7 +41,6 @@ class SurveyImportController extends Controller
                     'finish_date' => now()->addMonth(),
                 ]);
 
-                // 2. Las categorías están exactamente en la Fila 2 (índice 2)
                 $categoryNames = $rows[2] ?? [];
                 $categoriesData = [];
                 $orderCategory = 1;
@@ -47,7 +48,6 @@ class SurveyImportController extends Controller
                 foreach ($categoryNames as $colIndex => $categoryName) {
                     $categoryName = trim((string) $categoryName);
                     
-                    // Si la celda de la categoría está vacía, saltamos
                     if ($categoryName === '') continue;
 
                     $category = Category::create([
@@ -56,7 +56,6 @@ class SurveyImportController extends Controller
                         'order' => $orderCategory++,
                     ]);
 
-                    // Procesar las preguntas y respuestas debajo de esta columna de categoría (desde la fila 3)
                     $questionsData = $this->processCategoryColumn($rows, $colIndex, $category);
 
                     $categoriesData[] = [
@@ -85,8 +84,11 @@ class SurveyImportController extends Controller
             return response()->json([
                 'error' => 'Error al procesar el archivo',
                 'details' => $e->getMessage(),
-                'line' => $e->getLine()
             ], 500);
+        } finally {
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
         }
     }
 
@@ -97,16 +99,13 @@ class SurveyImportController extends Controller
         $orderQuestion = 1;
         $orderAnswer = 1;
 
-        // Comenzamos a leer desde la Fila 3 (índice 3) en adelante
         for ($i = 3; $i < count($rows); $i++) {
             $cell = trim((string) ($rows[$i][$colIndex] ?? ''));
             if ($cell === '') continue;
 
-            // En tu Excel, las preguntas inician con un número y un punto (ej: "1. En su opinión...")
             $isQuestion = preg_match('/^\d+[\.\s\-]+/', $cell);
 
             if ($isQuestion) {
-                // Limpiar la numeración inicial para almacenar únicamente el texto de la pregunta
                 $questionText = preg_replace('/^\d+[\.\s\-]+/', '', $cell);
 
                 $currentQuestion = Question::create([
@@ -115,7 +114,6 @@ class SurveyImportController extends Controller
                     'order' => $orderQuestion++,
                 ]);
 
-                // Reiniciamos el contador de respuestas para la nueva pregunta
                 $orderAnswer = 1;
 
                 $questions[] = [
@@ -127,7 +125,6 @@ class SurveyImportController extends Controller
                 continue;
             }
 
-            // Si ya hay una pregunta activa, las filas subsiguientes son las opciones de respuesta
             if ($currentQuestion) {
                 $answerName = preg_replace('/^[•\-\*\s]+/', '', $cell);
 

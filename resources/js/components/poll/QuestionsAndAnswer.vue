@@ -1,13 +1,13 @@
 <template >
     <div class="border border-neutral-200 rounded-xl p-6 bg-white shadow-sm">
 
-        <h3 class="mb-6 text-xl font-semibold text-gray-800">{{ question.order }}. {{ question.name }}</h3>
+        <h3 class="mb-6 text-lg font-semibold text-gray-800">{{ question.order }}. {{ question.name }}</h3>
         
-        <div class="flex flex-col gap-y-3">
+        <div class="flex flex-col gap-y-3 h-80 overflow-x-scroll">
             <div v-for="(answer,index) in answers"
                 :key="answer.id"
                 @click="selectedAnswer = answer.id"
-                class="answer-option w-full h-16 cursor-pointer border border-gray-200 flex items-center px-4 hover:border-blue-500 transition-all duration-200 rounded-lg"
+                class="answer-option w-full min-h-10 cursor-pointer border border-gray-300 flex items-center px-4 hover:border-blue-500 transition-all duration-200 rounded-lg"
             >
             
                 <input type="radio" v-model="selectedAnswer" :value="answer.id" :id="'answer-' + answer.id" name="answer" class="w-5 h-5 text-blue-600">

@@ -74,6 +74,10 @@
         </div>
 
         <!-- modal para crear nueva encuesta -->
+        <ImportSurveyModal
+            :show="isImportModalOpen"
+            @close="isImportModalOpen = false"
+        />
         <Modal :show="isModalOpen" @close="isModalOpen = false;">
             <SurveyForm :surveyId="idSurveyToEdit" />
         </Modal>
@@ -98,7 +102,7 @@ import { computed, onMounted, ref } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
-
+import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
 import { formatedDate } from '@/composables/shared';
 import SurveyForm from '@/components/forms/survey-form.vue';
 import { useNotification } from '@/composables/useNotification';
@@ -106,6 +110,7 @@ import { importSurveyFromExcel } from '@/composables/api/surveys';
 
 const { notify } = useNotification();
 const isModalOpen = ref(false);
+const isImportModalOpen = ref(false);
 const surveys = ref([])
 const pagination = ref(null)
 
@@ -142,19 +147,8 @@ const getSurveys = async (page = 1) => {
     }
 }   
 
-const importSurvey = async () => {
-    const result = await importSurveyFromExcel();
-
-    if (result.errorFlag) {
-        notify('Error', result.responseMessage, 'error');
-        return;
-    }
-
-    notify('Éxito', 'Encuesta importada correctamente', 'success');
-
-    router.get('/create-survey/step-4', {
-        surveyId: result.data.id
-    });
+const importSurvey = () => {
+    isImportModalOpen.value = true;
 }
 </script>
 <style lang="">

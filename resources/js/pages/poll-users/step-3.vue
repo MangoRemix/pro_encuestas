@@ -1,6 +1,6 @@
 <template>
     <Head title="Encuestado en curso"/>
-    <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 min-h-screen items-center">
+    <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 min-h-screen items-center px-5">
         <SuccessModal :show="showSuccess" />
         <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl pb-3 pt-0 md:min-h-120">
 

@@ -37,7 +37,7 @@
             <button @click="saveManyResults()" class="green-button-app cursor-pointer" :disabled="pendingSurveys.length==0">
                 Guardar Todas
             </button>
-            <button @click="clearSavedSurveys()" class="cursor-pointer yellow-button-app">
+            <button @click="clearSavedSurveys()" class="cursor-pointer primary-button-app">
                 Limpiar Guardadas
             </button>
         </div>

@@ -158,107 +158,63 @@ watch(q,(value)=>{
 
 const incrementQuestion = async () => {
     try {
+        await storageResults();
+        selectedAnswer.value = null;
 
-        let categories_compare
-        let questions_compare
-        selectedAnswer.value = null
-        await storageResults()
-        if(counts.value.actual_question  < counts.value.total_questions-1){
+        const currentCat = survey.value.categories[counts.value.actual_category];
+        const totalQuestionsInCat = currentCat.questions.length;
 
-            counts.value.actual_question++    
-            
-            if(survey.value.categories[counts.value.actual_category]?.questions[counts.value.actual_question]?.answers){
-                const {answers,...rest} = survey.value.categories[counts.value.actual_category].questions[counts.value.actual_question]
-                if(rest)
-                    q.value = rest
-                if(answers){
-                    a.value = answers
-                    
-                }
-            }
-            
-        }else{
-            if(counts.value.actual_question >= counts.value.total_questions-1){
-                if(counts.value.actual_category < counts.value.total_categories){
-                    counts.value.actual_category++
-                    counts.value.actual_question = 0
-                    q.value = []
-                    a.value = []
-                    if(survey.value.categories[counts.value.actual_category]){
-                        counts.value.total_questions = survey.value.categories[counts.value.actual_category]?.question? survey.value.categories[counts.value.actual_category]?.question.length : 0
-                        const {questions,...category} = survey.value.categories[counts.value.actual_category]
-        
-                        c.value = category
-                        
-                        if(questions && questions.length>0){
-                            
-                            q.value = questions[counts.value.actual_question]
-                            
-                            a.value = questions[counts.value.actual_question]?.answers ? questions[counts.value.actual_question]?.answers : []
-                            
-                        }
-                    }
-                }
-                
-            }
+        // Si hay más preguntas en la categoría actual
+        if (counts.value.actual_question < totalQuestionsInCat - 1) {
+            counts.value.actual_question++;
+        }
+        // Si se acabó la categoría actual, pasar a la siguiente
+        else if (counts.value.actual_category < survey.value.categories.length - 1) {
+            counts.value.actual_category++;
+            counts.value.actual_question = 0;
         }
         
-        
-        disabledRewind.value = false
+        // Actualizar datos de la pregunta actual
+        const nextCat = survey.value.categories[counts.value.actual_category];
+        const nextQ = nextCat.questions[counts.value.actual_question];
 
-        categories_compare = counts.value.actual_category == counts.value.total_categories-1
-        questions_compare = counts.value.actual_question == counts.value.total_questions
-        if(categories_compare && questions_compare){
-            disabledForward.value = categories_compare
-            visibilityFinishButton.value = categories_compare
-        }
-        
+        c.value = { ...nextCat, questions: undefined }; // Evitar pasar todo el array
+        q.value = { ...nextQ, answers: undefined };
+        a.value = nextQ.answers;
+
+        disabledRewind.value = false;
+
+        // Verificar si es la última pregunta de la última categoría
+        const isLastCategory = counts.value.actual_category === survey.value.categories.length - 1;
+        const isLastQuestion = counts.value.actual_question === survey.value.categories[counts.value.actual_category].questions.length - 1;
+
+        visibilityFinishButton.value = isLastCategory && isLastQuestion;
     } catch (error) {
-        console.log({error})
+        console.error(error);
     }
-    
 }
 
 const decrementQuestion = () => {
     try {
-        let categories_compare
-        let questions_compare
-        if(counts.value.actual_question > 0 && counts.value.actual_category>=0){
-            counts.value.actual_question--
-            const {answers,...rest} = survey.value.categories[counts.value.actual_category].questions[counts.value.actual_question]
-            
-            q.value = rest
-            a.value = answers
-        }else{
-            if(counts.value.actual_question == 0 && counts.value.actual_category>0){
-               
-            counts.value.actual_category--
-
-                const {questions} = c.value = survey.value.categories[counts.value.actual_category]
+        if (counts.value.actual_question > 0) {
+            counts.value.actual_question--;
+        } else if (counts.value.actual_category > 0) {
+            counts.value.actual_category--;
+            counts.value.actual_question = survey.value.categories[counts.value.actual_category].questions.length - 1;
+        }
                 
-                counts.value.total_questions = questions.length
-                counts.value.actual_question = counts.value.total_questions-1 > 0 ? counts.value.total_questions-1 : 0
-                q.value = questions[counts.value.actual_question]
-                if(q.value?.answers){
-                    const {answers} = q.value
-                    a.value = answers
-                }
-            }
-        }
+        const prevCat = survey.value.categories[counts.value.actual_category];
+        const prevQ = prevCat.questions[counts.value.actual_question];
 
-        disabledRewind.value = !counts.value.actual_category && !counts.value.actual_question?true:false
+        c.value = { ...prevCat, questions: undefined };
+        q.value = { ...prevQ, answers: undefined };
+        a.value = prevQ.answers;
 
-        categories_compare = counts.value.actual_category <= counts.value.total_categories
-        questions_compare = counts.value.actual_question < counts.value.total_questions
-        if(categories_compare && questions_compare){
-            disabledForward.value = false
-            visibilityFinishButton.value = false
-        }
-            
+        disabledRewind.value = (counts.value.actual_category === 0 && counts.value.actual_question === 0);
+        visibilityFinishButton.value = false;
     } catch (error) {
-        console.log({error})
+        console.error(error);
     }
-    
 }
 
 const storageResults = ()=>{

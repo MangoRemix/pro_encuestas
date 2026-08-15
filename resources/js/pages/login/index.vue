@@ -2,7 +2,7 @@
     <Head title="Inicio de sesión"></Head>
     <MainLayout>
         
-        <div class="flex items-center justify-center min-h-120 bg-white/30 backdrop-blur-md shadow-lg w-1/3 mx-auto rounded-xl">
+        <div class="flex items-center justify-center min-h-120 bg-white/30 backdrop-blur-md shadow-lg w-11/12 md:w-1/3 mx-auto rounded-xl mt-7">
             <div class="w-full max-w-sm p-6 space-y-6">
 
                 <div class="flex justify-center mb-8">

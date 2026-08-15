@@ -23,8 +23,8 @@
             @close="isMenuOpen = false" 
         />
 
-        <div class="w-full px-10 pl-14 xl:w-7xl mx-auto ">
-            <img src="/images/logoAlcaldia.png" class="bg-white rounded-full h-25 w-25 border-2 border-white mt-5" alt="">
+        <div class="w-1/3 md:w-full xl:w-7xl mx-auto h-fit">
+            <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 md:h-25 md:w-25 mx-auto border-2 border-white mt-5" alt="">
         </div>
         
         <div class="w-full xl:w-7xl min-h-screen mx-auto mt-4 px-4 sm:px-6">

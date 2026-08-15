@@ -1,9 +1,9 @@
 <template >
-    <div class="border border-neutral-200 rounded-xl p-6 bg-white shadow-sm">
+    <div class="border border-neutral-200 rounded-xl p-2 bg-white shadow-sm">
 
         <h3 class="mb-6 text-lg font-semibold text-gray-800">{{ question.order }}. {{ question.name }}</h3>
         
-        <div class="flex flex-col gap-y-3 h-80 overflow-x-scroll">
+        <div class="flex flex-col gap-y-3 h-68 lg:h-75 overflow-y-scroll">
             <div v-for="(answer,index) in answers"
                 :key="answer.id"
                 @click="selectedAnswer = answer.id"
@@ -15,8 +15,6 @@
             </div>
         </div>
         
-        
-
     </div>
 </template>
 <script setup>

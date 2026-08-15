@@ -2,10 +2,10 @@
     <Head title="Encuestado en curso"/>
     <div id="background-poll" class="dark:bg-gray-800 flex gap-y-3 min-h-screen items-center px-5">
         <SuccessModal :show="showSuccess" />
-        <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl pb-3 pt-0 md:min-h-120">
+        <div class="max-w-7xl mx-auto bg-white w-full md:w-10/12 flex flex-col justify-between rounded-3xl h-[95vh] overflow-hidden">
 
             <!-- Barra de Progreso -->
-            <div class="w-full px-8 pt-6 mb-2">
+            <div class="w-full px-8 pt-6 mb-2 shrink-0">
                 <div class="flex justify-between text-sm text-gray-500 mb-1">
                     <span>Progreso</span>
                     <span>{{ currentQuestionIndex }} / {{ totalQuestionsCount }}</span>
@@ -17,16 +17,18 @@
                 </div>
             </div>
 
-            <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full rounded-t-3xl mt-0">{{ c?.name }}</h1>
-
             <!-- Questions and Answer Component -->
+            <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full shrink-0">{{ c?.name }}</h1>
+            <!-- Questions and Answer Component -->
+            <div class="grow h-60 md:px-2 md:h-85">
             <QuestionsAndAnswer
             :key="q.id"
             @send-answer="getAnswer"
-            class="mx-auto p-5 w-full max-w-11/12 h-full md:h-2/3 shadow-lg shadow-neutral-500" v-if="q" :question="q" :answers="a"/>
-            
+                class="w-full" v-if="q" :question="q" :answers="a"/>
+            </div>
+
             <!-- Centered Buttons -->
-            <div class="flex space-x-3 md:space-x-0 justify-around w-10/12  mt-8 mx-auto">
+            <div class="flex space-x-3 md:space-x-0 justify-around w-full py-6 px-8 mt-auto shrink-0 ">
                 <button
                     :disabled="disabledRewind"
                     type="button"

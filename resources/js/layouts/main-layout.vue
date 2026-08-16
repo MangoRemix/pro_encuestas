@@ -1,6 +1,6 @@
 <template>
-    <div id="main" class="w-full overflow-x-scroll min-h-screen relative">
-        <!-- Botón para abrir el Menú Lateral -->
+    <div id="main" class="w-full min-h-screen relative pt-5">
+       <!-- Botón para abrir el Menú Lateral -->
         <div v-if="user" class="fixed top-5 left-5 z-40">
             <button 
                 @click="isMenuOpen = true" 
@@ -22,15 +22,14 @@
             :items="filteredMenuItems"
             @close="isMenuOpen = false" 
         />
-
         <div class="w-1/3 md:w-full xl:w-7xl mx-auto h-fit">
-            <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 md:h-25 md:w-25 mx-auto border-2 border-white mt-5" alt="">
+            <!-- <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 md:h-25 md:w-25 mx-auto border-2 border-white mt-5" alt=""> -->
+            <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 md:h-25 md:w-25 mx-auto border-2 border-white" alt="">
         </div>
-        
+
         <div class="w-full xl:w-7xl min-h-screen mx-auto mt-4 px-4 sm:px-6">
             <slot />
         </div>
-        
     </div>
 </template>
 <script setup>

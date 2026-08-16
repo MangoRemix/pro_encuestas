@@ -31,12 +31,12 @@
                     </button>
                 </form>
 
-                <div class="flex justify-between items-center text-sm text-gray-300">
+                <div class="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-300 gap-3">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input v-model="form.remember" type="checkbox" class="rounded border-gray-400 text-purple-900 focus:ring-purple-900">
-                        <span>Remember me</span>
+                        <span>Recordarme</span>
                     </label>
-                    <a href="#" class="hover:underline">Forgot your password?</a>
+                    <a href="#" class="hover:underline">Olvidaste tu contraseña?</a>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@ const disabledLoginButton = ref(true)
 
 const login = async () => {
     try {
-        await axios.post('/login', {
+        await axios.post('login', {
             email: form.email,
             password: form.password,
             remember: form.remember

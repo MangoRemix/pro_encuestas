@@ -10,9 +10,12 @@ use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SexController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyImportController;
+use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas Públicas (Lectura de catálogos necesarios para formularios y registro)
+Route::post('login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+
 Route::prefix('sex')->group(function(){
     Route::get('show-all', [SexController::class, 'index']);
 });
@@ -70,7 +73,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::delete('delete/{id}', [CategoryController::class, 'destroy']);
     });
 
-    /** QUESTIONS RESOURCES */
+    /**QUESTIONS RESOURCES */
     Route::prefix('question')->group(function (){
         Route::post('create', [QuestionController::class, 'store']);
         Route::post('create-many', [QuestionController::class, 'createMany']);
@@ -104,13 +107,17 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('show-one/{id}', [ResultController::class, 'show']);
         Route::put('update/{id}', [ResultController::class, 'update']);
         Route::delete('delete/{id}', [ResultController::class, 'destroy']);
+        Route::get('newReportStructure/{id}', [ResultController::class, 'newReportStructure']);
+        
     });
 
     /** PARISH (Escritura protegida) */
-Route::prefix('parish')->group(function(){
-        Route::post('create', [ParishController::class, 'store']);
-        Route::put('{id}', [ParishController::class, 'update']);
-        Route::delete('{id}', [ParishController::class, 'destroy']);
+    Route::prefix('parish')->group(function(){
+            Route::post('create', [ParishController::class, 'store']);
+            Route::put('{id}', [ParishController::class, 'update']);
+            Route::delete('{id}', [ParishController::class, 'destroy']);
+    });
+    
 });
-});
+
 

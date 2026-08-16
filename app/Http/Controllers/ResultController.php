@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\Person;
 use App\Models\Question;
 use App\Models\Result;
+use App\Models\Survey;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -233,6 +234,48 @@ class ResultController extends Controller
             return response()->json($results, 200);
         } catch (\Throwable $th) {
             return response()->json(["error" => $th->getMessage()], 500);
+        }
+    }
+
+    public function newReportStructure($id){
+        
+        try {
+            $survey = Survey::with([
+                'categories' => fn($query) => $query->orderBy('order', 'asc'),
+                'categories.questions' => fn($query) => $query->orderBy('order', 'asc'),
+                'categories.questions.answers' => fn($query) => $query->orderBy('order', 'asc'),
+            ])->findOrFail($id);
+
+            // Consulta usando Eloquent con conteo de votos agrupado por respuesta
+            $answersCount = Result::query()
+                ->join('questions as q', 'q.id', '=', 'results.question_id')
+                ->join('categories as c', 'c.id', '=', 'q.category_id')
+                ->join('surveys as s', 's.id', '=', 'c.survey_id')
+                ->rightJoin('answers as a', 'a.id', '=', 'results.answer_id')
+                ->where('s.id', $id)
+                ->select([
+                    'results.question_id',
+                    'results.answer_id',
+                    DB::raw('count(results.id) as total_votes')
+                ])
+                ->groupBy('results.question_id', 'results.answer_id')
+                ->get()
+                ->keyBy(fn($item) => $item->question_id . '-' . $item->answer_id);
+
+            foreach ($survey->categories as $category) {
+                foreach ($category->questions as $question) {
+                    foreach ($question->answers as $answer) {
+                        $key = $question->id . '-' . $answer->id;
+                        $answer->total_votes = isset($answersCount[$key]) ? (int) $answersCount[$key]->total_votes : 0;
+                    }
+                }
+            }
+            return response()->json($survey, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "error" => "No se pudo generar el reporte.",
+                "details" => $th->getMessage()
+            ], 500);
         }
     }
 }

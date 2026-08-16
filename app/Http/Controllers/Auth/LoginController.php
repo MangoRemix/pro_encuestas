@@ -18,7 +18,16 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Login exitoso', 'user' => Auth::user()]);
+            }
+
             return redirect()->intended('/');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Las credenciales proporcionadas son incorrectas.'], 422);
         }
 
         throw ValidationException::withMessages([
@@ -36,5 +45,4 @@ class LoginController extends Controller
         return redirect('/login');
     }
 }
-
 

@@ -34,8 +34,13 @@
             </div>
         </div>
         <div class="w-full md:w-1/3 mx-auto flex gap-2">
-            <button @click="saveManyResults()" class="green-button-app cursor-pointer" :disabled="pendingSurveys.length==0">
-                Guardar Todas
+            <button
+                @click="saveManyResults()"
+                class="green-button-app cursor-pointer flex items-center justify-center"
+                :disabled="pendingSurveys.length == 0 || isProcessing"
+            >
+                <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                {{ isProcessing ? 'Procesando...' : 'Guardar Todas' }}
             </button>
             <button @click="clearSavedSurveys()" class="cursor-pointer primary-button-app">
                 Limpiar Guardadas
@@ -48,9 +53,9 @@
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import MainLayout from '@/layouts/main-layout.vue';
-import axios from 'axios';
-
+import { useBatchProcessor } from '@/composables/useBatchProcessor';
 const pendingSurveys = ref([]);
+const { isProcessing, processBatch } = useBatchProcessor();
 
 onMounted(() => {
     const data = localStorage.getItem('allSurveysPending');
@@ -60,36 +65,20 @@ onMounted(() => {
 });
 
 const saveManyResults = async () => {
-    try {
         const surveysToProcess = pendingSurveys.value.filter(s => s.status !== 'GUARDADA');
         const allData = surveysToProcess.map(s => s.data);
-        const { data } = await axios.post('/api/result/batch', {
-            results: allData
-        });
 
-        const batchId = data.batch_id;
-
-        const interval = setInterval(async () => {
-            const { data: statusData } = await axios.get(`/api/result/batch-status/${batchId}`);
-
-            if (statusData.finished) {
-                clearInterval(interval);
-
-                // Actualizar estados
+    try {
+        const report = await processBatch('/api/result/batch', { results: allData });
                 let reportIndex = 0;
                 pendingSurveys.value.forEach((survey) => {
                     if (survey.status !== 'GUARDADA') {
-                        
-                        survey.status = statusData.report[reportIndex] === 'GUARDADA' ? 'GUARDADA' : 'FALLIDO';
+                survey.status = report[reportIndex] === 'GUARDADA' ? 'GUARDADA' : 'FALLIDO';
                         reportIndex++;
                     }
                 });
-
                 localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
                         alert("Procesamiento finalizado");
-            }
-        }, 2000);
-
     } catch (error) {
         console.error("Error en la petición batch:", error);
 }

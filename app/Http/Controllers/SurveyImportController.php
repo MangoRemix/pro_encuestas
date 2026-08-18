@@ -36,7 +36,7 @@ class SurveyImportController extends Controller
                 $surveyName = trim((string) ($rows[0][0] ?? 'Encuesta Importada'));
                 
                 $survey = Survey::create([
-                    'name' => $surveyName !== '' ? strtoupper($surveyName) : 'Encuesta Importada',
+                    'name' => $surveyName !== '' ? $surveyName : 'Encuesta Importada',
                     'init_date' => now(),
                     'finish_date' => now()->addMonth(),
                 ]);
@@ -51,7 +51,7 @@ class SurveyImportController extends Controller
                     if ($categoryName === '') continue;
 
                     $category = Category::create([
-                        'name' => strtoupper($categoryName),
+                        'name' => $categoryName,
                         'survey_id' => $survey->id,
                         'order' => $orderCategory++,
                     ]);
@@ -109,7 +109,7 @@ class SurveyImportController extends Controller
                 $questionText = preg_replace('/^\d+[\.\s\-]+/', '', $cell);
 
                 $currentQuestion = Question::create([
-                    'name' => $questionText !== '' ? strtoupper($questionText) : $cell,
+                    'name' => $questionText !== '' ? $questionText : $cell,
                     'category_id' => $category->id,
                     'order' => $orderQuestion++,
                 ]);
@@ -129,7 +129,7 @@ class SurveyImportController extends Controller
                 $answerName = preg_replace('/^[•\-\*\s]+/', '', $cell);
 
                 $answer = Answer::create([
-                    'name' => strtoupper($answerName),
+                    'name' => $answerName,
                     'question_id' => $currentQuestion->id,
                     'order' => $orderAnswer++,
                 ]);

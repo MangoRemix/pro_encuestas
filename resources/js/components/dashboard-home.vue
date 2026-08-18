@@ -66,7 +66,7 @@
                                     ? 'bg-yellow-500/30 text-white border-l-4 border-yellow-400 font-bold'
                                     : 'hover:bg-blue-800/40 hover:text-yellow-400'
                             ]">
-                            {{ question.name }}
+                            {{ question?.name.toUpperCase() }}
                         </li>
                         <li v-else> No Hay Elementos</li>
                     </ul>
@@ -76,7 +76,7 @@
                     <h2 class="underline text-white font-bold text-lg">Respuestas</h2>
                     <ul class="text-blue-100 mt-2">
                         <li v-if="answers.length>0" v-for="answer in answers" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ answer.name }}
+                            {{ answer?.name.toUpperCase() }}
                         </li>
                         <li v-else> No Hay Elementos</li>
                     </ul>

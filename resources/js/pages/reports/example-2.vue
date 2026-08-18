@@ -45,19 +45,25 @@
         </div>
 
         <div class="min-h-20 w-full flex flex-wrap gap-x-3 px-2 justify-center">
-            <div class="w-fit" v-for="category in categories">
-                <button class="primary-button-app cursor-pointer">
+            <div class="w-fit">
+                <button @click="category_selected = null" class="primary-button-app cursor-pointer">
                     TODAS
                 </button>
-                <button class="primary-button-app cursor-pointer">
+            </div>
+            <div class="w-fit" v-for="category in categories">
+                <button @click="category_selected = category.name" class="primary-button-app cursor-pointer">
                     {{ category.name }}
                 </button>
-                
-                
             </div>
         </div>
 
-        <Graphics :categories="reportData.categories" />
+        <div v-if="selected_radio === 'table' || selected_radio === 'both'">
+            <Table :categories="filteredCategories" />
+        </div>
+
+        <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
+            <Graphics :categories="filteredCategories" />
+        </div>
     </MainLayout>
 </template>
 <script setup>
@@ -65,9 +71,10 @@ import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
 import { getReportStructure } from '@/composables/api/reports'; // Importación
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import Graphics from './graphics.vue';
+import Table from './table.vue';
 
 const selectedSurvey = ref(null)
 const surveys = ref([])
@@ -78,6 +85,13 @@ const selected_radio = ref('table')
 const page = usePage()
 
 const reportData = ref([]);
+
+const filteredCategories = computed(() => {
+    if (!category_selected.value) return reportData.value.categories || [];
+    return (reportData.value.categories || []).filter(
+        c => c.name === category_selected.value
+    );
+});
 
 onMounted(async () => {
     

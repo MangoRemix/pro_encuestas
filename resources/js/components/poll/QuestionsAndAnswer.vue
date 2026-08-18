@@ -1,9 +1,9 @@
 <template >
     <div class="border border-neutral-200 rounded-xl p-2 bg-white shadow-sm">
 
-        <h3 class="mb-6 text-lg font-semibold text-gray-800">{{ question.order }}. {{ question.name }}</h3>
+        <h3 class="mb-6 text-lg font-semibold text-gray-800">{{ question.order }}. {{ question.name?.toUpperCase() }}</h3>
         
-        <div class="flex flex-col gap-y-3 h-68 lg:h-75 overflow-y-scroll">
+        <div class="flex flex-col gap-y-3 h-68 lg:h-72 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
             <div v-for="(answer,index) in answers"
                 :key="answer.id"
                 @click="selectedAnswer = answer.id"
@@ -11,7 +11,7 @@
             >
             
                 <input type="radio" v-model="selectedAnswer" :value="answer.id" :id="'answer-' + answer.id" name="answer" class="w-5 h-5 text-blue-600">
-                <label :for="'answer-' + answer.id" class="ml-3 cursor-pointer text-gray-700 w-full">{{ answer.name }}</label>
+                <label :for="'answer-' + answer.id" class="ml-3 cursor-pointer text-gray-700 w-full">{{ answer.name?.toUpperCase() }}</label>
             </div>
         </div>
         

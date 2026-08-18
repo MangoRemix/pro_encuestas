@@ -8,7 +8,7 @@ defineProps({
     show: Boolean
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'import-started'])
 
 const file = ref(null)
 const loading = ref(false)
@@ -24,26 +24,10 @@ const submitUpload = async () => {
         return
     }
 
-    loading.value = true
-    errorMessage.value = ''
-
     const formData = new FormData()
     formData.append('file', file.value)
 
-    try {
-        await axios.post('/api/survey/import-excel', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials: true
-        })
-        
-        emit('close')
-        router.reload()
-    } catch (error) {
-        console.log(error)
-        errorMessage.value = error.response?.data?.error || error.response?.data?.message || 'Error al importar el archivo.'
-    } finally {
-        loading.value = false
-    }
+    emit('import-started', formData)
 }
 </script>
 
@@ -70,9 +54,8 @@ const submitUpload = async () => {
                 </button>
                 <button 
                     @click="submitUpload" 
-                    :disabled="loading"
-                    class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50">
-                    {{ loading ? 'Importando...' : 'Importar' }}
+                    class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                    Importar
                 </button>
             </div>
         </div>

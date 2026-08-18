@@ -9,9 +9,14 @@
                 <input v-model="searchQuery" type="text" class="inputs-form bg-white">
             </div>
             <div class="flex gap-2">
-                <button @click="importSurvey" class="flex items-center rounded-full text-white bg-green-600 cursor-pointer hover:bg-green-500 h-9 px-4 font-bold">
-                    <Icon class="text-xl mr-1" icon="ic:outline-file-upload" />
-                    Importar Excel
+                <button
+                    @click="importSurvey"
+                    :disabled="isImporting"
+                    class="flex items-center rounded-full text-white bg-green-600 cursor-pointer hover:bg-green-500 h-9 px-4 font-bold disabled:opacity-50"
+                >
+                    <span v-if="isImporting" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                    <Icon v-else class="text-xl mr-1" icon="ic:outline-file-upload" />
+                    {{ isImporting ? 'Importando...' : 'Importar Excel' }}
                 </button>
                 <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
                     <Link href="/surveys/create-survey/step-1" class="flex items-center">
@@ -77,6 +82,7 @@
         <ImportSurveyModal
             :show="isImportModalOpen"
             @close="isImportModalOpen = false"
+            @import-started="handleImportProcess"
         />
         <Modal :show="isModalOpen" @close="isModalOpen = false;">
             <SurveyForm :surveyId="idSurveyToEdit" />
@@ -107,10 +113,13 @@ import { formatedDate } from '@/composables/shared';
 import SurveyForm from '@/components/forms/survey-form.vue';
 import { useNotification } from '@/composables/useNotification';
 import { importSurveyFromExcel } from '@/composables/api/surveys';
+import { useBatchProcessor } from '@/composables/useBatchProcessor';
 
 const { notify } = useNotification();
+const { isProcessing, processBatch } = useBatchProcessor();
 const isModalOpen = ref(false);
 const isImportModalOpen = ref(false);
+const isImporting = ref(false);
 const surveys = ref([])
 const pagination = ref(null)
 
@@ -150,6 +159,27 @@ const getSurveys = async (page = 1) => {
 const importSurvey = () => {
     isImportModalOpen.value = true;
 }
+
+const handleImportProcess = async (formData) => {
+    isImportModalOpen.value = false;
+    isImporting.value = true;
+
+    try {
+        const res = await importSurveyFromExcel(formData);
+
+        if (!res.errorFlag) {
+            notify("Encuesta importada exitosamente");
+        await getSurveys();
+        } else {
+            notify(res.responseMessage, 'error');
+    }
+    } catch (error) {
+        console.error("Error en la importación:", error);
+        notify("Error al importar la encuesta", 'error');
+    } finally {
+        isImporting.value = false;
+    }
+};
 </script>
 <style lang="">
     

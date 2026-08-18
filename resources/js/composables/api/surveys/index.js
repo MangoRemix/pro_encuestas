@@ -79,10 +79,10 @@ export async function showFullSurvey(id){
     }
 }
 
-export async function importSurveyFromExcel(){
+export async function importSurveyFromExcel(payload) {
     try {
-        const {data, status} = await axios.post(`${apiHost}survey/import-excel`)
-        if(status === 201){
+        const { data, status } = await axios.post(`${apiHost}survey/import-excel`, payload)
+        if (status === 202) { // Cambiado a 202 para consistencia con el batch job
             response.data = data
             return response
         }
@@ -92,3 +92,4 @@ export async function importSurveyFromExcel(){
         return response
     }
 }
+

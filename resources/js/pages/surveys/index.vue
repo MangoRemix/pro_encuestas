@@ -11,12 +11,12 @@
             <div class="flex gap-2">
                 <button
                     @click="importSurvey"
-                    :disabled="isImporting"
+                    :disabled="isProcessing"
                     class="flex items-center rounded-full text-white bg-green-600 cursor-pointer hover:bg-green-500 h-9 px-4 font-bold disabled:opacity-50"
                 >
-                    <span v-if="isImporting" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                    <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
                     <Icon v-else class="text-xl mr-1" icon="ic:outline-file-upload" />
-                    {{ isImporting ? 'Importando...' : 'Importar Excel' }}
+                    {{ isProcessing ? 'Importando...' : 'Importar Excel' }}
                 </button>
                 <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
                     <Link href="/surveys/create-survey/step-1" class="flex items-center">
@@ -116,10 +116,9 @@ import { importSurveyFromExcel } from '@/composables/api/surveys';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 
 const { notify } = useNotification();
-const { isProcessing, processBatch } = useBatchProcessor();
+const { isProcessing, pollBatchStatus } = useBatchProcessor();
 const isModalOpen = ref(false);
 const isImportModalOpen = ref(false);
-const isImporting = ref(false);
 const surveys = ref([])
 const pagination = ref(null)
 
@@ -162,22 +161,19 @@ const importSurvey = () => {
 
 const handleImportProcess = async (formData) => {
     isImportModalOpen.value = false;
-    isImporting.value = true;
+    isProcessing.value = true;
 
     try {
-        const res = await importSurveyFromExcel(formData);
+        const { data } = await axios.post(`${apiHost}survey/import-excel`, formData);
 
-        if (!res.errorFlag) {
+        await pollBatchStatus(data.batch_id);
+
             notify("Encuesta importada exitosamente");
         await getSurveys();
-        } else {
-            notify(res.responseMessage, 'error');
-    }
     } catch (error) {
+        isProcessing.value = false;
         console.error("Error en la importación:", error);
         notify("Error al importar la encuesta", 'error');
-    } finally {
-        isImporting.value = false;
     }
 };
 </script>

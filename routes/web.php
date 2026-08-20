@@ -151,17 +151,6 @@ Route::prefix('reports')->middleware(['auth', 'admin'])->group(function (){
             'categoryId' => $validated['categoryId'] ?? null,
         ]);
     })->name('reports-index');
-
-    Route::get('/example2', function (Request $request){
-        $validated = $request->validate([
-            'surveyId' => ['nullable', 'integer'],
-            'categoryId' => ['nullable', 'integer'],
-        ]);
-        return Inertia::render('reports/example-2', [
-            'surveyId' => $validated['surveyId'] ?? null,
-            'categoryId' => $validated['categoryId'] ?? null,
-        ]);
-    })->name('reports-example-2');
 });
 
 // ... existing code ...

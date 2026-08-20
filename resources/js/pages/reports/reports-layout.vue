@@ -10,14 +10,14 @@
                     {{ survey.name }}
                 </option>
             </select>
-        </div>
+        </div>            
         <div class="flex items-center justify-around gap-x-3 mt-6 w-1/2 mx-auto text-white ">
             
             <div class="flex space-x-2.5 items-center">
                 <label for="">Tabla</label>
                 <input type="radio"
                 v-model="selected_radio"
-                value="table" name="reportType" checked id="">
+                value="table" name="reportType" id="">
             </div>
             
             
@@ -35,34 +35,66 @@
                 v-model="selected_radio"
                 value="both" name="reportType" id="">
             </div>
-            
-
         </div>
-        <h2 class="text-3xl text-white font-bold mt-8 mb-6 underline text-center">{{ survey_selected?.name }} </h2>
-        <Table v-if="selected_radio=='both' || selected_radio=='table'?true:false" :report-data="reportData"/>
-        <Graphics v-if="selected_radio=='both' || selected_radio=='graphics'?true:false" :report-data="reportData"/>
+        <h2 class="text-xl lg:text-3xl text-white font-bold mt-8 mb-6 underline text-center">{{ survey_selected?.name }} </h2>
+       
+        <div v-if="survey_selected" class="text-white font-semibold text-center">
+            <h4 class="text-xl lg:text-2xl">Categorías</h4>
+            <span>Total encuestados: {{ reportData.total_respondent }}</span>
+        </div>
+
+        <div class="min-h-20 w-full flex flex-wrap gap-x-3 px-2 justify-center">
+            <div class="w-fit">
+                <button @click="category_selected = null" class="primary-button-app cursor-pointer">
+                    TODAS
+                </button>
+            </div>
+            <div class="w-fit" v-for="category in categories">
+                <button @click="category_selected = category.name" class="primary-button-app cursor-pointer">
+                    {{ category.name }}
+                </button>
+            </div>
+        </div>
+
+        <div v-if="selected_radio === 'table' || selected_radio === 'both'">
+            <Table :categories="filteredCategories" />
+        </div>
+
+        <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
+            <Graphics :categories="filteredCategories" />
+        </div>
     </MainLayout>
 </template>
 <script setup>
-import { getSurveys } from '@/composables/api/surveys';
+import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
+import { getReportStructure } from '@/composables/api/reports';
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
-import Table from './table.vue';
 import Graphics from './graphics.vue';
+import Table from './table.vue';
 
 const selectedSurvey = ref(null)
 const surveys = ref([])
+const categories = ref([])
+const category_selected = ref()
 const survey_selected = ref(null)
 const selected_radio = ref('table')
 const page = usePage()
 
 const reportData = ref([]);
 
+const filteredCategories = computed(() => {
+    if (!category_selected.value) return reportData.value.categories || [];
+    return (reportData.value.categories || []).filter(
+        c => c.name === category_selected.value
+    );
+});
+
 onMounted(async () => {
-    
     try {
+        
         surveys.value = await allSurveys()
         
     } catch (e) {
@@ -71,30 +103,31 @@ onMounted(async () => {
 });
 
 const allSurveys = async ()=>{
-    const {data,errorFlag,responseMessage} = await getSurveys({})
+    
+    const {data,errorFlag,responseMessage} = await getSurveys({all:true})
     if(data){
-        selectedSurvey.value = data.data[0]
         
-        return data.data
+        selectedSurvey.value = data[0]
+        return data
     }else{
         return []
     }
 }
 
-watch(selectedSurvey,async (value)=>{
-    
-    survey_selected.value = surveys.value.find((s)=>s.id == value)
-    //console.log(survey_selected.value)
-    if(survey_selected.value?.id){
-        const { data } = await axios.get(`/api/result/report/${survey_selected.value.id}`, {
-                params: { category_id: page?.props?.categoryId }
-            });
-        reportData.value = data;
-    }else{
-        reportData.value = []
+const loadReport = async () => {
+    if (!selectedSurvey.value) return;
+
+    survey_selected.value = surveys.value.find((s) => s.id == selectedSurvey.value)
+    if (survey_selected.value) {
+        const { data } = await getCategoriesBySurvey(selectedSurvey.value)
+        if (data) categories.value = data;
+
+        const report = await getReportStructure(selectedSurvey.value);
+        if (report.data) reportData.value = report.data;
     }
-    
-})
+};
+
+watch([selectedSurvey], loadReport, { deep: true });
 </script>
 <style scoped>
     

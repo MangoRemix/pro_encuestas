@@ -1,15 +1,11 @@
 import axios from "axios";
 import {apiHost} from '../../../store/store'
-const response = {
-    errorFlag:false,
-    responseMessage:'',
-    data:null
-}
-
 export async function getSurveys({all = false}){
+    
+    const response = { errorFlag: false, responseMessage: '', data: null }
     try {
         
-        const {data,error,status} = await axios.get(`${apiHost}survey/show-all`,{
+        const {data,status} = await axios.get(`${apiHost}survey/show-all`,{
             params:{
                 all
             }
@@ -29,8 +25,9 @@ export async function getSurveys({all = false}){
 }
 
 export async function getSurvey(id){
+    const response = { errorFlag: false, responseMessage: '', data: null }
     try {
-        const {data,error,status} = await axios.get(`${apiHost}survey/show-one/${id}`)
+        const {data,status} = await axios.get(`${apiHost}survey/show-one/${id}`)
         if(status==200){
             response.data = data
             return response
@@ -45,8 +42,9 @@ export async function getSurvey(id){
 }
 
 export async function getCategoriesBySurvey (survey_id){
+    const response = { errorFlag: false, responseMessage: '', data: null }
         try {
-            const {data,error,status} = await axios.get(`${apiHost}category/show-by-survey/${survey_id}`)
+            const {data,status} = await axios.get(`${apiHost}category/show-by-survey/${survey_id}`)
             if(status==200){
                 response.data = data
 
@@ -62,9 +60,9 @@ export async function getCategoriesBySurvey (survey_id){
 }
 
 export async function showFullSurvey(id){
-    
+    const response = { errorFlag: false, responseMessage: '', data: null }
     try {
-            const {data,error,status} = await axios.get(`${apiHost}survey/show-full/${id}`)
+            const {data,status} = await axios.get(`${apiHost}survey/show-full/${id}`)
             if(status==200){
                 response.data = data
 
@@ -80,6 +78,7 @@ export async function showFullSurvey(id){
 }
 
 export async function importSurveyFromExcel(payload) {
+    const response = { errorFlag: false, responseMessage: '', data: null }
     try {
         const { data, status } = await axios.post(`${apiHost}survey/import-excel`, payload)
         if (status === 202) { // Cambiado a 202 para consistencia con el batch job

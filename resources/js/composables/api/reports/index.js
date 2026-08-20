@@ -1,9 +1,8 @@
-// ... existing code ...
-export const getReportStructure = async (surveyId) => {
+export const getReportStructure = async (id) => {
     try {
-        const response = await axios.get(`/api/result/newReportStructure/${surveyId}`);
-        return { data: response.data, errorFlag: false };
-    } catch (error) {
-        return { data: null, errorFlag: true, message: error.message };
+        return await axios.get(`/api/result/newReportStructure/${id}`);
+    } catch (e) {
+        console.error(e);
+        return { data: null };
     }
 };

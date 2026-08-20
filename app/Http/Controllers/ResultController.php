@@ -246,6 +246,20 @@ class ResultController extends Controller
                 'categories.questions.answers' => fn($query) => $query->orderBy('order', 'asc'),
             ])->findOrFail($id);
 
+            $totalRespondent = DB::query()
+                ->fromSub(function ($query) use ($id) {
+                    $query->from('results as r')
+                        ->leftJoin('questions as q', 'q.id', '=', 'r.question_id')
+                        ->leftJoin('categories as c', 'c.id', '=', 'q.category_id')
+                        ->leftJoin('surveys as s', 's.id', '=', 'c.survey_id')
+                        ->where('s.id', $id)
+                        ->select('r.person_id')
+                        ->groupBy('r.person_id');
+                }, 'sub')
+                ->count();
+
+            $survey->total_respondent = $totalRespondent;
+
             // Consulta usando Eloquent con conteo de votos agrupado por respuesta
             $answersCount = Result::query()
                 ->join('questions as q', 'q.id', '=', 'results.question_id')

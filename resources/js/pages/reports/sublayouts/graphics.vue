@@ -59,9 +59,9 @@ watch(() => props.categories, (newVal) => {
 
 const getChartData = (question) => {
     return {
-        labels: question.answers.map(a => a.name),
+        labels: question.answers.map(a => a.name?.toUpperCase()),
         datasets: [{
-            label: question.name,          
+            label: question.name?.toUpperCase(),          
             data: question.answers.map(a => a.total_votes),
             backgroundColor: ['#3b82f6', '#3b15f6', '#3b8218', '#E582f6'],
             borderRadius: 4,

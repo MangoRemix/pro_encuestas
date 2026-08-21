@@ -103,6 +103,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('batch', [ResultController::class, 'storeBatch']);
         Route::get('batch-status/{batchId}', [ResultController::class, 'getBatchStatus']);
         Route::get('report/{surveyId}', [ResultController::class, 'reportCountAnswersByQuestion']);
+        Route::get('age-range/{surveyId}', [ResultController::class, 'getRespondentCountByAgeRange']);
         Route::get('show-all', [ResultController::class, 'index']);
         Route::get('show-one/{id}', [ResultController::class, 'show']);
         Route::put('update/{id}', [ResultController::class, 'update']);

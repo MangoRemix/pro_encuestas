@@ -39,7 +39,6 @@ class ResultController extends Controller
      */
     public function index()
     {
-        //
         return response()->json(Result::all(),200);
     }
 
@@ -48,10 +47,7 @@ class ResultController extends Controller
      */
     public function create(Request $request)
     {
-        //
         try {
-            //code...
-
             $validator = Validator::make($request->all(),$this->rules());
 
             if($validator->fails()){
@@ -69,7 +65,6 @@ class ResultController extends Controller
             ],201);
 
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
@@ -107,16 +102,13 @@ class ResultController extends Controller
      */
     public function show(int $id)
     {
-        //
         try {
-            //code...
             $result = Result::query()->where('id',$id)->first();
             if(!$result)
                 throw new Exception("Not found result register", 404);
                 
             return response()->json($result,200);
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
@@ -137,9 +129,7 @@ class ResultController extends Controller
      */
     public function update(Request $request, int $id)
     {
-        //
         try {
-            //code...
             $validator = Validator::make($request->all(),$this->updateRules());
 
             if($validator->fails()){
@@ -156,7 +146,6 @@ class ResultController extends Controller
                 "message" => "Actualización exitosa"
             ],200);
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
@@ -169,9 +158,7 @@ class ResultController extends Controller
      */
     public function destroy(int $id)
     {
-        //
         try {
-            //code...
             $result = Result::query()->where('id',$id)->first();
             if(!$result)
                 throw new Exception("Not found result register", 404);
@@ -183,7 +170,6 @@ class ResultController extends Controller
             ],200);
 
         } catch (\Throwable $th) {
-            //throw $th;
             return response()->json([
                 "error" => $th->getMessage(),
                 "code" => $th->getCode()
@@ -195,6 +181,29 @@ class ResultController extends Controller
     {
         $report = Cache::get("batch_status_{$batchId}");
         return response()->json(['report' => $report, 'finished' => !is_null($report)]);
+    }
+
+    public function getRespondentCountByAgeRange(Request $request, int $surveyId)
+    {
+        $min = $request->query('min');
+        $max = $request->query('max');
+
+        $query = Result::query()
+            ->join('persons as p', 'results.person_id', '=', 'p.id')
+            ->join('age_ranges as ar', 'p.age_range_id', '=', 'ar.id')
+            ->join('questions as q', 'results.question_id', '=', 'q.id')
+            ->join('categories as c', 'q.category_id', '=', 'c.id')
+            ->where('c.survey_id', $surveyId)
+            ->distinct('results.person_id');
+
+        if ($min !== null && $min !== '' && $min !== '*') {
+            $query->where('ar.init_range', '>=', (int)$min);
+        }
+        if ($max !== null && $max !== '' && $max !== '*') {
+            $query->where('ar.finish_range', '<=', (int)$max);
+        }
+
+        return response()->json(['count' => $query->count('results.person_id')]);
     }
 
     public function reportCountAnswersByQuestion(Request $request, int $surveyId)
@@ -260,7 +269,6 @@ class ResultController extends Controller
 
             $survey->total_respondent = $totalRespondent;
 
-            // Consulta usando Eloquent con conteo de votos agrupado por respuesta
             $answersCount = Result::query()
                 ->join('questions as q', 'q.id', '=', 'results.question_id')
                 ->join('categories as c', 'c.id', '=', 'q.category_id')
@@ -293,4 +301,3 @@ class ResultController extends Controller
         }
     }
 }
-

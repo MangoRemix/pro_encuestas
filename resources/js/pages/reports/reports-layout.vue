@@ -63,17 +63,21 @@
         <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
             <Graphics :categories="filteredCategories" />
         </div>
+        
+        <AgeRangeFilter v-if="survey_selected && reportData.total_respondent" :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent"/>
     </MainLayout>
 </template>
+
 <script setup>
+
 import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
 import { getReportStructure } from '@/composables/api/reports';
 import { Head, usePage } from '@inertiajs/vue3';
-import axios from 'axios';
 import { ref, onMounted, watch, computed } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
-import Graphics from './graphics.vue';
-import Table from './table.vue';
+import Graphics from './sublayouts/graphics.vue';
+import Table from './sublayouts/table.vue';
+import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
 
 const selectedSurvey = ref(null)
 const surveys = ref([])
@@ -128,7 +132,5 @@ const loadReport = async () => {
 };
 
 watch([selectedSurvey], loadReport, { deep: true });
+
 </script>
-<style scoped>
-    
-</style>

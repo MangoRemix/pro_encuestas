@@ -300,4 +300,41 @@ class ResultController extends Controller
             ], 500);
         }
     }
+
+    public function getRespondentCountBySex(Request $request, int $surveyId)
+    {
+        try {
+            $sexId = $request->query('sex_id');
+
+            $sql = "
+                SELECT
+                    p.sex_id,
+                    COUNT(DISTINCT r.person_id) as total_respondents
+                FROM results r
+                JOIN questions q ON q.id = r.question_id
+                JOIN categories c ON c.id = q.category_id
+                JOIN persons p ON p.id = r.person_id
+                WHERE c.survey_id = :survey_id
+            ";
+
+            $bindings = ['survey_id' => $surveyId];
+
+            if (!empty($sexId)) {
+                $sql .= " AND p.sex_id = :sex_id";
+                $bindings['sex_id'] = (int) $sexId;
+            }
+
+            $sql .= " GROUP BY p.sex_id ORDER BY p.sex_id ASC";
+
+            $results = DB::select($sql, $bindings);
+
+            return response()->json($results, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "error" => "No se pudo obtener el conteo de encuestados por sexo.",
+                "details" => $th->getMessage()
+            ], 500);
+        }
+    }
 }
+

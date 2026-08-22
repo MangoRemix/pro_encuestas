@@ -6,3 +6,14 @@ export const getReportStructure = async (id) => {
         return { data: null };
     }
 };
+
+export const getRespondentCountBySex = async (surveyId, sexId = null) => {
+    try {
+        const params = sexId ? { sex_id: sexId } : {};
+        return await axios.get(`/api/result/sex/${surveyId}`, { params });
+    } catch (e) {
+        console.error(e);
+        return { data: null };
+    }
+};
+

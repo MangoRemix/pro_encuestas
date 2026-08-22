@@ -51,7 +51,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::delete('delete/{id}', [AgeRangeController::class, 'destroy']);
     });
 
-    /** SURVEY RESOURCES */
+    /**SURVEY RESOURCES */
     Route::prefix('survey')->group(function (){
         Route::post('create', [SurveyController::class, 'store']);
         Route::post('import-excel', [SurveyImportController::class, 'importFromExcel']);
@@ -110,7 +110,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::put('update/{id}', [ResultController::class, 'update']);
         Route::delete('delete/{id}', [ResultController::class, 'destroy']);
         Route::get('newReportStructure/{id}', [ResultController::class, 'newReportStructure']);
-        
+        Route::get('parish/{surveyId}', [ResultController::class, 'getRespondentCountByParish']);
     });
 
     /** PARISH (Escritura protegida) */

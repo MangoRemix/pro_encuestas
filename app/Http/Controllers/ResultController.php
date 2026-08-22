@@ -336,5 +336,41 @@ class ResultController extends Controller
             ], 500);
         }
     }
+
+    public function getRespondentCountByParish(Request $request, int $surveyId)
+    {
+        try {
+            $parishId = $request->query('parish_id');
+
+            $sql = "
+                SELECT
+                    p.parish_id,
+                    COUNT(DISTINCT r.person_id) as total_respondents
+                FROM results r
+                JOIN questions q ON q.id = r.question_id
+                JOIN categories c ON c.id = q.category_id
+                JOIN persons p ON p.id = r.person_id
+                WHERE c.survey_id = :survey_id
+            ";
+
+            $bindings = ['survey_id' => $surveyId];
+
+            if (!empty($parishId)) {
+                $sql .= " AND p.parish_id = :parish_id";
+                $bindings['parish_id'] = (int) $parishId;
+            }
+
+            $sql .= " GROUP BY p.parish_id ORDER BY p.parish_id ASC";
+
+            $results = DB::select($sql, $bindings);
+
+            return response()->json($results, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "error" => "No se pudo obtener el conteo de encuestados por parroquia.",
+                "details" => $th->getMessage()
+            ], 500);
+        }
+    }
 }
 

@@ -17,3 +17,13 @@ export const getRespondentCountBySex = async (surveyId, sexId = null) => {
     }
 };
 
+export const getRespondentCountByParish = async (surveyId, parishId = null) => {
+    try {
+        const params = parishId ? { parish_id: parishId } : {};
+        return await axios.get(`/api/result/parish/${surveyId}`, { params });
+    } catch (e) {
+        console.error(e);
+        return { data: null };
+    }
+};
+

@@ -62,8 +62,9 @@
 
         <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
             <Graphics :categories="filteredCategories" />
-            <div v-if="survey_selected" class="mt-8">
+            <div v-if="survey_selected" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SexChart :survey-id="survey_selected.id" />
+                <ParishChart :survey-id="survey_selected.id" />
             </div>
 
             <AgeRangeFilter v-if="survey_selected && reportData.total_respondent" :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent"/>
@@ -84,6 +85,7 @@ import Graphics from './sublayouts/graphics.vue';
 import Table from './sublayouts/table.vue';
 import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
 import SexChart from './sublayouts/SexChart.vue';
+import ParishChart from './sublayouts/ParishChart.vue';
 
 const selectedSurvey = ref(null)
 const surveys = ref([])

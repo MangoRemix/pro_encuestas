@@ -1,40 +1,19 @@
 <template>
     <Head title="Reportes" />
     <MainLayout>
-        <div class="w-1/2 mx-auto">
-            <select v-model="selectedSurvey" name="" id="" class="inputs-form bg-white">
-                <option :value="0">
-
-                </option>
-                <option :value="survey.id" v-for="survey in surveys">
+        <div class="w-1/2 mx-auto space-y-6">
+            <select v-model="selectedSurvey" class="inputs-form bg-white w-full">
+                <option value=""></option>
+                <option v-for="survey in surveys" :key="survey.id" :value="survey.id">
                     {{ survey.name }}
                 </option>
             </select>
         </div>            
         <div class="flex items-center justify-around gap-x-3 mt-6 w-1/2 mx-auto text-white ">
-            
-            <div class="flex space-x-2.5 items-center">
-                <label for="">Tabla</label>
-                <input type="radio"
-                v-model="selected_radio"
-                value="table" name="reportType" id="">
-            </div>
-            
-            
-            <div class="flex space-x-2.5 items-center">
-                <label for="">Gráfica</label>
-                <input type="radio"
-                v-model="selected_radio"
-                value="graphics" name="reportType" id="">
-            </div>
-            
-            
-            <div class="flex space-x-2.5 items-center">
-                <label for="">Ambos</label>
-                <input type="radio"
-                v-model="selected_radio"
-                value="both" name="reportType" id="">
-            </div>
+            <label v-for="opt in reportTypes" :key="opt.value" class="flex space-x-2.5 items-center cursor-pointer">
+                <input type="radio" v-model="selected_radio" :value="opt.value" name="reportType">
+                <span>{{ opt.label }}</span>
+            </label>
         </div>
         <h2 class="text-xl lg:text-3xl text-white font-bold mt-8 mb-6 underline text-center">{{ survey_selected?.name }} </h2>
        
@@ -51,45 +30,41 @@
                 </option>
             </select>
         </div>
-        <div class="min-h-20 w-full flex flex-wrap gap-x-3 px-2 justify-center">
-            <div class="w-fit">
-                <button @click="category_selected = null" class="primary-button-app cursor-pointer">
+        <div class="min-h-20 w-full flex flex-wrap items-center gap-x-3 px-2 justify-center">
+                <div class="w-20">
+                    <button @click="category_selected = null" class="primary-button-app cursor-pointer">
                     TODAS
                 </button>
+                </div>
+                <div class="min-w-fit" v-for="category in categories" :key="category.id">
+                    <button @click="category_selected = category.name" class="primary-button-app cursor-pointer">
+                        {{ category.name }}
+                    </button>
+                </div>
             </div>
-            <div class="w-fit" v-for="category in categories">
-                <button @click="category_selected = category.name" class="primary-button-app cursor-pointer">
-                    {{ category.name }}
-                </button>
-            </div>
-        </div>
 
-        <div v-if="selected_radio === 'table' || selected_radio === 'both'">
+        <div v-if="['table', 'both'].includes(selected_radio)">
             <Table :categories="filteredCategories" />
         </div>
 
-        <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
-            <template v-if="selected_graphic === 'all' || selected_graphic === 'graphics'">
+        <div v-if="['graphics', 'both'].includes(selected_radio)">
+            <template v-if="['all', 'graphics'].includes(selected_graphic)">
             <Graphics :categories="filteredCategories" :total-respondent="reportData.total_respondent" />
 </template>
 
-            
-
             <div v-if="survey_selected" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <template v-if="selected_graphic === 'all' || selected_graphic === 'sexchart'">
+                <template v-if="['all', 'sexchart'].includes(selected_graphic)">
                     <SexChart :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent" />
                 </template>
-                <template v-if="selected_graphic === 'all' || selected_graphic === 'parishchart'">
+                <template v-if="['all', 'parishchart'].includes(selected_graphic)">
                     <ParishChart :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent" />
                 </template>
             </div>
 
-            <template v-if="(selected_graphic === 'all' || selected_graphic === 'agerangechart') && survey_selected && reportData.total_respondent">
+            <template v-if="['all', 'agerangechart'].includes(selected_graphic) && survey_selected && reportData.total_respondent">
                 <AgeRangeFilter :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent"/>
             </template>
         </div>
-        
-
     </MainLayout>
 </template>
 
@@ -109,12 +84,18 @@ import ParishChart from './sublayouts/ParishChart.vue';
 const selectedSurvey = ref(null)
 const surveys = ref([])
 const categories = ref([])
-const category_selected = ref()
+const category_selected = ref(null)
 const survey_selected = ref(null)
 const selected_radio = ref('table')
 const page = usePage()
 
 const reportData = ref([]);
+
+const reportTypes = [
+    { label: 'Tabla', value: 'table' },
+    { label: 'Gráfica', value: 'graphics' },
+    { label: 'Ambos', value: 'both' }
+];
 
 const filteredCategories = computed(() => {
     if (!category_selected.value) return reportData.value.categories || [];
@@ -136,25 +117,15 @@ const selected_graphic = ref('all')
 
 onMounted(async () => {
     try {
-        
-        surveys.value = await allSurveys()
-        
+        const { data } = await getSurveys({ all: true });
+        if (data?.length) {
+            surveys.value = data;
+            //selectedSurvey.value = data[0].id;
+        }
     } catch (e) {
         console.error("Error cargando reporte:", e);
     }
 });
-
-const allSurveys = async ()=>{
-    
-    const {data,errorFlag,responseMessage} = await getSurveys({all:true})
-    if(data){
-        
-        selectedSurvey.value = data[0]
-        return data
-    }else{
-        return []
-    }
-}
 
 const loadReport = async () => {
     if (!selectedSurvey.value) return;
@@ -169,6 +140,6 @@ const loadReport = async () => {
     }
 };
 
-watch([selectedSurvey], loadReport, { deep: true });
+watch(selectedSurvey, loadReport, { immediate: true });
 
 </script>

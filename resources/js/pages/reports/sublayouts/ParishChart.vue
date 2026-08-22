@@ -8,7 +8,16 @@
             x-scale-color="#ffffff"
             y-scale-color="#ffffff"
             :chart-data="chartData"
-            :chart-options="{ maintainAspectRatio: false, responsive: true }"
+            :chart-options="{
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }"
         />
     </div>
 </template>
@@ -18,11 +27,14 @@ import { ref, watch } from 'vue';
 import BarChart from '@/components/Charts/BarChart.vue';
 import { getRespondentCountByParish } from '@/composables/api/reports';
 
-const props = defineProps({ surveyId: Number });
+const props = defineProps({
+    surveyId: Number,
+    totalRespondent: Number
+});
 const chartData = ref(null);
 
 const loadData = async () => {
-    if (!props.surveyId) return;
+    if (!props.surveyId || !props.totalRespondent) return;
     const { data } = await getRespondentCountByParish(props.surveyId);
     if (data) {
         const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
@@ -30,8 +42,8 @@ const loadData = async () => {
         chartData.value = {
             labels: data.map(item => `Parroquia ${item.parish_id}`),
             datasets: [{
-                label: 'Total Encuestados',
-                data: data.map(item => item.total_respondents),
+                label: '% del Total',
+                data: data.map(item => ((item.total_respondents / props.totalRespondent) * 100).toFixed(2)),
                 backgroundColor: data.map((_, index) => colors[index % colors.length]),
                 borderRadius: 4,
             }]
@@ -39,5 +51,6 @@ const loadData = async () => {
     }
 };
 
-watch(() => props.surveyId, loadData, { immediate: true });
+watch(() => [props.surveyId, props.totalRespondent], loadData, { immediate: true });
 </script>
+

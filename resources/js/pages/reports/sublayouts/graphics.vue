@@ -19,7 +19,11 @@
                         maintainAspectRatio: false,
                         responsive: true,
                         scales: {
-                            x: { ticks: { font: { size: 14, weight: 'bold' } } },
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: { font: { size: 14, weight: 'bold' } }
+                            },
                             y: { ticks: { font: { size: 14, weight: 'bold' } } }
                         },
                         plugins: {
@@ -50,6 +54,10 @@ const props = defineProps({
     categories: {
         type: Array,
         default: () => []
+    },
+    totalRespondent: {
+        type: Number,
+        default: 0
     }
 });
 
@@ -61,8 +69,12 @@ const getChartData = (question) => {
     return {
         labels: question.answers.map(a => a.name?.toUpperCase()),
         datasets: [{
-            label: question.name?.toUpperCase(),          
-            data: question.answers.map(a => a.total_votes),
+            label: '% del Total',
+            data: question.answers.map(a =>
+                props.totalRespondent > 0
+                    ? ((a.total_votes / props.totalRespondent) * 100).toFixed(2)
+                    : 0
+            ),
             backgroundColor: ['#3b82f6', '#3b15f6', '#3b8218', '#E582f6'],
             borderRadius: 4,
         }]

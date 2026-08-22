@@ -70,15 +70,17 @@
 
         <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
             <template v-if="selected_graphic === 'all' || selected_graphic === 'graphics'">
-            <Graphics :categories="filteredCategories" />
+            <Graphics :categories="filteredCategories" :total-respondent="reportData.total_respondent" />
 </template>
+
+            
 
             <div v-if="survey_selected" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <template v-if="selected_graphic === 'all' || selected_graphic === 'sexchart'">
-                    <SexChart :survey-id="survey_selected.id" />
+                    <SexChart :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent" />
                 </template>
                 <template v-if="selected_graphic === 'all' || selected_graphic === 'parishchart'">
-                    <ParishChart :survey-id="survey_selected.id" />
+                    <ParishChart :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent" />
                 </template>
             </div>
 

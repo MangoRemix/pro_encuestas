@@ -43,6 +43,14 @@
             <span>Total encuestados: {{ reportData.total_respondent }}</span>
         </div>
 
+        <!-- Dropdown de selección de gráficas -->
+        <div class="w-1/2 mx-auto my-6">
+            <select v-model="selected_graphic" class="inputs-form bg-white w-full">
+                <option v-for="option in graphicOptions" :key="option.component" :value="option.component">
+                    {{ option.name }}
+                </option>
+            </select>
+        </div>
         <div class="min-h-20 w-full flex flex-wrap gap-x-3 px-2 justify-center">
             <div class="w-fit">
                 <button @click="category_selected = null" class="primary-button-app cursor-pointer">
@@ -61,16 +69,25 @@
         </div>
 
         <div v-if="selected_radio === 'graphics' || selected_radio === 'both'">
+            <template v-if="selected_graphic === 'all' || selected_graphic === 'graphics'">
             <Graphics :categories="filteredCategories" />
+</template>
+
             <div v-if="survey_selected" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SexChart :survey-id="survey_selected.id" />
-                <ParishChart :survey-id="survey_selected.id" />
+                <template v-if="selected_graphic === 'all' || selected_graphic === 'sexchart'">
+                    <SexChart :survey-id="survey_selected.id" />
+                </template>
+                <template v-if="selected_graphic === 'all' || selected_graphic === 'parishchart'">
+                    <ParishChart :survey-id="survey_selected.id" />
+                </template>
             </div>
 
-            <AgeRangeFilter v-if="survey_selected && reportData.total_respondent" :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent"/>
+            <template v-if="(selected_graphic === 'all' || selected_graphic === 'agerangechart') && survey_selected && reportData.total_respondent">
+                <AgeRangeFilter :survey-id="survey_selected.id" :total-respondent="reportData.total_respondent"/>
+            </template>
         </div>
         
-        
+
     </MainLayout>
 </template>
 
@@ -103,6 +120,17 @@ const filteredCategories = computed(() => {
         c => c.name === category_selected.value
     );
 });
+
+const graphicOptions = [
+    { name: 'Todas las gráficas', component: 'all' },
+    { name: 'Categorías', component: 'graphics' },
+    { name: 'Sexo', component: 'sexchart' },
+    { name: 'Parroquias', component: 'parishchart' },
+    { name: 'Rangos de edad', component: 'agerangechart' }
+];
+
+const selected_graphic = ref('all')
+
 
 onMounted(async () => {
     try {

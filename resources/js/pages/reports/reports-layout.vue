@@ -1,56 +1,57 @@
 <template>
     <Head title="Reportes" />
     <MainLayout>
-        <div class="w-1/2 mx-auto space-y-6">
-            <select v-model="selectedSurvey" class="inputs-form bg-white w-full">
-                <option value=""></option>
+        <div class="w-full max-w-4xl mx-auto space-y-6">
+            <div class="bg-white p-3 rounded-2xl shadow-sm flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-62.5">
+                    <select v-model="selectedSurvey" class="w-full rounded-lg border-slate-200 text-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Seleccione una encuesta</option>
                 <option v-for="survey in surveys" :key="survey.id" :value="survey.id">
                     {{ survey.name }}
                 </option>
             </select>
         </div>            
-        <div class="flex items-center justify-around gap-x-3 mt-6 w-1/2 mx-auto text-white ">
-            <label v-for="opt in reportTypes" :key="opt.value" class="flex space-x-2.5 items-center cursor-pointer">
-                <input type="radio" v-model="selected_radio" :value="opt.value" name="reportType">
-                <span>{{ opt.label }}</span>
+
+                <div class="flex items-center gap-x-4">
+                    <label v-for="opt in reportTypes" :key="opt.value" class="flex items-center gap-2 cursor-pointer text-slate-600 font-medium">
+                        <input type="radio" v-model="selected_radio" :value="opt.value" name="reportType" class="text-indigo-600 focus:ring-indigo-500">
+                        {{ opt.label }}
             </label>
         </div>
-        <h2 class="text-xl lg:text-3xl text-white font-bold mt-8 mb-6 underline text-center">{{ survey_selected?.name }} </h2>
-       
-        <div v-if="survey_selected" class="text-white font-semibold text-center">
-            <h4 class="text-xl lg:text-2xl">Categorías</h4>
-            <span>Total encuestados: {{ reportData.total_respondent }}</span>
         </div>
-
+        </div>
+        <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
+       
         <!-- Dropdown de selección de gráficas -->
-        <div class="w-1/2 mx-auto my-6">
-            <select v-model="selected_graphic" class="inputs-form bg-white w-full">
+        <div class="w-fit flex items-center gap-x-3 max-w-2xl mx-auto my-6 bg-white p-4 rounded-xl shadow-sm">
+            <span class="text-sm font-semibold opacity-75">Total encuestados: {{ reportData.total_respondent }}</span>
+            <select v-model="selected_graphic" class="border-none focus:ring-0 text-slate-700">
                 <option v-for="option in graphicOptions" :key="option.component" :value="option.component">
                     {{ option.name }}
                 </option>
             </select>
         </div>
-        <div class="min-h-20 w-full flex flex-wrap items-center gap-x-3 px-2 justify-center">
-                <div class="w-20">
-                    <button @click="category_selected = null" class="primary-button-app cursor-pointer">
-                    TODAS
-                </button>
-                </div>
-                <div class="min-w-fit" v-for="category in categories" :key="category.id">
-                    <button @click="category_selected = category.name" class="primary-button-app cursor-pointer">
-                        {{ category.name }}
-                    </button>
-                </div>
-            </div>
-
-        <div v-if="['table', 'both'].includes(selected_radio)">
-            <Table :categories="filteredCategories" />
+        <div class="w-full mx-auto flex justify-center">
+            <CategoryFilter
+                :categories="categories"
+                v-model="category_selected"
+            />
         </div>
 
-        <div v-if="['graphics', 'both'].includes(selected_radio)">
+        <div v-if="['table', 'both'].includes(selected_radio)" class="">
+            <Transition name="fade" mode="out-in">
+                <div class="text-slate-800">
+            <Table :categories="filteredCategories" />
+                </div>
+            </Transition>
+        </div>
+
+        <div v-if="['graphics', 'both'].includes(selected_radio)" class="mt-6 space-y-6">
+            <Transition name="fade" mode="out-in">
             <template v-if="['all', 'graphics'].includes(selected_graphic)">
             <Graphics :categories="filteredCategories" :total-respondent="reportData.total_respondent" />
 </template>
+            </Transition>
 
             <div v-if="survey_selected" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <template v-if="['all', 'sexchart'].includes(selected_graphic)">
@@ -80,6 +81,7 @@ import Table from './sublayouts/table.vue';
 import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
 import SexChart from './sublayouts/SexChart.vue';
 import ParishChart from './sublayouts/ParishChart.vue';
+import CategoryFilter from '@/components/CategoryFilter.vue';
 
 const selectedSurvey = ref(null)
 const surveys = ref([])
@@ -143,3 +145,16 @@ const loadReport = async () => {
 watch(selectedSurvey, loadReport, { immediate: true });
 
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
+

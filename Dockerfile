@@ -35,14 +35,16 @@ RUN npm ci --ignore-scripts
 # Copy full source
 COPY . .
 
-# Create a minimal .env so artisan can bootstrap (no real DB needed for wayfinder)
-RUN cp .env.example .env \
-    && sed -i 's|DB_CONNECTION=.*|DB_CONNECTION=sqlite|' .env \
-    && sed -i 's|DB_HOST=.*||' .env \
-    && echo "DB_DATABASE=/tmp/temp.sqlite" >> .env \
-    && php artisan key:generate --force
+# Write a clean minimal .env — use openssl for APP_KEY (avoids artisan bootstrap issues)
+# SQLite in-memory: no real DB needed just for wayfinder type generation
+RUN APP_KEY="base64:$(openssl rand -base64 32)" \
+    && printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=false\nDB_CONNECTION=sqlite\nDB_DATABASE=/tmp/temp.sqlite\nSESSION_DRIVER=array\nCACHE_STORE=array\nQUEUE_CONNECTION=sync\nFILESYSTEM_DISK=local\nLOG_CHANNEL=stderr\n" "$APP_KEY" > .env \
+    && touch /tmp/temp.sqlite
 
-# Build frontend assets (wayfinder will call php artisan internally)
+# Pre-generate wayfinder route types so the Vite plugin finds them already done
+RUN php artisan wayfinder:generate --with-form || true
+
+# Build frontend assets
 RUN npm run build
 
 

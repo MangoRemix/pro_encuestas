@@ -67,3 +67,22 @@ export function useAnswers() {
 
     return { loading, error, message, getAnswersByQuestion, deleteAnswer, createManyAnswers, updateAnswer };
 }
+
+// ── Standalone named exports ─────────────────────────────────────────────────
+// step-3.vue imports these directly (not via useAnswers()).
+// They mirror the functions inside useAnswers() without reactive state.
+
+export async function getAnswersByQuestion(questionId) {
+    const { data } = await axios.get(`${apiHost}answer/show-by-question/${questionId}`);
+    return { data: data.answers || [] };
+}
+
+export async function updateAnswer(id, payload) {
+    const { data } = await axios.put(`${apiHost}answer/update/${id}`, payload);
+    return { success: true, data };
+}
+
+export async function createManyAnswers(payload) {
+    const { data } = await axios.post(`${apiHost}answer/create-many`, payload);
+    return { success: true, data };
+}

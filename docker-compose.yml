@@ -5,8 +5,12 @@ services:
       dockerfile: Dockerfile
       target: production
     environment:
+      DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
+      DB_DATABASE: encuestas
+      DB_USERNAME: postgres
+      DB_PASSWORD: secret
     ports:
       - "80"
     volumes:
@@ -20,13 +24,13 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-encuestas}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: encuestas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-encuestas}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d encuestas"]
       interval: 5s
       timeout: 5s
       retries: 10

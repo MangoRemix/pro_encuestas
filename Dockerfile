@@ -27,7 +27,8 @@ RUN composer install \
     --no-progress \
     --no-scripts \
     --prefer-dist \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --ignore-platform-reqs
 
 # ============================================================
 # Stage 3: Production image
@@ -42,6 +43,8 @@ RUN apk add --no-cache \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
+    libzip-dev \
+    libxml2-dev \
     zip \
     unzip \
     git \
@@ -58,7 +61,13 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         opcache \
         pcntl \
         bcmath \
-        gd
+        gd \
+        zip \
+        xml \
+        simplexml \
+        dom \
+        mbstring \
+        intl
 
 # Configure PHP-FPM to use unix socket
 RUN echo '[www]' > /usr/local/etc/php-fpm.d/www.conf \

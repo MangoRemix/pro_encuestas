@@ -1,0 +1,54 @@
+services:
+  # ─────────────────────────────────────────────
+  # Aplicación Laravel
+  # ─────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "${APP_PORT:-8080}:80"
+    env_file:
+      - .env
+    environment:
+      # Sobreescribir host de la DB para que apunte al servicio interno
+      DB_HOST: db
+      DB_PORT: 5432
+    volumes:
+      # Env montado como writable para que entrypoint pueda escribir APP_KEY
+      - ./.env:/var/www/html/.env
+      # Persistir uploads de archivos entre reinicios
+      - app_storage:/var/www/html/storage/app
+      # Persistir logs
+      - app_logs:/var/www/html/storage/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────
+  # Base de datos PostgreSQL
+  # ─────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-encuestas}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-encuestas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "${DB_PORT_EXPOSE:-5433}:5432"
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  app_storage:
+  app_logs:

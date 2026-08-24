@@ -4,7 +4,7 @@
         <div class="w-full max-w-4xl mx-auto space-y-6">
             <div class="bg-white p-3 rounded-2xl shadow-sm flex flex-wrap gap-4 items-center">
                 <div class="flex-1 min-w-62.5">
-                    <select v-model="selectedSurvey" class="w-full rounded-lg border-slate-200 text-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
+                    <select v-model="selectedSurvey" class="w-full rounded-lg border-slate-200 text-slate-700 focus:ring-blue-600 focus:border-indigo-600">
                         <option value="">Seleccione una encuesta</option>
                 <option v-for="survey in surveys" :key="survey.id" :value="survey.id">
                     {{ survey.name }}
@@ -31,6 +31,7 @@
                 </option>
             </select>
         </div>
+        
         <div class="w-full mx-auto flex justify-center">
             <CategoryFilter
                 :categories="categories"

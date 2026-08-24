@@ -5,8 +5,8 @@
             :class="[
                 'px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',
                 !modelValue 
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-400'
+                    ? 'bg-blue-800 text-white border-blue-800 shadow-md' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400'
             ]"
         >
             Todas
@@ -19,8 +19,8 @@
             :class="[
                 'px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',
                 modelValue === category.name 
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-400'
+                    ? 'bg-blue-800 text-white border-blue-800 shadow-md' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400'
             ]"
         >
             {{ category.name }}

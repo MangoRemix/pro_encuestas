@@ -25,7 +25,7 @@ class SexSeeder extends Seeder
     {
         //
         foreach ($this->values as $sex) {
-            DB::table('sexs')->insert($sex);
+            DB::table('sexes')->insert($sex);
         }
     }
 }

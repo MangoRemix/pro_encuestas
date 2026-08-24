@@ -90,7 +90,7 @@ fi
 if [ "$FRESH" = true ]; then
     echo ""
     echo -e "${YELLOW}⚠️  Modo --fresh: eliminando volumes existentes...${NC}"
-    docker compose down -v --remove-orphans 2>/dev/null || true
+    docker compose -f docker-compose.local.yml down -v --remove-orphans 2>/dev/null || true
     echo -e "${GREEN}✓ Volumes eliminados${NC}"
 fi
 
@@ -99,11 +99,11 @@ echo ""
 echo -e "${BLUE}🔨 Construyendo imagen Docker...${NC}"
 echo -e "${YELLOW}   (Primera vez puede tardar 3-5 min)${NC}"
 echo ""
-docker compose build --no-cache 2>&1 | grep -E "(Step|=>|Error|error|Successfully)" || true
+docker compose -f docker-compose.local.yml build --no-cache 2>&1 | grep -E "(Step|=>|Error|error|Successfully)" || true
 
 echo ""
 echo -e "${BLUE}🚀 Arrancando servicios...${NC}"
-docker compose up -d
+docker compose -f docker-compose.local.yml up -d
 
 # ── Esperar que la app esté lista ────────────────────
 echo ""
@@ -115,7 +115,7 @@ until curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 | grep -qE "^
     WAITED=$((WAITED + 3))
     if [ $WAITED -ge $MAX_WAIT ]; then
         echo -e "${RED}❌ La app no respondió en $MAX_WAIT segundos.${NC}"
-        echo -e "${YELLOW}Revisa los logs con: docker compose logs -f app${NC}"
+        echo -e "${YELLOW}Revisa los logs con: docker compose -f docker-compose.local.yml logs -f app${NC}"
         exit 1
     fi
     echo -e "   Esperando... ${WAITED}s"
@@ -131,8 +131,8 @@ echo -e "  🌐 App:      ${BLUE}http://localhost:8080${NC}"
 echo -e "  🗄️  DB:       ${BLUE}localhost:5433${NC} (postgres/secret)"
 echo ""
 echo -e "  📋 Comandos útiles:"
-echo -e "     ${YELLOW}docker compose logs -f app${NC}     → Ver logs"
-echo -e "     ${YELLOW}docker compose exec app sh${NC}     → Entrar al contenedor"
-echo -e "     ${YELLOW}docker compose down${NC}            → Apagar"
+echo -e "     ${YELLOW}docker compose -f docker-compose.local.yml logs -f app${NC}     → Ver logs"
+echo -e "     ${YELLOW}docker compose -f docker-compose.local.yml exec app sh${NC}     → Entrar al contenedor"
+echo -e "     ${YELLOW}docker compose -f docker-compose.local.yml down${NC}            → Apagar"
 echo -e "     ${YELLOW}bash setup.sh --fresh${NC}          → Reinstalar todo"
 echo ""

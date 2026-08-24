@@ -11,10 +11,6 @@ services:
       - "${APP_PORT:-8080}:80"
     env_file:
       - .env
-    environment:
-      # Sobreescribir host de la DB para que apunte al servicio interno
-      DB_HOST: db
-      DB_PORT: 5432
     volumes:
       # Env montado como writable para que entrypoint pueda escribir APP_KEY
       - ./.env:/var/www/html/.env

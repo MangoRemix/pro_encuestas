@@ -4,13 +4,36 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
     ports:
       - "80"
     volumes:
       - app_storage:/var/www/html/storage/app
       - app_logs:/var/www/html/storage/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-encuestas}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-encuestas}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
 
 volumes:
+  db_data:
   app_storage:
   app_logs:

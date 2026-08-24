@@ -70,31 +70,32 @@ RUN composer install \
 # ============================================================
 FROM php:8.3-fpm-alpine AS production
 
-# Install system utilities (nginx, supervisor, bash)
+# Install system dependencies and dev libraries required for PHP extensions
 RUN apk add --no-cache \
     nginx \
     supervisor \
+    libpq-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    icu-dev \
+    oniguruma-dev \
     zip \
     unzip \
     git \
     curl \
-    bash \
-    && rm -rf /var/cache/apk/*
+    bash
 
-# Use install-php-extensions for reliable PHP extension installation.
-# This script automatically resolves all Alpine system deps per extension.
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions \
-    && install-php-extensions \
+# Install PHP extensions using standard docker-php-ext-install
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
         pdo_pgsql \
         opcache \
         pcntl \
         bcmath \
         gd \
         zip \
-        xml \
-        simplexml \
-        dom \
         mbstring \
         intl
 

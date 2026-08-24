@@ -1,17 +1,50 @@
 # ============================================================
-# Stage 1: Build frontend assets (Node.js)
+# Stage 1: Build frontend assets
+# Needs both Node.js AND PHP because @laravel/vite-plugin-wayfinder
+# runs "php artisan wayfinder:generate" during the Vite build.
 # ============================================================
-FROM node:20-alpine AS node-builder
+FROM php:8.3-fpm-alpine AS node-builder
+
+# Install Node.js 20 + npm on top of PHP alpine
+RUN apk add --no-cache nodejs npm
 
 WORKDIR /app
 
-# Copy package files first for better layer caching
+# Install PHP extensions needed for artisan to bootstrap
+RUN apk add --no-cache libpq-dev libzip-dev libxml2-dev \
+    && docker-php-ext-install pdo pdo_pgsql zip
+
+# Install Composer
+COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+
+# Install PHP dependencies (needed for artisan bootstrap)
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --no-scripts \
+    --prefer-dist \
+    --optimize-autoloader \
+    --ignore-platform-reqs
+
+# Install Node dependencies
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
-# Copy source and build
+# Copy full source
 COPY . .
+
+# Create a minimal .env so artisan can bootstrap (no real DB needed for wayfinder)
+RUN cp .env.example .env \
+    && sed -i 's|DB_CONNECTION=.*|DB_CONNECTION=sqlite|' .env \
+    && sed -i 's|DB_HOST=.*||' .env \
+    && echo "DB_DATABASE=/tmp/temp.sqlite" >> .env \
+    && php artisan key:generate --force
+
+# Build frontend assets (wayfinder will call php artisan internally)
 RUN npm run build
+
 
 # ============================================================
 # Stage 2: Install PHP dependencies (Composer)

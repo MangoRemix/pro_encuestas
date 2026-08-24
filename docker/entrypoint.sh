@@ -11,14 +11,19 @@ echo ""
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# ── 2. Generar APP_KEY si no está configurada ────────
-if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:CHANGE_ME_RUN_php_artisan_key_generate" ]; then
-    echo "🔑 APP_KEY no encontrada, generando automáticamente..."
-    php artisan key:generate --force
-    # Recargar la variable desde el .env que acabamos de escribir
-    APP_KEY=$(grep "^APP_KEY=" /var/www/html/.env | cut -d '=' -f2-)
-    export APP_KEY
-    echo "   APP_KEY generada ✓"
+# ── 2. Verificar APP_KEY ─────────────────────────────
+# En Coolify/producción la APP_KEY se inyecta como variable de entorno.
+# En local (docker-compose + setup.sh) ya viene en el .env montado.
+if [ -z "$APP_KEY" ]; then
+    echo "⚠️  APP_KEY no encontrada."
+    # Solo intentar generar si existe el .env (entorno local)
+    if [ -f "/var/www/html/.env" ]; then
+        echo "🔑 Generando APP_KEY automáticamente..."
+        php artisan key:generate --force
+    else
+        echo "❌ ERROR: APP_KEY es requerida. Configúrala como variable de entorno."
+        exit 1
+    fi
 else
     echo "🔑 APP_KEY configurada ✓"
 fi
@@ -27,16 +32,27 @@ fi
 echo "⏳ Esperando conexión a la base de datos..."
 MAX_RETRIES=30
 RETRY=0
-until php artisan db:show --no-interaction 2>/dev/null | grep -q "pgsql" || [ $RETRY -eq $MAX_RETRIES ]; do
+until php -r "
+    try {
+        \$pdo = new PDO(
+            'pgsql:host=${DB_HOST};port=${DB_PORT:-5432};dbname=${DB_DATABASE}',
+            '${DB_USERNAME}',
+            '${DB_PASSWORD}'
+        );
+        exit(0);
+    } catch (Exception \$e) {
+        exit(1);
+    }
+" 2>/dev/null; do
     RETRY=$((RETRY + 1))
-    echo "   Intento $RETRY/$MAX_RETRIES..."
-    sleep 2
+    if [ $RETRY -ge $MAX_RETRIES ]; then
+        echo "❌ No se pudo conectar a la base de datos después de $MAX_RETRIES intentos."
+        echo "   Verifica DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD."
+        exit 1
+    fi
+    echo "   Intento $RETRY/$MAX_RETRIES — esperando 3s..."
+    sleep 3
 done
-
-if [ $RETRY -eq $MAX_RETRIES ]; then
-    echo "❌ No se pudo conectar a la base de datos. Verifica DB_HOST, DB_PORT, DB_USERNAME y DB_PASSWORD."
-    exit 1
-fi
 echo "   Base de datos lista ✓"
 
 # ── 4. Migraciones y seeders ─────────────────────────

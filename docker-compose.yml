@@ -12,8 +12,6 @@ services:
     env_file:
       - .env
     volumes:
-      # Env montado como writable para que entrypoint pueda escribir APP_KEY
-      - ./.env:/var/www/html/.env
       # Persistir uploads de archivos entre reinicios
       - app_storage:/var/www/html/storage/app
       # Persistir logs

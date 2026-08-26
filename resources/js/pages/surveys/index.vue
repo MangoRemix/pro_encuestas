@@ -4,7 +4,7 @@
         <div class=" text-center">
             <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas</h2>
         </div>
-        <div class="w-full flex justify-between items-center mb-6">
+        <div class="w-full flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div class="w-full md:w-80">
                 <input
                     v-model="searchQuery"
@@ -13,29 +13,55 @@
                     class="w-full px-4 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 transition-all"
                 />
             </div>
-            <div class="flex gap-2">
+            <div class="flex w-full md:w-auto gap-2">
                 <button
                     @click="importSurvey"
                     :disabled="isProcessing"
-                    class="flex items-center rounded px-4 py-2 text-white bg-green-600 hover:bg-green-500 font-medium transition-colors disabled:opacity-50"
+                    class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-green-600 hover:bg-green-500 font-medium transition-colors disabled:opacity-50"
                 >
                     <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
                     <Icon v-else class="text-xl mr-2" icon="ic:outline-file-upload" />
-                    {{ isProcessing ? 'Importando...' : 'Importar Excel' }}
+                    {{ isProcessing ? 'Importando...' : 'Importar' }}
                 </button>
                 <button
                     @click="idSurveyToEdit=0; isModalOpen=true;"
-                    class="flex items-center rounded px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-500 font-medium transition-colors"
+                    class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-500 font-medium transition-colors"
                 >
                     <Icon class="text-xl mr-2" icon="ic:outline-plus" />
-                    Crear encuesta
+                    Crear
                 </button>
             </div>
         </div>
 
-        <!-- Nueva tabla -->
+        <!-- Vista Móvil: Tarjetas -->
+        <div class="md:hidden space-y-4">
+            <div v-for="survey in filteredSurveys" :key="survey.id" class="bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-sm">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-white text-lg">{{ survey.name }}</h3>
+                    <span class="text-xs font-semibold bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
+                        {{ survey.results_count }} respuestas
+                    </span>
+                </div>
+                <div class="text-sm text-slate-400 space-y-1 mb-4">
+                    <p>Inicio: {{ formatedDate(survey.init_date) }}</p>
+                    <p>Fin: {{ formatedDate(survey.finish_date) }}</p>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+                    <Link :href="`/surveys/details/${survey.id}`" class="p-3 text-blue-400 hover:bg-slate-700 rounded-lg">
+                        <Icon class="text-2xl" icon="ic:baseline-remove-red-eye"/>
+                    </Link>
+                    <button @click="idSurveyToEdit=survey.id; isModalOpen=true;" class="p-3 text-yellow-500 hover:bg-slate-700 rounded-lg">
+                        <Icon class="text-2xl" icon="ic:baseline-edit"/>
+                    </button>
+                    <button class="p-3 text-red-500 hover:bg-slate-700 rounded-lg">
+                        <Icon class="text-2xl" icon="ic:baseline-restore-from-trash"/>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-        <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+        <!-- Vista Escritorio: Tabla -->
+        <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>

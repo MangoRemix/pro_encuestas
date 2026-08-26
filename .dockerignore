@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+.gitattributes
+.github
+
+# Dependencias (se instalan en el build)
+node_modules
+vendor
+
+# Assets compilados (se compilan en el build)
+public/build
+public/hot
+
+# Entorno local
+.env
+.env.*
+!.env.example
+
+# Logs
+storage/logs/*
+*.log
+
+# Cache
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+
+# IDE y herramientas de desarrollo
+.idea
+.vscode
+.fleet
+.nova
+.zed
+.phpactor.json
+.phpunit.result.cache
+.phpunit.cache
+
+# Tests
+tests
+
+# Documentación
+README.md
+CHANGELOG.md
+
+# Docker
+docker-compose.yml
+docker-compose.override.yml
+setup.sh

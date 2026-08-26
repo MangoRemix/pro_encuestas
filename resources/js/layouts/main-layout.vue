@@ -27,7 +27,7 @@
             <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 md:h-25 md:w-25 mx-auto border-2 border-white" alt="">
         </div>
 
-        <div class="w-full xl:w-7xl min-h-screen mx-auto mt-4 px-4">
+        <div class="w-full md:w-7xl 2xl:w-8/12 min-h-screen mx-auto mt-4 px-4">
             <slot />
         </div>
     </div>

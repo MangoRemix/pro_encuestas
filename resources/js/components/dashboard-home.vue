@@ -3,7 +3,7 @@
 
 
 
-    <div class="max-w-7xl mx-auto p-4 md:p-0">
+    <div class="mx-auto p-4 md:p-0">
         <h1 class="text-2xl md:text-3xl text-slate-100 font-bold mb-6 md:mb-8 text-center">Resumen de encuestas</h1>
 
 

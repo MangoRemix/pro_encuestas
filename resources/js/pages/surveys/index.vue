@@ -4,75 +4,65 @@
         <div class=" text-center">
             <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas</h2>
         </div>
-        <div class="w-full flex justify-between items-center mb-3">
-            <div class="w-1/3 ">
-                <input v-model="searchQuery" type="text" class="inputs-form bg-white">
+        <div class="w-full flex justify-between items-center mb-6">
+            <div class="w-full md:w-80">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Buscar encuesta..."
+                    class="w-full px-4 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 transition-all"
+                />
             </div>
             <div class="flex gap-2">
                 <button
                     @click="importSurvey"
                     :disabled="isProcessing"
-                    class="flex items-center rounded-full text-white bg-green-600 cursor-pointer hover:bg-green-500 h-9 px-4 font-bold disabled:opacity-50"
+                    class="flex items-center rounded px-4 py-2 text-white bg-green-600 hover:bg-green-500 font-medium transition-colors disabled:opacity-50"
                 >
                     <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-                    <Icon v-else class="text-xl mr-1" icon="ic:outline-file-upload" />
+                    <Icon v-else class="text-xl mr-2" icon="ic:outline-file-upload" />
                     {{ isProcessing ? 'Importando...' : 'Importar Excel' }}
                 </button>
-                <button class="flex  items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
-                    <Link href="/surveys/create-survey/step-1" class="flex items-center">
-                        <Icon class="text-2xl " icon="ic:outline-plus" />
-                        Crear encuesta
-                    </Link>
+                <button
+                    @click="idSurveyToEdit=0; isModalOpen=true;"
+                    class="flex items-center rounded px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-500 font-medium transition-colors"
+                >
+                    <Icon class="text-xl mr-2" icon="ic:outline-plus" />
+                    Crear encuesta
                 </button>
             </div>
         </div>
 
         <!-- Nueva tabla -->
 
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
-            w-full h-135">
-            
-            <div id="table-header" class="h-10 w-full mb-3">
-                <table class="table-fixed w-full text-left">
+        <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-white/30 text-white text-lg">
-                            <th class="text-sm p-2 lg:text-lg w-70 lg:w-100">Nombre</th>
-                            <th class="text-sm p-2 lg:text-lg w-fit lg:w-50">Fecha de inicio</th>
-                            <th class="text-sm p-2 lg:text-lg w-fit lg:w-50 text-nowrap">Fecha de finalización</th>
-                            <th class="text-sm p-2 lg:text-lg w-fit lg:w-30">Encuestados</th>
-                            <th class="text-sm p-2 lg:text-lg w-fit lg:w-55 text-center">Acciones</th>
+                        <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                            <th class="p-4">Nombre</th>
+                            <th class="p-4">Fecha de inicio</th>
+                            <th class="p-4">Fecha de finalización</th>
+                            <th class="p-4 text-center">Encuestados</th>
+                            <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                </table>
-            </div>
-            <div id="table-body" class="w-full max-h-100 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                <table class="table-fixed w-full">
-                    <tbody class="">
-                        <tr  v-for="survey in filteredSurveys" class="text-white border-b border-neutral-400">
-                            <td class="py-2 w-70 lg:w-105">
-                                {{ survey.name }}
-                            </td>
-                            <td class="py-2 w-fit lg:w-50">
-                                {{ formatedDate(survey.init_date) }}
-                            </td>
-                            <td class="py-2 w-fit lg:w-50">
-                                {{ formatedDate(survey.finish_date) }}
-                            </td>
-                            <td class="py-2 w-fit lg:w-20 text-center">
-                                {{ survey.results_count }}
-                            </td>
-                            <td class="py-2 w-25 lg:w-55 text-center">
-                                <div class="w-full flex gap-x-1 lg:gap-x-3 justify-center align-center">
+                    <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                        <tr v-for="survey in filteredSurveys" :key="survey.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
+                            <td class="p-4 font-medium">{{ survey.name }}</td>
+                            <td class="p-4">{{ formatedDate(survey.init_date) }}</td>
+                            <td class="p-4">{{ formatedDate(survey.finish_date) }}</td>
+                            <td class="p-4 text-center">{{ survey.results_count }}</td>
+                            <td class="p-4">
+                                <div class="flex gap-3 justify-center">
                                     <Link :href="`/surveys/details/${survey.id}`">
-                                        <Icon class="text-lg md:text-2xl text-blue-600 hover:text-blue-500 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
+                                        <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
                                     </Link>
-                                    
-                                    <Icon @click="idSurveyToEdit=survey.id; isModalOpen=true;" class="text-lg md:text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                    <Icon class="text-lg md:text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                    <Icon @click="idSurveyToEdit=survey.id; isModalOpen=true;" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                    <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                 </div>
                             </td>
                         </tr>
-                        
                     </tbody>
                 </table>
             </div>
@@ -177,6 +167,9 @@ const handleImportProcess = async (formData) => {
     }
 };
 </script>
-<style lang="">
-    
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
 </style>

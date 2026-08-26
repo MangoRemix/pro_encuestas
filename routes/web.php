@@ -158,7 +158,10 @@ Route::get('/parishes', function () {
     return Inertia::render('parishes/index');
 })->name('parishes.index');
 
-Route::inertia('login','login/index')->name('login');
+Route::middleware('guest')->group(function () {
+    Route::inertia('login', 'login/index')->name('login');
 Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+});
+
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth');
 

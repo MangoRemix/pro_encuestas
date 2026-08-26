@@ -1,48 +1,56 @@
 <template>
     <Head title="Gestión de Personal" />
     <MainLayout>
-        <div class="text-center">
-            <h2 class="text-3xl text-white font-bold mt-8 underline">Usuarios</h2>
+        <div class="max-w-7xl mx-auto p-4 md:p-6">
+            <h1 class="text-2xl md:text-3xl text-slate-100 font-bold mb-6 text-center">Gestión de Personal</h1>
+
+            <!-- Barra de herramientas -->
+            <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Buscar por nombre, email o rol..."
+                    class="w-full md:w-80 px-4 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 transition-all"
+                />
+                <div class="w-50">
+                    <button
+                    @click="isModalOpen = true"
+                    class="flex items-center justify-center gap-2 px-4 py-2 rounded yellow-button-app cursor-pointer font-medium transition-colors"
+                    >
+                        <Icon class="text-xl" icon="ic:outline-plus" />
+                        Crear usuario
+                    </button>
+                </div>
+                
         </div>
 
-        
-        <div class="w-full flex justify-between mb-3">
-            <div class="w-1/3 ">
-                <input v-model="searchQuery" type="text" class="inputs-form bg-white"
-                placeholder="Nombre, rol, email....."
-                >
-            </div>
-            <button @click="isModalOpen = true" class="flex items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-40 p-2 font-bold">
-                <Icon class="text-2xl" icon="ic:outline-plus" />
-                Crear usuario
-            </button>
-        </div>
-
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full h-135 mt-6">
-            <div id="table-header" class="h-10 w-full mb-3">
-                <table class="table-fixed w-full text-left">
+            <!-- Tabla con estilo Dashboard -->
+            <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-white/30 text-white text-lg">
-                            <th class="p-2 w-1/3">Nombre</th>
-                            <th class="p-2 w-1/3">Email</th>
-                            <th class="p-2 w-1/6">Sexo</th>
-                            <th class="p-2 w-1/6">Rol</th>
+                            <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                                <th class="p-4">Nombre</th>
+                                <th class="p-4">Email</th>
+                                <th class="p-4">Sexo</th>
+                                <th class="p-4">Rol</th>
                         </tr>
                     </thead>
-                </table>
-            </div>
-            <div id="table-body" class="w-full max-h-100 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                <table class="table-fixed w-full">
-                    <tbody>
-                        <tr v-for="user in filteredStaff" :key="user.id" class="text-white border-b border-neutral-400">
-                            <td class="py-3 px-2 w-1/3 truncate">{{ user.name }}</td>
-                            <td class="py-3 px-2 w-1/3 truncate">{{ user.email }}</td>
-                            <td class="py-3 px-2 w-1/6">{{ user.sex_id === 1 ? 'M' : 'F' }}</td>
-                            <td class="py-3 px-2 w-1/6">{{ user.rol_id === 3 ? 'Admin' : 'Encuestador' }}</td>
+                        <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                            <tr v-for="user in filteredStaff" :key="user.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
+                                <td class="p-4">{{ user.name }}</td>
+                                <td class="p-4">{{ user.email }}</td>
+                                <td class="p-4">{{ user.sex_id === 1 ? 'M' : 'F' }}</td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 rounded text-xs bg-slate-800 border border-slate-700">
+                                        {{ user.rol_id === 3 ? 'Admin' : 'Encuestador' }}
+                                    </span>
+                                </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
         </div>
 
         <Modal :show="isModalOpen" @close="isModalOpen = false">
@@ -97,3 +105,10 @@ const handleUserCreated = () => {
     getStaff();
 };
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+</style>

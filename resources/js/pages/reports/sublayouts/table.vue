@@ -1,6 +1,6 @@
 <template>
-    <div class="p-6">
-        <div v-if="categories && categories.length" class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full h-135">
+    <div class="px-10 py-1">
+        <div v-if="categories && categories.length" class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-3 border border-blue-700/50 w-full h-135">
             <div id="table-body" class="w-full max-h-120 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
                 <table class="table-fixed w-full text-left text-white">
                     <thead class="sticky top-0 bg-blue-900/80 backdrop-blur-sm">

@@ -1,6 +1,7 @@
 <template>
-    <div class="flex flex-wrap gap-2 py-4">
+    <div class="flex flex-wrap gap-2 mb-3">
         <button
+            v-if="categories.length>0"
             @click="$emit('update:modelValue', null)"
             :class="[
                 'px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',

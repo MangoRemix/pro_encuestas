@@ -1,92 +1,89 @@
 <template>
-    
-    <NotificationBox v-if="message || isError? true:false" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100"/>
+    <NotificationBox v-if="message" :message="message" :isError="isError" class="fixed z-50 right-4 top-4"/>
 
-    <h1 class="text-3xl text-blue-100 font-extrabold text-center my-5 underline">Resumen de encuestas</h1>
-    <div class="w-full flex flex-wrap md:flex-nowrap items-center space-x-2">
+
+
+    <div class="max-w-7xl mx-auto p-4 md:p-0">
+        <h1 class="text-2xl md:text-3xl text-slate-100 font-bold mb-6 md:mb-8 text-center">Resumen de encuestas</h1>
+
+
+        <div class="flex flex-col lg:flex-row gap-4 h-auto lg:h-150">
         <!-- Listado de encuestas -->
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
-        w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
-        h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-            <h2 class="underline text-white font-bold text-lg mb-4">Listado de encuestas</h2>
+
+
+            <div class="bg-gray-500/50 border border-slate-700 rounded-lg p-3 w-full lg:w-80 flex flex-col">
+                <h2 class="text-white font-semibold mb-3 text-xs uppercase tracking-wider">Encuestas</h2>
             <input 
                 v-model="searchQuery" 
                 type="text" 
-                placeholder="Buscar encuesta..." 
-                class="w-full mb-4 px-4 py-2 rounded-lg bg-blue-900/40 border border-blue-500 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="Buscar..."
+
+                    class="w-full mb-4 px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 transition-all"
             />
-            <ul class="text-blue-100 mt-2">
-                <li @click="callCategories(survey.id)" 
+                <div class="flex-1 overflow-y-auto pr-2 space-y-1 custom-scrollbar">
+                    <button
                     v-for="survey in filteredSurveys" 
                     :key="survey.id"
+                        @click="callCategories(survey.id)"
                     :class="[
-                        'cursor-pointer py-2 px-3 rounded-md transition-colors duration-200',
+
+                            'w-full text-left px-3 py-2 rounded text-sm transition-colors',
                         surveySelected === survey.id 
-                            ? 'bg-yellow-500/30 text-white border-l-4 border-yellow-400 font-bold' 
-                            : 'hover:bg-blue-800/40 hover:text-yellow-400'
+
+
+                                ? 'bg-slate-600 text-white'
+                                : 'text-slate-300 hover:bg-slate-700'
                     ]">
                     {{ survey.name }}
-                </li>
-            </ul>
+                    </button>
+                </div>
         </div>
 
-        <!-- Listado Categorías -->
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
-        w-full h-125">
-            <div class="w-full flex flex-wrap md:flex-nowrap space-x-2">
-                <div class="w-full lg:w-1/3
-                overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
-                    <h2 class="underline text-white font-bold text-lg">Categorías</h2>
-                    <ul class="text-blue-100 mt-2">
-                        <li @click="callQuestions(category.id)" v-if="categories.length>0"
-                            v-for="category in categories"
-                            class="cursor-pointer py-1 px-2 rounded-md transition-colors duration-200"
-                            :key="category.id"
-                            :class="[
-                                'cursor-pointer py-1 px-2 rounded-md transition-colors duration-200',
-                                categorySelected === category.id
-                                    ? 'bg-yellow-500/30 text-white border-l-4 border-yellow-400 font-bold'
-                                    : 'hover:bg-blue-800/40 hover:text-yellow-400'
-                            ]">
-                            {{ category.name }}
-                        </li>
-                        <li v-else> No Hay Elementos</li>
-                    </ul>
+            <!-- Panel de Datos -->
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Categorías -->
+
+
+                <div class="bg-gray-500/50 border border-slate-700 rounded-lg p-4 flex flex-col">
+                    <h2 class="text-white font-medium mb-3 text-sm">Categorías</h2>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+                        <button v-for="cat in categories" :key="cat.id" @click="callQuestions(cat.id)"
+
+                            :class="['w-full text-left px-3 py-2 rounded text-sm transition-colors', categorySelected === cat.id ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700']">
+                            {{ cat.name }}
+                        </button>
                 </div>
-                <div class="w-full lg:w-1/3
-                overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
-                    <h2 class="underline text-white font-bold text-lg">Preguntas</h2>
-                    <ul class="text-blue-100 mt-2">
-                        <li @click="callAnswers(question.id)" v-if="questions.length>0"
-                            v-for="question in questions"
-                            :key="question.id"
-                            :class="[
-                                'cursor-pointer py-1 px-2 rounded-md transition-colors duration-200',
-                                questionSelected === question.id
-                                    ? 'bg-yellow-500/30 text-white border-l-4 border-yellow-400 font-bold'
-                                    : 'hover:bg-blue-800/40 hover:text-yellow-400'
-                            ]">
-                            {{ question?.name.toUpperCase() }}
-                        </li>
-                        <li v-else> No Hay Elementos</li>
-                    </ul>
                 </div>
-                <div class="w-full lg:w-1/3
-                overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30 h-115">
-                    <h2 class="underline text-white font-bold text-lg">Respuestas</h2>
-                    <ul class="text-blue-100 mt-2">
-                        <li v-if="answers.length>0" v-for="answer in answers" class="cursor-pointer hover:underline hover:text-yellow-400 py-1">
-                            {{ answer?.name.toUpperCase() }}
-                        </li>
-                        <li v-else> No Hay Elementos</li>
-                    </ul>
+
+                <!-- Preguntas -->
+
+
+                <div class="bg-gray-500/50 border border-slate-700 rounded-lg p-4 flex flex-col">
+                    <h2 class="text-white font-medium mb-3 text-sm">Preguntas</h2>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+                        <button v-for="q in questions" :key="q.id" @click="callAnswers(q.id)"
+
+                            :class="['w-full text-left px-3 py-2 rounded text-sm transition-colors', questionSelected === q.id ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700']">
+                            {{ q.name }}
+                        </button>
                 </div>
             </div> 
+
+                <!-- Respuestas -->
+
+
+                <div class="bg-gray-500/50 border border-slate-700 rounded-lg p-4 flex flex-col">
+                    <h2 class="text-white font-medium mb-3 text-sm">Respuestas</h2>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+
+                        <div v-for="ans in answers" :key="ans.id" class="px-3 py-2 text-sm text-slate-300 border-b border-slate-700/50">
+                            {{ ans.name }}
         </div>
     </div>
-    
-    
-   
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 <script setup>
 import { onMounted, ref, computed } from 'vue';
@@ -204,5 +201,10 @@ onMounted(async ()=>{
     }
 </script>
 <style scoped>
-    
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
 </style>

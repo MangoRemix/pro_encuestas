@@ -1,10 +1,10 @@
 <template>
     <Head title="Reportes" />
     <MainLayout>
-        <div class="w-full max-w-4xl mx-auto space-y-6">
+        <div class="w-11/12 mx-auto space-y-6">
             <div class="bg-white p-3 rounded-2xl shadow-sm flex flex-wrap gap-4 items-center">
                 <div class="flex-1 min-w-62.5">
-                    <select v-model="selectedSurvey" class="w-full rounded-lg border-slate-200 text-slate-700 focus:ring-blue-600 focus:border-indigo-600">
+                    <select v-model="selectedSurvey" class="w-9/12 rounded-lg border-slate-200 text-slate-700 focus:ring-blue-600 focus:border-indigo-600">
                         <option value="">Seleccione una encuesta</option>
                 <option v-for="survey in surveys" :key="survey.id" :value="survey.id">
                     {{ survey.name }}
@@ -18,21 +18,25 @@
                         {{ opt.label }}
             </label>
         </div>
-        </div>
-        </div>
-        <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
-       
-        <!-- Dropdown de selección de gráficas -->
-        <div class="w-fit flex items-center gap-x-3 max-w-2xl mx-auto my-6 bg-white p-4 rounded-xl shadow-sm">
-            <span class="text-sm font-semibold opacity-75">Total encuestados: {{ reportData.total_respondent }}</span>
+        <div class="flex items-center gap-x-2">
+            <span class="text-sm font-semibold opacity-75">Tipo:</span>
             <select v-model="selected_graphic" class="border-none focus:ring-0 text-slate-700">
                 <option v-for="option in graphicOptions" :key="option.component" :value="option.component">
                     {{ option.name }}
                 </option>
             </select>
         </div>
+        </div>
+        </div>
+        <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
+       
+        <!-- Dropdown de selección de gráficas -->
+        <div class="w-fit flex items-center gap-x-3 max-w-2xl ml-13 my-6 bg-white p-4 rounded-xl shadow-sm">
+            <span class="text-sm font-semibold opacity-75">Total encuestados: {{ reportData.total_respondent }}</span>
+            
+        </div>
         
-        <div class="w-full mx-auto flex justify-center">
+        <div class="w-11/12 mx-auto flex justify-center" v-if="selected_graphic=='graphics'">
             <CategoryFilter
                 :categories="categories"
                 v-model="category_selected"

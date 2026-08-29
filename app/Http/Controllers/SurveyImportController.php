@@ -18,17 +18,21 @@ class SurveyImportController extends Controller
 {
     public function importFromExcel(Request $request): JsonResponse
     {
-        $request->validate(['file' => 'required|file|mimes:xlsx,xls']);
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+            'init_date' => 'required|date',
+            'finish_date' => 'required|date|after:init_date',
+        ]);
 
         $batchId = (string) Str::uuid();
         $path = $request->file('file')->store('temp_imports');
 
-        ImportSurveyExcelJob::dispatch($path, $batchId);
+        ImportSurveyExcelJob::dispatch($path, $batchId, $request->init_date, $request->finish_date);
 
         return response()->json(['batch_id' => $batchId], 202);
     }
 
-    public function processExcelFile(string $fullPath)
+    public function processExcelFile(string $fullPath, string $initDate, string $finishDate)
     {
         $spreadsheet = IOFactory::load($fullPath);
         $sheet = $spreadsheet->getActiveSheet();
@@ -38,13 +42,13 @@ class SurveyImportController extends Controller
             throw new \Exception('El archivo Excel está vacío');
         }
 
-        return DB::transaction(function () use ($rows) {
+        return DB::transaction(function () use ($rows, $initDate, $finishDate) {
             $surveyName = trim((string) ($rows[0][0] ?? 'Encuesta Importada'));
 
             $survey = Survey::create([
                 'name' => $surveyName !== '' ? $surveyName : 'Encuesta Importada',
-                'init_date' => now(),
-                'finish_date' => now()->addMonth(),
+                'init_date' => $initDate,
+                'finish_date' => $finishDate,
             ]);
 
             $categoryNames = $rows[2] ?? [];
@@ -53,7 +57,6 @@ class SurveyImportController extends Controller
             foreach ($categoryNames as $colIndex => $categoryName) {
                 $categoryName = trim((string) $categoryName);
                 if ($categoryName === '') continue;
-
                 $category = Category::create([
                     'name' => $categoryName,
                     'survey_id' => $survey->id,

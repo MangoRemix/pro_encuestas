@@ -23,7 +23,7 @@ class PersonController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'sex_id' => 'required|integer',
-            'age_range_id' => 'required|integer',
+            'age' => 'required|integer|min:0|max:120',
             'parish_id' => 'required|integer',
         ]);
 

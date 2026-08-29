@@ -74,7 +74,7 @@ const menuItems = ref([
         children: [
             { label: 'Ver todas', link: '/surveys?page=1', permission:'ADMIN' },
             { label: 'Crear nueva', link: '/surveys/create-survey/step-1', permission:'ADMIN' },
-            { label: 'Registrar rangos de edad', link: '/age-ranges', permission:'ADMIN' }
+            //{ label: 'Registrar rangos de edad', link: '/age-ranges', permission:'ADMIN' }
         ]
     },
     {

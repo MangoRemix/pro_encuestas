@@ -65,23 +65,25 @@ onMounted(() => {
 });
 
 const saveManyResults = async () => {
-        const surveysToProcess = pendingSurveys.value.filter(s => s.status !== 'GUARDADA');
-        const allData = surveysToProcess.map(s => s.data);
+    const pendingIndices = pendingSurveys.value
+        .map((s, i) => s.status !== 'GUARDADA' ? i : -1)
+        .filter(i => i !== -1);
+
+    const surveysToProcess = pendingSurveys.value.filter(s => s.status !== 'GUARDADA');
+    const allData = surveysToProcess.map(s => s.data);
 
     try {
         const report = await processBatch('/api/result/batch', { results: allData });
-                let reportIndex = 0;
-                pendingSurveys.value.forEach((survey) => {
-                    if (survey.status !== 'GUARDADA') {
-                survey.status = report[reportIndex] === 'GUARDADA' ? 'GUARDADA' : 'FALLIDO';
-                        reportIndex++;
-                    }
-                });
-                localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
-                        alert("Procesamiento finalizado");
+        
+        pendingIndices.forEach((originalIndex, reportIndex) => {
+            pendingSurveys.value[originalIndex].status = report[reportIndex] === 'GUARDADA' ? 'GUARDADA' : 'FALLIDO';
+        });
+        
+        localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
+        alert("Procesamiento finalizado");
     } catch (error) {
         console.error("Error en la petición batch:", error);
-}
+    }
 }
 
 const clearSavedSurveys = () => {

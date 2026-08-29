@@ -54,7 +54,7 @@ class SurveyController extends Controller
             ->addSelect([
                 'results_count' => DB::table('results')
                     ->join('persons', 'persons.id', '=', 'results.person_id')
-                    ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
+                    // ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
                     ->join('questions', 'questions.id', '=', 'results.question_id')
                     ->join('categories', 'categories.id', '=', 'questions.category_id')
                     ->whereColumn('categories.survey_id', 'surveys.id')
@@ -112,11 +112,11 @@ class SurveyController extends Controller
             ->addSelect([
             'results_count' => DB::table('results')
                 ->join('persons', 'persons.id', '=', 'results.person_id')
-                ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
+                // ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
                 ->join('questions', 'questions.id', '=', 'results.question_id')
                 ->join('categories', 'categories.id', '=', 'questions.category_id')
                 ->whereColumn('categories.survey_id', 'surveys.id')
-                ->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
+                // ->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
                 ->selectRaw('count(DISTINCT persons.id)')
             ])->first();
 

@@ -62,9 +62,9 @@ Route::prefix('surveys')->group(function (){
     })->name('survey-details');
 });
 
-Route::prefix('age-ranges')->middleware(['auth', 'admin'])->group(function (){
-    Route::inertia('/', 'age-ranges/index')->name('age-ranges-index');
-});
+// Route::prefix('age-ranges')->middleware(['auth', 'admin'])->group(function (){
+//     Route::inertia('/', 'age-ranges/index')->name('age-ranges-index');
+// });
     
 Route::prefix('categories')->group(function (){
 

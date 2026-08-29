@@ -28,7 +28,7 @@
                     class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-500 font-medium transition-colors"
                 >
                     <Icon class="text-xl mr-2" icon="ic:outline-plus" />
-                    Crear
+                    Crear manual
                 </button>
             </div>
         </div>

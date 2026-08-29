@@ -18,15 +18,10 @@
         </select>
       </div>
 
-      <!-- Rango de Edad -->
+      <!-- Edad -->
       <div class="flex flex-col gap-1.5">
-        <label for="age_range_id" class="text-sm font-semibold text-gray-700">Rango de Edad:</label>
-        <select id="age_range_id" v-model="form.age_range_id" class="inputs-form" required>
-          <option value="" disabled>Seleccione...</option>
-          <option v-for="range in ageRanges" :key="range.id" :value="range.id">
-            {{ range.range }}
-          </option>
-        </select>
+        <label for="age" class="text-sm font-semibold text-gray-700">Edad:</label>
+        <input type="number" id="age" v-model="form.age" class="inputs-form" required min="0" max="120">
       </div>
 
       <!-- Parroquia -->
@@ -64,9 +59,7 @@ import { router, usePage } from '@inertiajs/vue3';
 
 onMounted(async () => {
   sexes.value = await getSexList()
-  ageRanges.value = await getAgeRangeList()
   parishes.value = await getParishList()
-
   console.log(page.props)
 })
 
@@ -81,14 +74,12 @@ const updatePerson = async (data) => {
 const form = reactive({
   name:`Encuestado ${page.props.id}`,
   sex_id: '',
-  age_range_id: '',
+  age: '',
   parish_id: ''
 });
 
 const sexes = ref([])
-const ageRanges = ref([])
 const parishes = ref([])
-
 const loading = ref(false);
 const message = ref('');
 const isError = ref(false);
@@ -109,7 +100,7 @@ const handleSubmit = async () => {
     
     // Limpiar el formulario
     form.sex_id = '';
-    form.age_range_id = '';
+    form.age = '';
     form.parish_id = '';
   } catch (error) {
     isError.value = true;
@@ -125,15 +116,6 @@ const getSexList = async () =>{
     return sex.data
   } catch (error) {
     console.log(error)
-  }
-}
-
-const getAgeRangeList = async () => {
-  try {
-    const response = await axios.get(`${apiHost}age-range/show-all`)
-    return response.data
-  } catch (error) {
-    console.error(error)
   }
 }
 

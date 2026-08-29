@@ -4,6 +4,12 @@ import axios from 'axios';
 export function useBatchProcessor() {
     const isProcessing = ref(false);
 
+    const processBatch = async (url, payload) => {
+        isProcessing.value = true;
+        const { data } = await axios.post(url, payload);
+        return await pollBatchStatus(data.batch_id);
+    };
+
     const pollBatchStatus = (batchId) => {
             return new Promise((resolve, reject) => {
                 const interval = setInterval(async () => {
@@ -23,6 +29,6 @@ export function useBatchProcessor() {
             });
     };
 
-    return { isProcessing, pollBatchStatus };
+    return { isProcessing, processBatch, pollBatchStatus };
 }
 

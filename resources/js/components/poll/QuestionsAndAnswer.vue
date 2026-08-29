@@ -3,7 +3,7 @@
 
         <h3 class="mb-6 text-lg font-semibold text-gray-800">{{ question.order }}. {{ question.name?.toUpperCase() }}</h3>
         
-        <div class="flex flex-col gap-y-3 max-h-11/12 lg:h-72 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+        <div class="flex flex-col gap-y-3 lg:max-h-66 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
             <div v-for="(answer,index) in answers"
                 :key="answer.id"
                 @click="selectedAnswer = answer.id"

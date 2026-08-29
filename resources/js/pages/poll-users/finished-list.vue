@@ -1,6 +1,13 @@
 <template>
     <Head title="Encuestas Pendientes" />
     <MainLayout>
+        <div class="fixed top-4 right-4 z-50 w-80">
+            <NotificationBox 
+                :message="notification.message" 
+                :is-error="notification.isError" 
+            />
+        </div>
+
         <div class="text-center">
             <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas Pendientes</h2>
         </div>
@@ -52,9 +59,11 @@ import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
 import MainLayout from '@/layouts/main-layout.vue';
+import NotificationBox from '@/components/notification-box.vue';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 const pendingSurveys = ref([]);
 const { isProcessing, processBatch } = useBatchProcessor();
+const notification = ref({ message: '', isError: false });
 
 onMounted(() => {
     const data = localStorage.getItem('allSurveysPending');
@@ -62,6 +71,13 @@ onMounted(() => {
         pendingSurveys.value = JSON.parse(data);
     }
 });
+
+const showNotification = (msg, isError = false) => {
+    notification.value = { message: msg, isError };
+    setTimeout(() => {
+        notification.value.message = '';
+    }, 2500);
+};
 
 const saveManyResults = async () => {
     const pendingIndices = pendingSurveys.value
@@ -79,9 +95,10 @@ const saveManyResults = async () => {
         });
         
         localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
-        alert("Procesamiento finalizado");
+        showNotification("Procesamiento finalizado");
     } catch (error) {
         console.error("Error en la petición batch:", error);
+        showNotification("Error al procesar las encuestas", true);
     }
 }
 

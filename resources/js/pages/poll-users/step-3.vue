@@ -20,7 +20,7 @@
             <!-- Questions and Answer Component -->
             <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full shrink-0">{{ c?.name.toUpperCase() }}</h1>
             <!-- Questions and Answer Component -->
-            <div class="grow md:px-2">
+            <div class="grow min-w-fit lg:max-h-66 md:px-2">
             <QuestionsAndAnswer
             :key="q.id"
             @send-answer="getAnswer"
@@ -163,66 +163,13 @@ const incrementQuestion = async () => {
         await storageResults();
         selectedAnswer.value = null;
 
-
-
-
-
-
         const currentCat = survey.value.categories[counts.value.actual_category];
         const totalQuestionsInCat = currentCat.questions.length;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         // Si hay más preguntas en la categoría actual
         if (counts.value.actual_question < totalQuestionsInCat - 1) {
             counts.value.actual_question++;
         }
-
-
-
-
-
-
-
-
-
-
-
-
         // Si se acabó la categoría actual, pasar a la siguiente
         else if (counts.value.actual_category < survey.value.categories.length - 1) {
             counts.value.actual_category++;
@@ -253,29 +200,6 @@ const incrementQuestion = async () => {
 
 const decrementQuestion = () => {
     try {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         if (counts.value.actual_question > 0) {
             counts.value.actual_question--;
         } else if (counts.value.actual_category > 0) {
@@ -290,14 +214,6 @@ const decrementQuestion = () => {
         c.value = { ...prevCat, questions: undefined };
         q.value = { ...prevQ, answers: undefined };
         a.value = prevQ.answers;
-
-
-
-
-
-
-
-
         disabledRewind.value = (counts.value.actual_category === 0 && counts.value.actual_question === 0);
         visibilityFinishButton.value = false;
     } catch (error) {

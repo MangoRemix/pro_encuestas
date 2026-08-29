@@ -5,37 +5,29 @@
             <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas Pendientes</h2>
         </div>
 
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full h-135 mt-6">
-            <div id="table-header" class="h-10 w-full mb-3">
-                <table class="table-fixed w-full text-left">
-                    <thead>
-                        <tr class="border-b border-white/30 text-white text-lg">
-                            <th class="p-2 w-1/3">Fecha</th>
-                            <th class="p-2 w-1/3">Encuesta</th>
-                            <!-- <th class="p-2 w-1/4">Cantidad Respuestas</th> -->
-                            <th class="p-2 w-1/3 text-center">Estado</th>
+        <div class="mt-6 bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+            <table class="w-full text-left border-collapse flex flex-col">
+                <thead>
+                        <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider flex">
+                            <th class="p-4 w-1/3">Fecha</th>
+                            <th class="p-4 w-1/2">Encuesta</th>
+                            <th class="p-4 w-1/4 text-center">Estado</th>
                         </tr>
                     </thead>
-                </table>
-            </div>
-            <div id="table-body" class="w-full max-h-100 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                <table class="table-fixed w-full">
-                    <tbody>
-                        <tr v-for="(survey, index) in pendingSurveys" :key="index" class="text-white border-b border-neutral-400">
-                            <td class="py-3 px-2 w-1/3 text-sm">{{ new Date(survey.created_at).toLocaleString() }}</td>
-                            <td class="py-3 px-2 w-1/3 text-xs lg:text-md">{{ survey?.survey?.name}}</td>
-                            <!-- <td class="py-3 px-2 w-1/4">{{ survey.data.length }}</td> -->
-                            <td class="py-3 px-2 w-1/3 text-center">
-                                <Icon v-if="survey.status === 'PENDIENTE'" icon="mdi:clock-outline" class="text-yellow-500 text-xl mx-auto" />
-                                <Icon v-else-if="survey.status === 'FALLIDO'" icon="mdi:close-circle-outline" class="text-red-500 text-xl mx-auto" />
-                                <Icon v-else-if="survey.status === 'GUARDADA'" icon="mdi:check-circle-outline" class="text-green-500 text-xl mx-auto" />
+                <tbody class="divide-y divide-slate-700/50 block max-h-150 overflow-y-scroll custom-scrollbar">
+                        <tr v-for="(survey, index) in pendingSurveys" :key="index" class="text-slate-200 hover:bg-slate-600/30 transition-colors flex">
+                            <td class="p-4 w-1/3 text-xs md:text-sm">{{ new Date(survey.created_at).toLocaleString() }}</td>
+                            <td class="p-4 w-1/2 text-xs md:text-sm">{{ survey?.survey?.name }}</td>
+                            <td class="p-4 w-1/4 text-center flex justify-center items-center">
+                                    <Icon v-if="survey.status === 'PENDIENTE'" icon="mdi:clock-outline" class="text-yellow-500 text-xl" />
+                                    <Icon v-else-if="survey.status === 'FALLIDO'" icon="mdi:close-circle-outline" class="text-red-500 text-xl" />
+                                    <Icon v-else-if="survey.status === 'GUARDADA'" icon="mdi:check-circle-outline" class="text-green-500 text-xl" />
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div class="w-full md:w-1/3 mx-auto flex gap-2">
+        <div class="w-full md:w-1/3 mx-auto flex gap-2 mt-6">
             <div class="w-1/2">
                 <button
                     @click="saveManyResults()"
@@ -51,7 +43,6 @@
                     Limpiar Guardadas
                 </button>
             </div>
-            
         </div>
     </MainLayout>
 </template>
@@ -99,4 +90,20 @@ const clearSavedSurveys = () => {
     localStorage.setItem('allSurveysPending', JSON.stringify(pendingSurveys.value));
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+</style>
 

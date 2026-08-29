@@ -7,6 +7,7 @@ export function useBatchProcessor() {
     const processBatch = async (url, payload) => {
         isProcessing.value = true;
         const { data } = await axios.post(url, payload);
+        console.log(payload)
         return await pollBatchStatus(data.batch_id);
     };
 

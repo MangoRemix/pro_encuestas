@@ -10,6 +10,7 @@ import {
     CategoryScale, 
     LinearScale 
 } from 'chart.js';
+import axios from 'axios';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -28,9 +29,15 @@ const loading = ref(false);
 const fetchData = async () => {
     loading.value = true;
     try {
-        const response = await fetch(`/api/results/age-range/${props.surveyId}?min=${min.value}&max=${max.value}`);
-        const data = await response.json();
-        count.value = data.count || 0;
+        const minVal = min.value === '' ? '*' : min.value;
+        const maxVal = max.value === '' ? '*' : max.value;
+        
+        const response = await axios.get(`/api/result/age-range/${props.surveyId}`, {
+            params: { min: minVal, max: maxVal }
+        });
+        console.log(response.data)
+        count.value = response.data.count || 0;
+        console.log("count",count.value)
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
@@ -59,9 +66,9 @@ const chartOptions = {
     <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
         <h3 class="text-lg font-semibold text-slate-800 mb-4">Filtro por Rango de Edad</h3>
         
-        <div class="flex flex-wrap gap-3 mb-6">
-            <input v-model="min" placeholder="Edad Min (ej: 18 o *)" class="border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-            <input v-model="max" placeholder="Edad Max (ej: 61 o *)" class="border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+        <div class="flex flex-wrap gap-x-3 mb-6">
+            <input v-model="min" type="number" placeholder="Edad Min" class="border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none w-28" />
+            <input v-model="max" type="number" placeholder="Edad Max" class="border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none w-28" />
             <button 
                 @click="fetchData" 
                 :disabled="loading"

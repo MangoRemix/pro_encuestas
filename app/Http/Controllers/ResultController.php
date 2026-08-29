@@ -190,20 +190,21 @@ class ResultController extends Controller
 
         $query = Result::query()
             ->join('persons as p', 'results.person_id', '=', 'p.id')
-            ->join('age_ranges as ar', 'p.age_range_id', '=', 'ar.id')
             ->join('questions as q', 'results.question_id', '=', 'q.id')
             ->join('categories as c', 'q.category_id', '=', 'c.id')
-            ->where('c.survey_id', $surveyId)
-            ->distinct('results.person_id');
+            ->where('c.survey_id', (int)$surveyId);
 
         if ($min !== null && $min !== '' && $min !== '*') {
-            $query->where('ar.init_range', '>=', (int)$min);
+            $query->where('p.age', '>=', (int)$min);
         }
+        
         if ($max !== null && $max !== '' && $max !== '*') {
-            $query->where('ar.finish_range', '<=', (int)$max);
+            $query->where('p.age', '<=', (int)$max);
         }
 
-        return response()->json(['count' => $query->count('results.person_id')]);
+        $count = $query->distinct('results.person_id')->count('results.person_id');
+
+        return response()->json(['count' => $count]);
     }
 
     public function reportCountAnswersByQuestion(Request $request, int $surveyId)

@@ -20,7 +20,7 @@
             <!-- Questions and Answer Component -->
             <h1 class="text-lg md:text-2xl font-bold mb-4 flex items-center justify-center bg-blue-900 text-white h-20 w-full shrink-0">{{ c?.name.toUpperCase() }}</h1>
             <!-- Questions and Answer Component -->
-            <div class="grow h-60 md:px-2 md:h-85">
+            <div class="grow h-85 md:px-2 md:h-85 bg-red-400">
             <QuestionsAndAnswer
             :key="q.id"
             @send-answer="getAnswer"

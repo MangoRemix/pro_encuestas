@@ -22,11 +22,13 @@
                 <table class="table-fixed w-full">
                     <tbody>
                         <tr v-for="(survey, index) in pendingSurveys" :key="index" class="text-white border-b border-neutral-400">
-                            <td class="py-3 px-2 w-1/3">{{ new Date(survey.created_at).toLocaleString() }}</td>
-                            <td class="py-3 px-2 w-1/3">{{ survey?.survey?.name}}</td>
+                            <td class="py-3 px-2 w-1/3 text-sm">{{ new Date(survey.created_at).toLocaleString() }}</td>
+                            <td class="py-3 px-2 w-1/3 text-xs lg:text-md">{{ survey?.survey?.name}}</td>
                             <!-- <td class="py-3 px-2 w-1/4">{{ survey.data.length }}</td> -->
                             <td class="py-3 px-2 w-1/3 text-center">
-                                <span :class="`px-2 py-1 ${survey.status=='PENDIENTE'? 'bg-yellow-600':survey.status=='FALLIDO'?'bg-red-600':'bg-green-600'}  rounded text-xs`">{{ survey.status }}</span>
+                                <Icon v-if="survey.status === 'PENDIENTE'" icon="mdi:clock-outline" class="text-yellow-500 text-xl mx-auto" />
+                                <Icon v-else-if="survey.status === 'FALLIDO'" icon="mdi:close-circle-outline" class="text-red-500 text-xl mx-auto" />
+                                <Icon v-else-if="survey.status === 'GUARDADA'" icon="mdi:check-circle-outline" class="text-green-500 text-xl mx-auto" />
                             </td>
                         </tr>
                     </tbody>
@@ -34,17 +36,22 @@
             </div>
         </div>
         <div class="w-full md:w-1/3 mx-auto flex gap-2">
-            <button
-                @click="saveManyResults()"
-                class="green-button-app cursor-pointer flex items-center justify-center"
-                :disabled="pendingSurveys.length == 0 || isProcessing"
-            >
-                <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-                {{ isProcessing ? 'Procesando...' : 'Guardar Todas' }}
-            </button>
-            <button @click="clearSavedSurveys()" class="cursor-pointer primary-button-app">
-                Limpiar Guardadas
-            </button>
+            <div class="w-1/2">
+                <button
+                    @click="saveManyResults()"
+                    class="green-button-app cursor-pointer flex items-center justify-center"
+                    :disabled="pendingSurveys.length == 0 || isProcessing"
+                >
+                    <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                    {{ isProcessing ? 'Procesando...' : 'Guardar Todas' }}
+                </button>
+            </div>
+            <div class="w-1/2">
+                <button @click="clearSavedSurveys()" class="cursor-pointer primary-button-app">
+                    Limpiar Guardadas
+                </button>
+            </div>
+            
         </div>
     </MainLayout>
 </template>
@@ -52,6 +59,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 const pendingSurveys = ref([]);

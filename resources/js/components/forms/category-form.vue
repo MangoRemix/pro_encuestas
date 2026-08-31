@@ -44,7 +44,7 @@ const submit = async () => {
         
         <div class="mb-4 flex items-center space-x-3">
             <div class="w-42">
-                <label class="block text-sm font-medium text-gray-700" for="">Orden de categoría</label>
+                <label class="block text-sm font-medium text-gray-700 text-nowrap" for="">Orden de categoría</label>
                 <div class="w-18">
                     <input v-model="form.order" type="number" class="inputs-form">
                 </div>

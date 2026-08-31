@@ -1,67 +1,65 @@
-
 <template>
-  <div class="max-w-md mx-auto my-8 p-6 bg-white border border-gray-200 rounded-xl shadow-sm w-200">
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+  <div class="max-w-2xl mx-auto my-8 px-6 py-8 bg-white border border-gray-200 rounded-2xl shadow-sm">
+    <h2 class="text-xl font-bold text-gray-900 mb-8">
       Crear Nueva Encuesta
     </h2>
 
-    <form @submit.prevent="handleSubmit" class="space-y-5">
-      <!-- Campo: Nombre -->
-      <div class="flex flex-col gap-1.5">
-        <label for="name" class="text-sm font-semibold text-gray-700">
-          Nombre de la Encuesta:
+    <form @submit.prevent="handleSubmit" class="space-y-6">
+      <div class="flex flex-col gap-2">
+        <label for="name" class="text-sm font-medium text-gray-700">
+          Nombre de la Encuesta
         </label>
         <input 
           type="text" 
           id="name" 
           v-model="form.name" 
           placeholder="Ej. Satisfacción al Cliente"
-          class="inputs-form"
+          class="inputs-form w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all outline-none"
           required
         />
       </div>
 
-      <!-- Campo: Fecha de Inicio -->
-      <div class="flex flex-col gap-1.5">
-        <label for="init_date" class="text-sm font-semibold text-gray-700">
-          Fecha de Inicio:
-        </label>
-        <input 
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex flex-col gap-2">
+          <label for="init_date" class="text-sm font-medium text-gray-700">
+            Fecha de Inicio
+          </label>
+          <input
           type="date" 
           id="init_date" 
           v-model="form.init_date" 
-          class="inputs-form"
+            class="inputs-form w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all outline-none"
           required
         />
       </div>
 
-      <!-- Campo: Fecha de Fin -->
-      <div class="flex flex-col gap-1.5">
-        <label for="finish_date" class="text-sm font-semibold text-gray-700">
-          Fecha de Finalización:
+        <div class="flex flex-col gap-2">
+          <label for="finish_date" class="text-sm font-medium text-gray-700">
+            Fecha de Finalización
         </label>
         <input 
           type="date" 
           id="finish_date" 
           v-model="form.finish_date" 
           :min="form.init_date"
-          class="inputs-form"
+            class="inputs-form w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all outline-none"
           required
         />
       </div>
+  </div>
 
-      <!-- Botón de Envío -->
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         :disabled="loading"
-        :class="`primary-button-app hover:${form.name?'cursor-pointer':''}`"
+        class="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {{ loading ? 'Guardando...' : 'Crear Encuesta' }}
       </button>
     </form>
 
-    <!-- Mensajes de Estado -->
-    <NotificationBox v-if="message || isError? true:false" :message="message" :isError="isError" />
+    <div class="mt-6">
+      <NotificationBox v-if="message || isError" :message="message" :isError="isError" />
+    </div>
   </div>
 </template>
 
@@ -132,13 +130,19 @@ const handleSubmit = async () => {
       
     }else{
       if(response.status == 201){
-        console.log(response)
+        //console.log(response)
         setTimeout(() => {
           if(response.data.data.id)
-          router.get('/categories/create',{
+          router.get('/surveys/create-survey/step-2',{
             surveyId:response.data.data.id
           })
-        }, 750);
+        }, 250);
+        //setTimeout(() => {
+        //  if(response.data.data.id)
+        //  router.get('/categories/create',{
+        //    surveyId:response.data.data.id
+        //  })
+        //}, 750);
       }
     }
     // Limpiar el formulario
@@ -157,3 +161,4 @@ const handleSubmit = async () => {
   }
 };
 </script>
+

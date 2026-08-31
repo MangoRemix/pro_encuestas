@@ -1,12 +1,13 @@
-
 <template>
     <Head title="Nueva encuesta: paso 1" />
     <MainLayout>
-        <div class="w-200 flex items-center mx-auto">
-            <StepNavigation :items="steps" :current="current" />
-        </div>
         
+        <StepNavigation :items="steps" :current="current" />
+        
+        
+        <div class="px-4">
         <SurveyForm/>
+        </div>
     </MainLayout>
 </template>
 <script setup>

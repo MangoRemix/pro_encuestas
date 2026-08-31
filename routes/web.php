@@ -26,11 +26,11 @@ Route::prefix('surveys')->group(function (){
         Route::get('/step-3',function (Request $request){
             $validated = $request->validate([
                 'surveyId' => ['required', 'integer'],
-                'categoryId' => ['required', 'integer'],
+                'categoryId' => ['nullable', 'integer'],
             ]);
             return Inertia::render('create-survey/step-3',[
                 "surveyId" => $validated["surveyId"],
-                "categoryId" => $validated["categoryId"]
+                "categoryId" => $validated["categoryId"] ?? null,
             ]);
         })->name('survey-create-step3');
         Route::get('/step-4',function (Request $request){

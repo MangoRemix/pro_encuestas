@@ -1,7 +1,7 @@
 <template>
     <Head :title="'Preguntas y respuestas'" />
     <MainLayout>
-        <NotificationBox v-if="message || isError? true:false" :message="message" :is-error="isError" class="absolute z-10 right-0 top-0 w-100"/>
+        <NotificationBox v-if="message" :message="message" :is-error="isError" class="absolute z-10 right-0 top-0 w-100"/>
         <StepNavigation :items="steps" :current="current" />
         <div class="w-100 min-h-10 mx-auto my-3 flex flex-col ">
             
@@ -395,10 +395,15 @@ const getQuestionToEdit = async (id) => {
 
 const createManyQuestions = async () => {
     try {
+        const { errorFlag } = await createMany(formQuestion.value)
         
-      const {} =  await createMany(formQuestion.value)
+        isError.value = errorFlag
+        message.value = errorFlag ? 'Error al cargar pregunta(s)' : 'Pregunta guardada exitosamente'
 
-        await getQuestions(categorySelected.value);    
+        setTimeout(() => {
+            message.value = ''
+        }, 3000)
+        await getQuestions(categorySelected.value)
         
     } catch (error) {
         console.log(error)
@@ -418,9 +423,10 @@ const newAnswers = ()=>{
 }
 
 const createManyAnswers_ = async (formData)=>{
-    const {status} = await createManyAnswers(formData)
+    const {success} = await createManyAnswers(formData)
+    
     try {
-        if(status==201){
+        if(success){
             const {data} = await getAnswersByQuestion(questionSelected.value.id)
 
             answers.value = data
@@ -459,3 +465,4 @@ const NextStep = () =>{
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
 </style>
+

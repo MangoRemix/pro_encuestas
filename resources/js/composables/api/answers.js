@@ -83,6 +83,7 @@ export async function updateAnswer(id, payload) {
 }
 
 export async function createManyAnswers(payload) {
-    const { data } = await axios.post(`${apiHost}answer/create-many`, payload);
-    return { success: true, data };
+    const { data,status } = await axios.post(`${apiHost}answer/create-many`, payload);
+    
+    return { success: status == 201?true:false, data };
 }

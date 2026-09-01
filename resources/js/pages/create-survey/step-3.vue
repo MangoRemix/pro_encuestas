@@ -3,17 +3,17 @@
     <MainLayout>
         <NotificationBox v-if="message" :message="message" :is-error="isError" class="absolute z-10 right-0 top-0 w-100"/>
         <StepNavigation :items="steps" :current="current" />
-        <div class="w-100 min-h-10 mx-auto my-3 flex flex-col ">
+        <div class="w-100 min-h-10 my-3 flex flex-col ">
             
             <select name="" v-model="categorySelected" id="" class="inputs-form bg-white ">
                 <option :value="0">Seleccione categoría</option>
-                <option :value="category.id" class="p-2 text-neutral-800" v-for="category in categories"> {{ category.name }}</option>
+                <option :value="category.id" :key="category.id" class="p-2 text-neutral-800" v-for="category in categories"> {{ category.name }}</option>
                 
             </select>
         </div>
         
         <div class="flex items-center justify-between w-full mb-3">
-            <div class="w-60">
+            <div class="w-55">
                 <button type="button" @click="newQuestions()" class="text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer" :disabled="!categorySelected">
                     <Icon class="text-2xl" icon="ic:outline-plus" />
                     Crear preguntas
@@ -120,7 +120,7 @@
                     
                 </div>
                 <div class="w-full h-full max-h-full overflow-y-scroll">
-                    <div v-for="(formRow,index) in formQuestion" class="mb-3 ">
+                    <div v-for="(formRow,index) in formQuestion" :key="index" class="mb-3 ">
                         <div class="text-center font-bold mb-3">
                             <span>Pregunta {{ index+1 }}</span>
                         </div>
@@ -161,7 +161,7 @@
                 </button>
                 
             </div>
-                <div v-for="(formRow,index) in formAnswer" class="mb-3">
+                <div v-for="(formRow,index) in formAnswer" :key="index" class="mb-3">
                     <div class="text-center font-bold mb-3">
                         <span>Respuesta {{ index+1 }}</span>
                     </div>
@@ -196,7 +196,7 @@
             </ol>
                 
         </div>
-        <div class="mx-auto w-1/2 mb-3">
+        <div class="mx-auto w-2/8 mb-3">
             <button @click="NextStep()" class="green-button-app cursor-pointer" :disabled="nextStepFlag">
                 Finalizar
             </button>    
@@ -413,14 +413,20 @@ const createManyQuestions = async () => {
 
 const newQuestions = ()=>{
     isQuestionModalOpen.value = true; operation_name.value = 'Crear'
-    formQuestion.value[0].name = ''
-    formQuestion.value[0].order = 0
+    formQuestion.value = [{
+        name:'',
+        order:0,
+        category_id:parseInt(page.props.categoryId)
+    }]
 }
 
 const newAnswers = ()=>{
     isAnswerModalOpen.value = true; operation_name.value = 'Crear'
-    formQuestion.value[0].name = ''
-    formQuestion.value[0].order = 0
+    formAnswer.value = [{
+        name:'',
+        order:0,
+        question_id:parseInt(questionSelected.value?.id)
+    }]
 }
 
 const createManyAnswers_ = async (formData)=>{
@@ -445,13 +451,17 @@ const updateAnswers = async (id)=>{
 
 const validateQuestionsAnswers = async () => {
     const {data:survey} = await showFullSurvey(page.props.surveyId)
-    if (!survey?.categories) return false;
+    if (!survey?.categories || survey.categories.length === 0) return false;
 
-    return survey.categories.every(category => 
-        category.questions?.every(question => 
+    return survey.categories.every(category => {
+        // Obliga a que haya mínimo 1 pregunta
+        if (!category.questions || category.questions.length === 0) return false;
+        
+        // Y mínimo 2 respuestas por pregunta
+        return category.questions.every(question => 
             Array.isArray(question.answers) && question.answers.length >= 2
-        ) ?? true
-    );
+        );
+    });
 };
 
 const NextStep = () =>{

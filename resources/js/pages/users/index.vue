@@ -1,7 +1,7 @@
 <template>
     <Head title="Gestión de Personal" />
     <MainLayout>
-        <div class="max-w-7xl mx-auto p-4 md:p-6">
+        <div class="max-w-7xl mx-auto p-0 md:p-6">
             <h1 class="text-2xl md:text-3xl text-slate-100 font-bold mb-6 text-center">Gestión de Personal</h1>
 
             <!-- Barra de herramientas -->
@@ -24,8 +24,28 @@
                 
         </div>
 
-            <!-- Tabla con estilo Dashboard -->
-            <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+            <!-- Vista Móvil: Tarjetas -->
+            <div class="md:hidden space-y-4">
+                <div v-for="user in filteredStaff" :key="user.id" class="bg-slate-800 p-3 rounded-lg border border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-white text-lg">{{ user.name }}</h3>
+                        <span class="px-2 py-1 rounded text-xs bg-slate-800 border border-slate-700 text-blue-100">
+                            {{ user.rol_id === 3 ? 'Admin' : 'Encuestador' }}
+                        </span>
+                    </div>
+                    <div class="text-sm text-slate-400 space-y-1 mb-4">
+                        <p>Email: {{ user.email }}</p>
+                        <p>Sexo: {{ user.sex_id === 1 ? 'M' : 'F' }}</p>
+                    </div>
+                    <!-- Placeholder for actions if any were needed -->
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+                        <!-- Future implementation for edit/delete actions could go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla con estilo Dashboard (Vista Escritorio) -->
+            <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                     <thead>

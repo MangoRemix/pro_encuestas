@@ -48,7 +48,7 @@
                             :class="['text-slate-200 transition-colors cursor-pointer w-full', questionSelected?.id === question.id ? 'bg-yellow-500 text-white font-semibold' : 'hover:bg-slate-600/30']"
                             >
                                 <td class="p-2 sm:p-4 w-12 sm:w-20">{{ question.order }}</td>
-                                <td class="p-2 sm:p-4 w-full break-words">
+                                <td class="p-2 sm:p-4 w-full wrap-break-word">
                                     {{ question.name }}
                                 </td>
                                 <td class="p-2 sm:p-4">
@@ -83,7 +83,7 @@
                         <tbody class="divide-y divide-slate-700/50 custom-scrollbar max-h-90 overflow-y-scroll">
                             <tr :id="`answer-${index}`" v-for="(answer,index) in answers" :key="answer.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors w-full">
                                 <td class="p-2 sm:p-4 w-12 sm:w-20">{{ answer.order }}</td>
-                                <td class="p-2 sm:p-4 w-full break-words">
+                                <td class="p-2 sm:p-4 w-full wrap-break-word">
                                     {{ answer.name }}
                                 </td>
                                 <td class="p-2 sm:p-4">

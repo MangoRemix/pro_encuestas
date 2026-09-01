@@ -35,7 +35,7 @@
                     {{ isProcessing ? 'Importando...' : 'Importar' }}
                 </button> -->
                 <div class="w-50 flex items-center" >
-                    <Link href="/surveys/create-survey/step-1" class="green-button-app flex items-center gap-x-2">  
+                    <Link href="/surveys/create-survey/step-1" class="green-button-app flex items-center gap-x-2 justify-center">  
                         <Icon class="text-2xl " icon="ic:outline-plus" /> Crear manual 
                     </Link>
                     <!-- <button class="green-button-app flex items-center justify-center cursor-pointer gap-x-2"
@@ -60,7 +60,7 @@
             <div v-for="survey in filteredSurveys" :key="survey.id" class="bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-sm">
                 <div class="flex justify-between items-start mb-3">
                     <h3 class="font-bold text-white text-lg">{{ survey.name }}</h3>
-                    <span class="text-xs font-semibold bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
+                    <span class="text-xs font-semibold bg-slate-700 text-slate-300 px-2 py-1 rounded-full text-nowrap">
                         {{ survey.results_count }} respuestas
                     </span>
                 </div>

@@ -15,9 +15,9 @@
                 <div class="w-50">
                     <button
                     @click="isModalOpen = true"
-                    class="flex items-center justify-center gap-2 px-4 py-2 rounded yellow-button-app cursor-pointer font-medium transition-colors"
+                    class="flex items-center justify-center gap-x-2 px-4 py-2 rounded green-button-app cursor-pointer font-medium transition-colors"
                     >
-                        <Icon class="text-xl" icon="ic:outline-plus" />
+                        <Icon class="text-2xl" icon="ic:outline-plus" />
                         Crear usuario
                     </button>
                 </div>

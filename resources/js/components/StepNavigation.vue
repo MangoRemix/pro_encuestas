@@ -16,7 +16,7 @@ const props = defineProps({
         <!-- Línea conectora -->
         <div 
           v-if="index !== items.length - 1" 
-          class="absolute top-3 left-[50%] w-full h-[2px]"
+          class="absolute top-3 left-[50%] w-full h-0.5"
           :class="items.indexOf(current) > index ? 'bg-blue-600' : 'bg-gray-200'"
         ></div>
         
@@ -25,7 +25,7 @@ const props = defineProps({
           class="relative flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium z-10 transition-colors duration-300 ring-4 ring-white"
           :class="[
             current === item ? 'bg-blue-600 text-white' : 
-            items.indexOf(current) > index ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400 border border-gray-300'
+            items.indexOf(current) > index ? 'bg-blue-600 text-white' : 'bg-gray-100 text-slate-700 border border-gray-300'
           ]"
         >
           <!-- Checkmark para pasos completados -->
@@ -38,7 +38,7 @@ const props = defineProps({
         <!-- Etiqueta del paso -->
         <span 
           class="mt-3 text-xs font-semibold tracking-wide uppercase transition-colors duration-300 text-center"
-          :class="current === item ? 'text-blue-900' : 'text-gray-400'"
+          :class="current === item ? 'text-yellow-500' : 'text-neutral-400'"
         >
           {{ item }}
         </span>

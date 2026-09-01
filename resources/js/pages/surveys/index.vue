@@ -34,12 +34,15 @@
                     <Icon v-else class="text-xl mr-2" icon="ic:outline-file-upload" />
                     {{ isProcessing ? 'Importando...' : 'Importar' }}
                 </button> -->
-                <div class="w-50" >
-                    <button class="green-button-app flex items-center justify-center cursor-pointer gap-x-2"
+                <div class="w-50 flex items-center" >
+                    <Link href="/surveys/create-survey/step-1" class="green-button-app flex items-center gap-x-2">  
+                        <Icon class="text-2xl " icon="ic:outline-plus" /> Crear manual 
+                    </Link>
+                    <!-- <button class="green-button-app flex items-center justify-center cursor-pointer gap-x-2"
                     @click="idSurveyToEdit=0; isModalOpen=true;"> 
                         <Icon class="text-2xl " icon="ic:outline-plus" />
                         Crear manual
-                    </button>
+                    </button> -->
                     
                 </div>
                 <!-- <button

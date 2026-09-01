@@ -6,11 +6,11 @@
         
         <StepNavigation :items="steps" :current="current" />
         
-        <div class="max-w-2xl mx-auto py-10 px-4">
+        <div class="max-w-2xl mx-auto py-5 px-4">
             <CategoryForm :survey_id="page.props.surveyId" @update-categories="updateCategories" />
         </div>
 
-        <div class="w-full flex items-center justify-end h-15">
+        <div class="w-full flex items-center justify-end h-15 mb-3">
             
             <div class="w-fit">
                 <button @click="NextStep()"  class="yellow-button-app cursor-pointer flex items-center gap-x-2" :disabled="!categories.length>0">

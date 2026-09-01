@@ -3,26 +3,26 @@
     <MainLayout>
         <NotificationBox v-if="message" :message="message" :is-error="isError" class="absolute z-10 right-0 top-0 w-100"/>
         <StepNavigation :items="steps" :current="current" />
-        <div class="w-100 min-h-10 my-3 flex flex-col ">
+        <div class="w-full md:w-100 min-h-10 my-3 flex flex-col">
             
-            <select name="" v-model="categorySelected" id="" class="inputs-form bg-white ">
+            <select name="" v-model="categorySelected" id="" class="inputs-form bg-white w-full">
                 <option :value="0">Seleccione categoría</option>
                 <option :value="category.id" :key="category.id" class="p-2 text-neutral-800" v-for="category in categories"> {{ category.name }}</option>
                 
             </select>
         </div>
         
-        <div class="flex items-center justify-between w-full mb-3">
-            <div class="w-55">
-                <button type="button" @click="newQuestions()" class="text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer" :disabled="!categorySelected">
+        <div class="flex flex-col sm:flex-row items-center justify-between w-full mb-3 gap-y-3 sm:gap-y-0">
+            <div class="w-full sm:w-55">
+                <button type="button" @click="newQuestions()" class="w-full text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer" :disabled="!categorySelected">
                     <Icon class="text-2xl" icon="ic:outline-plus" />
                     Crear preguntas
                     
                 </button>
             </div>
             
-            <div class="w-60">
-                <button :disabled="!questionSelected" type="button" @click="newAnswers()" class="text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer">
+            <div class="w-full sm:w-60">
+                <button :disabled="!questionSelected" type="button" @click="newAnswers()" class="w-full text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer">
                     <Icon class="text-2xl" icon="ic:outline-plus" />
                     Asociar respuestas
                 </button>
@@ -30,29 +30,29 @@
             
 
         </div>
-        <div class="flex space-x-2">
+        <div class="flex flex-col md:flex-row gap-y-4 md:gap-y-0 md:space-x-2">
                 
-            <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden w-1/2 h-125">
+            <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden w-full md:w-1/2 h-125">
                 <h3 class="text-xl text-center text-white font-extrabold mb-3 mt-3">Listado de preguntas</h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full table-fixed text-left border-collapse">
+                    <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
-                                <th class="p-4 w-20 ">Orden</th>
-                                <th class="p-4 w-80 ">Nombre</th>
-                                <th class="p-4 text-center">Acciones</th>
+                                <th class="p-2 sm:p-4 w-12 sm:w-20">Orden</th>
+                                <th class="p-2 sm:p-4 w-full">Nombre</th>
+                                <th class="p-2 sm:p-4 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-700/50 custom-scrollbar max-h-90 overflow-y-scroll">
                             <tr :id="`question-${index}`" v-for="(question,index) in questions" :key="question.id" @click="questionSelected = question" 
                             :class="['text-slate-200 transition-colors cursor-pointer w-full', questionSelected?.id === question.id ? 'bg-yellow-500 text-white font-semibold' : 'hover:bg-slate-600/30']"
                             >
-                                <td class="p-4 w-20">{{ question.order }}</td>
-                                <td class="p-4 w-80 ">
+                                <td class="p-2 sm:p-4 w-12 sm:w-20">{{ question.order }}</td>
+                                <td class="p-2 sm:p-4 w-full break-words">
                                     {{ question.name }}
                                 </td>
-                                <td class="p-4">
-                                    <div class="flex items-center justify-center gap-x-3">
+                                <td class="p-2 sm:p-4">
+                                    <div class="flex items-center justify-center gap-x-2 sm:gap-x-3">
                                         <Link :href="`/questions/details/${question.id}`">
                                             <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
                                         </Link>
@@ -67,27 +67,27 @@
                 </div>
             </div>
 
-            <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden w-1/2 h-125" v-if="questionSelected">
-                <h3 v-if="questionSelected" class="text-xl text-center text-white font-extrabold mb-3 mt-3">{{ questionSelected.name }}</h3>
+            <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden w-full md:w-1/2 h-125" v-if="questionSelected">
+                <!-- <h3 v-if="questionSelected" class="text-xl text-center text-white font-extrabold mb-3 mt-3">{{ questionSelected.name }}</h3> -->
                 <!--<h3 v-if="!questionSelected" class="text-xl text-center text-white font-extrabold mb-3 mt-3 underline">No ha seleccionado una pregunta.</h3>-->
-                <h4 class="text-lg text-center text-white font-extrabold mb-3">Respuestas asociadas</h4>
+                <h4 class="text-xl text-center text-white font-extrabold mb-3 mt-3">Respuestas asociadas</h4>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
-                                <th class="p-4 w-30">Orden</th>
-                                <th class="p-4">Nombre</th>
-                                <th class="p-4 text-center w-45">Acciones</th>
+                                <th class="p-2 sm:p-4 w-12 sm:w-20">Orden</th>
+                                <th class="p-2 sm:p-4 w-full">Nombre</th>
+                                <th class="p-2 sm:p-4 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-700/50 custom-scrollbar max-h-90 overflow-y-scroll">
                             <tr :id="`answer-${index}`" v-for="(answer,index) in answers" :key="answer.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors w-full">
-                                <td class="p-4 w-30">{{ answer.order }}</td>
-                                <td class="p-4 flex-1">
+                                <td class="p-2 sm:p-4 w-12 sm:w-20">{{ answer.order }}</td>
+                                <td class="p-2 sm:p-4 w-full break-words">
                                     {{ answer.name }}
                                 </td>
-                                <td class="p-4 w-45">
-                                    <div class="flex items-center justify-center gap-x-3">
+                                <td class="p-2 sm:p-4">
+                                    <div class="flex items-center justify-center gap-x-2 sm:gap-x-3">
                                         <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
                                         <Icon @click="getQuestionToEdit(question.id)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
                                         <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
@@ -108,7 +108,7 @@
             </h2>
             
             
-            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class=" w-150 h-70">
+            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class="w-full md:w-150 h-70">
                 <div class="flex item-center justify-end space-x-3">
                     <button @click.prevent="incrementFormRow('question')" class="" v-if="operation_name!='Editar'">
                         <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
@@ -124,15 +124,15 @@
                         <div class="text-center font-bold mb-3">
                             <span>Pregunta {{ index+1 }}</span>
                         </div>
-                        <div class="flex items-center justify-between space-x-2">
-                            <div class="w-35 flex items-center space-x-2">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-y-3 sm:gap-y-0 sm:space-x-2">
+                            <div class="w-full sm:w-35 flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
                                 <label for="" class="text-sm font-bold">Orden: </label>
-                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
+                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form w-full sm:w-auto">
                             </div>
 
-                            <div class="w-full flex items-center space-x-2">
+                            <div class="w-full flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
                                 <label for="" class="text-sm font-bold">Nombre: </label>
-                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
+                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form w-full">
                             </div>
                         </div>
                         
@@ -150,7 +150,7 @@
             </h2>
             
             
-            <form @submit.prevent="operation_name =='Crear'?createManyAnswers_(formAnswer):updateAnswer(selectedAnswer?.id)" action="" class=" w-150 min-h-50 max-h-70 overflow-y-scroll">
+            <form @submit.prevent="operation_name =='Crear'?createManyAnswers_(formAnswer):updateAnswer(selectedAnswer?.id)" action="" class="w-full md:w-150 min-h-50 max-h-70 overflow-y-scroll">
                 <div class="flex item-center justify-end space-x-3">
                 <button @click.prevent="incrementFormRow('answer')" v-if="operation_name!='Editar'">
                     <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
@@ -165,15 +165,15 @@
                     <div class="text-center font-bold mb-3">
                         <span>Respuesta {{ index+1 }}</span>
                     </div>
-                    <div class="flex items-center justify-between space-x-2">
-                        <div class="w-35 flex items-center space-x-2">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-y-3 sm:gap-y-0 sm:space-x-2">
+                        <div class="w-full sm:w-35 flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
                             <label for="" class="text-sm font-bold">Orden: </label>
-                            <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
+                            <input required v-model="formRow.order" min="1" type="number" class="inputs-form w-full sm:w-auto">
                         </div>
 
-                        <div class="w-full flex items-center space-x-2">
+                        <div class="w-full flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
                             <label for="" class="text-sm font-bold">Nombre: </label>
-                            <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
+                            <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form w-full">
                         </div>
                     </div>
                     
@@ -196,8 +196,8 @@
             </ol>
                 
         </div>
-        <div class="mx-auto w-2/8 mb-3">
-            <button @click="NextStep()" class="green-button-app cursor-pointer" :disabled="nextStepFlag">
+        <div class="mx-auto w-full sm:w-1/2 md:w-1/4 lg:w-1/4 mb-3 flex justify-center">
+            <button @click="NextStep()" class="w-full green-button-app cursor-pointer" :disabled="nextStepFlag">
                 Finalizar
             </button>    
         </div>
@@ -268,7 +268,7 @@ onMounted(async()=>{
                 surveySelected.value = page.props.surveyId
         }
     }, 750);   
-
+    nextStepFlag.value = !(await validateQuestionsAnswers())
     
 })
 
@@ -451,6 +451,7 @@ const updateAnswers = async (id)=>{
 
 const validateQuestionsAnswers = async () => {
     const {data:survey} = await showFullSurvey(page.props.surveyId)
+    console.log(survey)
     if (!survey?.categories || survey.categories.length === 0) return false;
 
     return survey.categories.every(category => {

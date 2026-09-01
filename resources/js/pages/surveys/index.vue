@@ -4,7 +4,7 @@
         <div class=" text-center">
             <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas</h2>
         </div>
-        <div class="w-full flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div class="w-full flex flex-col-reverse md:flex-row justify-between items-center mb-6 gap-4">
             <div class="w-full md:w-80">
                 <input
                     v-model="searchQuery"
@@ -13,8 +13,19 @@
                     class="w-full px-4 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 transition-all"
                 />
             </div>
-            <div class="flex w-full md:w-auto gap-2">
-                <button
+            <div class="flex w-full md:w-auto gap-2 ">
+                <div class="w-40">
+                    <button
+                    @click="importSurvey"
+                    :disabled="isProcessing"
+                    class="yellow-button-app flex items-center gap-x-2 justify-center cursor-pointer"
+                >
+                    <span v-if="isProcessing" class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+                    <Icon v-else class="text-2xl" icon="ic:outline-file-upload" />
+                    {{ isProcessing ? 'Importando...' : 'Importar' }}
+                </button>
+                </div>
+                <!-- <button
                     @click="importSurvey"
                     :disabled="isProcessing"
                     class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-green-600 hover:bg-green-500 font-medium transition-colors disabled:opacity-50"
@@ -22,14 +33,22 @@
                     <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
                     <Icon v-else class="text-xl mr-2" icon="ic:outline-file-upload" />
                     {{ isProcessing ? 'Importando...' : 'Importar' }}
-                </button>
-                <button
+                </button> -->
+                <div class="w-50" >
+                    <button class="green-button-app flex items-center justify-center cursor-pointer gap-x-2"
+                    @click="idSurveyToEdit=0; isModalOpen=true;"> 
+                        <Icon class="text-2xl " icon="ic:outline-plus" />
+                        Crear manual
+                    </button>
+                    
+                </div>
+                <!-- <button
                     @click="idSurveyToEdit=0; isModalOpen=true;"
                     class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-500 font-medium transition-colors"
                 >
                     <Icon class="text-xl mr-2" icon="ic:outline-plus" />
                     Crear manual
-                </button>
+                </button> -->
             </div>
         </div>
 

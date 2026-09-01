@@ -14,16 +14,17 @@
         
         <div class="flex items-center justify-between w-full mb-3">
             <div class="w-60">
-                <button type="button" @click="newQuestions()" class="text-white font-bold flex items-center justify-center gap-x-1 yellow-button-app cursor-pointer h-10" :disabled="!categorySelected">
-                    Crear preguntas
+                <button type="button" @click="newQuestions()" class="text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer" :disabled="!categorySelected">
                     <Icon class="text-2xl" icon="ic:outline-plus" />
+                    Crear preguntas
+                    
                 </button>
             </div>
             
             <div class="w-60">
-                <button :disabled="!questionSelected" type="button" @click="newAnswers()" class="text-white font-bold flex items-center justify-center gap-x-1 yellow-button-app cursor-pointer h-10">
-                    Asociar respuestas
+                <button :disabled="!questionSelected" type="button" @click="newAnswers()" class="text-white font-bold flex items-center justify-center gap-x-2 yellow-button-app cursor-pointer">
                     <Icon class="text-2xl" icon="ic:outline-plus" />
+                    Asociar respuestas
                 </button>
             </div>
             

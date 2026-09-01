@@ -10,12 +10,11 @@
             <CategoryForm :survey_id="page.props.surveyId" @update-categories="updateCategories" />
         </div>
 
-        <div class="w-full flex items-center justify-between h-15">
-            <span class="text-white">Categorías existentes ({{ categories.length }})</span>
-
+        <div class="w-full flex items-center justify-end h-15">
+            
             <div class="w-fit">
-                <button @click="NextStep()"  class="yellow-button-app cursor-pointer" :disabled="!categories.length>0">
-                    
+                <button @click="NextStep()"  class="yellow-button-app cursor-pointer flex items-center gap-x-2" :disabled="!categories.length>0">
+                    <Icon class="text-2xl " icon="ic:outline-plus" />
                     Cargar preguntas
                     
                 </button>

@@ -1,33 +1,36 @@
 <template >
     <MainLayout>
         <StepNavigation :items="steps" :current="current" />
-        <div class="bg-gray-500/50 backdrop-blur-md shadow-lg rounded-xl py-6 px-2 md:px-6 border border-blue-700/50 h-135 
-        overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
+        <div class="bg-gray-500/50 backdrop-blur-md shadow-lg rounded-xl py-6 px-2 md:px-6 border border-blue-700/50 
+        grow overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
             
             <h2 class="text-xl md:text-2xl font-bold text-white mb-6 underline">Resumen de la Encuesta</h2>
 
             <div v-if="fullSurvey" class="space-y-4">
                 <div v-for="category in fullSurvey.categories" :key="category.id" class="border border-blue-800/50 rounded-lg overflow-hidden bg-blue-950/40">
-                    <button @click="toggleCategory(category.id)" class="w-full p-4 text-white font-bold flex justify-between items-center hover:bg-white/60 cursor-pointer transition-colors text-sm">
+                    <button @click="toggleCategory(category.id)" class="w-full p-4 text-white font-bold flex justify-between items-center hover:bg-blue-800/60 cursor-pointer transition-colors text-sm">
                         {{ category.name }}
                         <Icon :icon="openItems.category === category.id ? 'ic:baseline-expand-less' : 'ic:baseline-expand-more'" class="text-xl" />
                     </button>
 
                     <div v-if="openItems.category === category.id" class="p-3 bg-blue-900/20 border-t border-blue-800/50">
                         <div v-for="question in category.questions" :key="question.id" class="mb-2 border border-blue-800/30 rounded-lg overflow-hidden bg-blue-950/60">
-                            <button @click="toggleQuestion(question.id)" class="w-full p-3  text-xs md:text-sm text-blue-100 flex justify-between items-center hover:bg-white/40 cursor-pointer">
+                            <button @click="toggleQuestion(question.id)" class="w-full p-3  text-xs md:text-sm text-blue-100 flex justify-between items-center hover:bg-blue-900/50 cursor-pointer">
                                 {{ question.name }}
                                 <Icon :icon="openItems.question === question.id ? 'ic:baseline-expand-less' : 'ic:baseline-expand-more'" class="text-xs" />
                             </button>
 
                             <div v-if="openItems.question === question.id" class="p-4 bg-blue-950/80 text-blue-200  text-xs md:text-sm">
-                                <div v-for="answer in question.answers" :key="answer.id" class="p-2 border-b border-blue-800/30 last:border-0 hover:bg-white/40">
+                                <div v-for="answer in question.answers" :key="answer.id" class="p-2 border-b border-blue-800/30 last:border-0 hover:bg-blue-800/40">
                                     {{ answer.name }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div v-else class="text-center text-white py-10">
+                <p>Cargando encuesta...</p>
             </div>
         </div>
         <div class="mx-auto w-7/12 md:w-1/4 mb-3">

@@ -373,5 +373,43 @@ class ResultController extends Controller
             ], 500);
         }
     }
+
+    public function getTopPollsters(Request $request)
+    {
+        try {
+            $surveyId = $request->query('survey_id');
+
+            $sql = "
+                SELECT 
+                    r.pollster_id,
+                    p.name as pollster_name,
+                    COUNT(DISTINCT r.person_id) as total_surveys_conducted
+                FROM results r
+                JOIN persons p ON p.id = r.pollster_id
+            ";
+
+            $bindings = [];
+
+            if (!empty($surveyId)) {
+                $sql .= " 
+                    JOIN questions q ON q.id = r.question_id
+                    JOIN categories c ON c.id = q.category_id
+                    WHERE c.survey_id = :survey_id
+                ";
+                $bindings['survey_id'] = (int) $surveyId;
+            }
+
+            $sql .= " GROUP BY r.pollster_id, p.name ORDER BY total_surveys_conducted DESC LIMIT 5";
+
+            $results = DB::select($sql, $bindings);
+
+            return response()->json($results, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "error" => "No se pudo obtener el ranking de encuestadores.",
+                "details" => $th->getMessage()
+            ], 500);
+        }
+    }
 }
 

@@ -39,32 +39,27 @@ class SurveyController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        //$age_range = intval($request->query('age_range'));
-        
         $perPage = $request->query('per_page', 10);
         $surveys = [];
 
-        if($request->query('all')=='true'){
+        if($request->query('all') == 'true'){
             $surveys = Survey::query()
-            ->orderBy('created_at', 'DESC')->get();
-        }else{
-            
+                ->orderBy('created_at', 'DESC')
+                ->get();
+        } else {
             $surveys = Survey::query()
-            ->orderBy('created_at', 'DESC')
+                ->orderBy('created_at', 'DESC')
             ->addSelect([
-                'results_count' => DB::table('results')
-                    ->join('persons', 'persons.id', '=', 'results.person_id')
-                    // ->join('age_ranges', 'persons.age_range_id', '=', 'age_ranges.id')
-                    ->join('questions', 'questions.id', '=', 'results.question_id')
-                    ->join('categories', 'categories.id', '=', 'questions.category_id')
-                    ->whereColumn('categories.survey_id', 'surveys.id')
-                    //->when($age_range, fn($query) => $query->where('age_ranges.id', $age_range))
-                    ->selectRaw('count(DISTINCT persons.id)')
-            ])
-            ->paginate($perPage);
-        }
-        
-        
+            'results_count' => DB::table('results')
+                ->join('persons', 'persons.id', '=', 'results.person_id')
+                ->join('questions', 'questions.id', '=', 'results.question_id')
+                ->join('categories', 'categories.id', '=', 'questions.category_id')
+                ->whereColumn('categories.survey_id', 'surveys.id')
+                ->selectRaw('count(DISTINCT persons.id)')
+                ])
+                ->paginate($perPage);
+            }
+            
         return response()->json($surveys, 200);
     }
 
@@ -74,18 +69,16 @@ class SurveyController extends Controller
     public function store(Request $request): JsonResponse
     {
         try{
-            
             $request['name'] = strtoupper($request->name);
             $request['finish_date'] = $request->finish_date.' 23:59:59';
-
-            $validator = Validator::make($request->all(), $this->rules());
             
+            $validator = Validator::make($request->all(), $this->rules());
+
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
 
             $survey = Survey::create($validator->validated());
-
             return response()->json([
                 'message' => 'Encuesta creada con éxito',
                 'data'    => $survey
@@ -123,9 +116,8 @@ class SurveyController extends Controller
             if(!$survey){
                 throw new Exception("Not found register", 404);    
             }
-            
-            return response()->json($survey, 200);
 
+            return response()->json($survey, 200);
         } catch (\Throwable $th) {
             return response()->json([
                 "error" => $th->getMessage(),
@@ -213,6 +205,23 @@ class SurveyController extends Controller
             ]);
         }
         
+    }
+
+    public function getRecent(Request $request): JsonResponse
+    {
+        try {
+            $surveys = Survey::query()
+                ->orderBy('created_at', 'DESC')
+                ->limit(5)
+                ->get();
+
+            return response()->json($surveys, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "error" => "No se pudieron cargar las encuestas recientes.",
+                "details" => $e->getMessage()
+            ], 500);
+        }
     }
 }
 

@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::prefix('survey')->group(function (){
         Route::post('create', [SurveyController::class, 'store']);
         Route::post('import-excel', [SurveyImportController::class, 'importFromExcel']);
+        Route::get('show-recent', [SurveyController::class, 'getRecent']);
         Route::get('show-all', [SurveyController::class, 'index']);
         Route::get('show-one/{id}', [SurveyController::class, 'show']);
         Route::get('show-full/{id}', [SurveyController::class, 'showFull']);
@@ -111,6 +112,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::delete('delete/{id}', [ResultController::class, 'destroy']);
         Route::get('newReportStructure/{id}', [ResultController::class, 'newReportStructure']);
         Route::get('parish/{surveyId}', [ResultController::class, 'getRespondentCountByParish']);
+        Route::get('reports/top-pollsters', [ResultController::class, 'getTopPollsters']);
     });
 
     /** PARISH (Escritura protegida) */

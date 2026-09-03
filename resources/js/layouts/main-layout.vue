@@ -18,11 +18,11 @@
         <div class="flex-1 flex flex-col transition-all duration-300 min-w-0" 
              :style="{ width: (isMenuOpen && windowWidth >= 1024) ? 'calc(100% - 20rem)' : '100%', marginLeft: (isMenuOpen && windowWidth >= 1024) ? '20rem' : '0rem' }">
             
-            <div class="pt-20 w-full max-w-7xl mx-auto px-4">
+            <div class="pt-7 w-full max-w-7xl mx-auto px-4">
                 <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 mx-auto border-2 border-white" alt="Logo">
             </div>
 
-            <div class="w-full max-w-7xl 2xl:max-w-8/12 min-h-screen mx-auto mt-4 px-4 pb-10">
+            <div class="w-full max-w-7xl 2xl:max-w-500 min-h-screen mx-auto mt-4 px-4 pb-10">
                 <slot />
             </div>
         </div>

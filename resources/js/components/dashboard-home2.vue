@@ -5,13 +5,13 @@
         </h1>
     </div>
 
-    <div id="cards" class="flex items-center sm:justify-around lg:justify-between flex-wrap gap-2 mb-6 md:p-6">
+    <div id="cards" class="flex items-center justify-around justify-items-stretch flex-wrap gap-2 mb-6 md:px-6 mt-3">
         <DashboardCard title="Usuarios" value="1,234" />
         <DashboardCard title="Encuestas" value="48" />
         <DashboardCard title="Respuestas" value="12,890" />
     </div>
     
-    <div class="flex flex-wrap gap-6 md:p-6">
+    <div class="flex flex-wrap gap-6 md:px-6">
         <div class="flex-1 min-w-[320px] bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
             <div class="p-4 border-b border-slate-700 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-white">Encuestas recientes</h2>

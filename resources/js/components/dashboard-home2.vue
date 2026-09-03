@@ -5,7 +5,7 @@
         </h1>
     </div>
 
-    <div id="cards" class="flex items-center flex-wrap justify-around gap-4 mb-6 md:p-6">
+    <div id="cards" class="flex items-center sm:justify-around lg:justify-between flex-wrap gap-2 mb-6 md:p-6">
         <DashboardCard title="Usuarios" value="1,234" />
         <DashboardCard title="Encuestas" value="48" />
         <DashboardCard title="Respuestas" value="12,890" />

@@ -20,6 +20,16 @@ const toggleDropdown = (key) => {
   openDropdowns.value[key] = !openDropdowns.value[key];
 };
 
+const closeMenu = () => {
+  emit('close');
+};
+
+const handleNavigation = () => {
+  if (window.innerWidth < 1024) {
+    emit('close');
+  }
+};
+
 const handleLogout = () => {
   router.post('/logout');
 };
@@ -49,18 +59,18 @@ onUnmounted(() => {
     <Transition name="fade-overlay">
       <div
         v-if="show"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity"
-        @click="emit('close')"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity lg:hidden"
+        @click="closeMenu"
       ></div>
     </Transition>
 
     <Transition name="slide-menu">
       <div
         v-if="show"
-        class="fixed top-0 left-0 h-full w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out"
+        class="fixed top-0 left-0 h-full w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0"
       >
         <button
-          @click="emit('close')"
+          @click="closeMenu"
           class="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer transition-colors"
         >
           <Icon icon="ic:round-close" class="text-2xl" />
@@ -90,7 +100,7 @@ onUnmounted(() => {
               :open-dropdowns="openDropdowns"
               :toggle-dropdown="toggleDropdown"
               :user-role="userRole"
-              @close="emit('close')"
+              @close="handleNavigation"
             />
 
             <li class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">

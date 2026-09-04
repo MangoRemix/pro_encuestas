@@ -34,10 +34,6 @@ const handleLogout = () => {
   router.post('/logout');
 };
 
-watch(() => props.show, (newVal) => {
-  document.body.style.overflow = newVal ? 'hidden' : '';
-});
-
 const handleKeyDown = (e) => {
   if (e.key === 'Escape' && props.show) {
     emit('close');
@@ -50,7 +46,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
-  document.body.style.overflow = '';
 });
 </script>
 
@@ -67,7 +62,7 @@ onUnmounted(() => {
     <Transition name="slide-menu">
       <div
         v-if="show"
-        class="fixed top-0 left-0 h-full w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0"
+        class="fixed top-0 left-0 h-screen w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0"
       >
         <button
           @click="closeMenu"

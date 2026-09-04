@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="bg-white/90 border border-slate-200 p-6 rounded-lg shadow-sm flex flex-col justify-between w-full sm:w-64 md:w-80">
+  <div class="bg-white/90 border border-slate-200 p-6 rounded-lg shadow-sm flex flex-col justify-between ">
     <h3 class="text-slate-500 text-sm font-medium uppercase tracking-wider self-start">
       {{ title }}
     </h3>

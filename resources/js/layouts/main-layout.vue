@@ -1,5 +1,6 @@
 <template>
-    <div id="main" class="w-full min-h-screen relative flex bg-[#0B1E36]">
+    <div id="main" 
+         :class="['w-full min-h-screen relative flex bg-[#0B1E36]', isMenuOpen && windowWidth < 1024 ? 'overflow-hidden h-screen' : '']">
         <!-- Botón siempre visible para alternar el menú -->
         <div v-if="user" class="fixed top-5 left-5 z-50">
             <button 
@@ -16,7 +17,10 @@
         
         <!-- Contenedor principal: ancho dinámico usando calc() para restar el menú cuando está abierto -->
         <div class="flex-1 flex flex-col transition-all duration-300 min-w-0" 
-             :style="{ width: (isMenuOpen && windowWidth >= 1024) ? 'calc(100% - 20rem)' : '100%', marginLeft: (isMenuOpen && windowWidth >= 1024) ? '20rem' : '0rem' }">
+             :style="{ 
+                 width: (user && isMenuOpen && windowWidth >= 1024) ? 'calc(100% - 20rem)' : '100%', 
+                 marginLeft: (user && isMenuOpen && windowWidth >= 1024) ? '20rem' : '0rem' 
+             }">
             
             <div class="pt-7 w-full max-w-7xl mx-auto px-4">
                 <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 mx-auto border-2 border-white" alt="Logo">

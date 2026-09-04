@@ -4,10 +4,10 @@
         
         <!-- Notificación flotante -->
         <div class="fixed top-5 right-5 z-50 w-80">
-                <NotificationBox :message="errorMessage" :is-error="true" />
-                    </div>
+            <NotificationBox :message="errorMessage" :is-error="true" />
+        </div>
 
-        <div class="flex items-center justify-center min-h-125 bg-slate-700 backdrop-blur-md shadow-lg w-[95%] sm:w-100 md:w-112.5 mx-auto rounded-xl mt-10">
+        <div class="flex items-center justify-center min-h-125 bg-slate-700 backdrop-blur-md shadow-lg w-[95%] sm:w-100 md:w-112.5 mx-auto rounded-xl mt-10 ">
             <div class="w-full p-6 space-y-6">
 
                 <div class="flex justify-center mb-8">

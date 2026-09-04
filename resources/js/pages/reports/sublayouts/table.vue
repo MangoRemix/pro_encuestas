@@ -1,29 +1,27 @@
 <template>
     <div class="px-10 py-1">
-        <div v-if="categories && categories.length" class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-3 border border-blue-700/50 w-full h-135">
-            <div id="table-body" class="w-full max-h-120 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                <table class="table-fixed w-full text-left text-white">
-                    <thead class="sticky top-0 bg-blue-900/80 backdrop-blur-sm">
-                        <tr>
-                            <th class="p-2 w-1/4">Categoría</th>
-                            <th class="p-2 w-1/4">Pregunta</th>
-                            <th class="p-2 w-1/4">Respuesta</th>
-                            <th class="p-2 w-1/4 text-center">Votos</th>
+        <div v-if="categories && categories.length" class="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden w-full h-135">
+            <div id="table-body" class="w-full max-h-120 overflow-x-auto overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse text-slate-200">
+                    <thead class="sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
+                        <tr class="border-b border-slate-700 text-xs uppercase tracking-wider text-white">
+                            <th class="p-4 w-1/4">Categoría</th>
+                            <th class="p-4 w-1/4">Pregunta</th>
+                            <th class="p-4 w-1/2" colspan="2">Respuesta / Votos</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-700/50">
                         <template v-for="cat in categories" :key="cat.id">
-                            <tr v-for="(q, qIndex) in cat.questions" :key="q.id" class=" uppercase border-b border-white/20">
-                                <td v-if="qIndex === 0" :rowspan="cat.questions.length" class="p-2 font-bold align-top">
+                            <tr v-for="(q, qIndex) in cat.questions" :key="q.id" class="hover:bg-slate-600/30 transition-colors">
+                                <td v-if="qIndex === 0" :rowspan="cat.questions.length" class="p-4 font-bold border-r border-slate-700/50 align-top">
                                     {{ cat.name }}
                                 </td>
-                                <td class="p-2 align-top">{{ q.name }}</td>
+                                <td class="p-4 align-top border-r border-slate-700/50">{{ q.name }}</td>
                                 <td class="p-0" colspan="2">
-                                    <table class="w-full">
-                                        <tr v-for="ans in q.answers" :key="ans.id" class="border-b border-white/10 last:border-0">
-                                            <td class="p-2 w-1/2">{{ ans.name }}</td>
-                                            <td class="p-2 w-1/2 text-center font-bold">{{ ans.total_votes ?? 0 }}</td>
-                                            <td class="p-2 w-1/2 text-center font-bold">{{ ans.count }}</td>
+                                    <table class="w-full border-collapse">
+                                        <tr v-for="ans in q.answers" :key="ans.id" class="border-b border-slate-700/30 last:border-0">
+                                            <td class="p-4 w-3/4">{{ ans.name }}</td>
+                                            <td class="p-4 w-1/4 text-center font-bold text-blue-400">{{ ans.total_votes ?? 0 }}</td>
                                         </tr>
                                     </table>
                                 </td>
@@ -33,7 +31,7 @@
                 </table>
             </div>
         </div>
-        <p v-else class="text-white/70 italic text-center py-4 bg-white/10 backdrop-blur-sm rounded-xl border border-blue-700/30">
+        <p v-else class="text-slate-400 italic text-center py-8 bg-slate-900/30 rounded-xl border border-slate-700">
             No hay datos para mostrar...
         </p>
     </div>
@@ -42,3 +40,10 @@
 <script setup>
 defineProps(['categories'])
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+</style>

@@ -5,10 +5,10 @@
         </h1>
     </div>
 
-    <div id="cards" class="flex items-center justify-around justify-items-stretch flex-wrap gap-2 mb-6 md:px-6 mt-3">
-        <DashboardCard title="Usuarios" value="1,234" />
-        <DashboardCard title="Encuestas" value="48" />
-        <DashboardCard title="Respuestas" value="12,890" />
+    <div id="cards" class="flex items-center justify-between xl:justify-around flex-wrap gap-2 mb-6 md:px-6 mt-3">
+        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Usuarios" value="1,234" />
+        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestas" value="48" />
+        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Respuestas" value="12,890" />
     </div>
     
     <div class="flex flex-wrap gap-6 md:px-6">

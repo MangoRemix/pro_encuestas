@@ -57,9 +57,7 @@
       </button>
     </form>
 
-    <div class="mt-6">
-      <NotificationBox v-if="message || isError" :message="message" :isError="isError" />
-    </div>
+    <NotificationBox v-if="message || isError" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100" />
   </div>
 </template>
 
@@ -125,6 +123,10 @@ const handleSubmit = async () => {
       response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
     
     message.value = '¡Encuesta creada con éxito!';
+    setTimeout(() => {
+      message.value = '';
+    }, 3000);
+
     if(response.status == 200){
       getSurvey(surveyId)
       
@@ -156,6 +158,10 @@ const handleSubmit = async () => {
     } else {
       message.value = 'Ocurrió un error al procesar la solicitud.';
     }
+    setTimeout(() => {
+      message.value = '';
+      isError.value = false;
+    }, 3000);
   } finally {
   loading.value = false;
   }

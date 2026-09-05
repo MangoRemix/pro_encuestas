@@ -6,8 +6,8 @@
     </div>
 
     <div id="cards" class="flex items-center justify-between 2xl:justify-start flex-wrap gap-2 mb-6 md:px-6 mt-3">
-        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Usuarios" value="1,234" />
-        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestas" value="48" />
+        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestados" value="1,234" />
+        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestadores" value="48" />
         <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Respuestas" value="12,890" />
     </div>
     

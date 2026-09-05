@@ -26,11 +26,13 @@
 
             <!-- Vista Móvil: Tarjetas -->
             <div class="md:hidden space-y-4">
+                <div v-if="isLoading" class="text-center text-slate-400 py-8">Cargando...</div>
+                <div v-else-if="errorMessage" class="text-center text-red-400 py-8">{{ errorMessage }}</div>
                 <div v-for="user in filteredStaff" :key="user.id" class="bg-slate-800 p-3 rounded-lg border border-slate-700 shadow-sm">
                     <div class="flex justify-between items-start mb-3">
                         <h3 class="font-bold text-white text-lg">{{ user.name }}</h3>
                         <span class="px-2 py-1 rounded text-xs bg-slate-800 border border-slate-700 text-blue-100">
-                            {{ user.rol_id === 3 ? 'Admin' : 'Encuestador' }}
+                            {{ getRoleName(user.rol_id) }}
                         </span>
                     </div>
                     <div class="text-sm text-slate-400 space-y-1 mb-4">
@@ -58,19 +60,24 @@
                         </tr>
                     </thead>
                         <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                            <tr v-if="isLoading">
+                                <td colspan="5" class="p-4 text-center text-slate-400">Cargando...</td>
+                            </tr>
+                            <tr v-else-if="errorMessage">
+                                <td colspan="5" class="p-4 text-center text-red-400">{{ errorMessage }}</td>
+                            </tr>
                             <tr v-for="user in filteredStaff" :key="user.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
                                 <td class="p-4">{{ user.name }}</td>
                                 <td class="p-4">{{ user.email }}</td>
                                 <td class="p-4">{{ user.sex_id === 1 ? 'M' : 'F' }}</td>
                                 <td class="p-4">
                                     <span class="px-2 py-1 rounded text-xs bg-slate-800 border border-slate-700">
-                                        {{ user.rol_id === 3 ? 'Admin' : 'Encuestador' }}
+                                        {{ getRoleName(user.rol_id) }}
                                     </span>
                                 </td>
                                 <td class="p-4">
                                 <div class="flex gap-3 justify-center">
-                                    
-                                                                        <Icon @click="" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                    <Icon @click="editUser(user)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
                                     <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash" @click="confirmDelete(user.id)"/>
                                 </div>
                             </td>
@@ -91,7 +98,7 @@
                 <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
                 <div class="flex justify-center gap-4">
                     <button @click="isDeleteModalOpen = false" class="px-4 py-2 bg-slate-200 text-slate-800 rounded hover:bg-slate-300">Cancelar</button>
-                    <button @click="deleteUser" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer">Confirmar</button>
+                    <button @click="handleDeleteUser" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer">Confirmar</button>
                 </div>
             </div>
         </Modal>
@@ -111,26 +118,15 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import { Icon } from "@iconify/vue";
-import axios from 'axios';
-import { apiHost } from '../../store/store';
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
 import UserForm from '@/components/forms/user-form.vue';
 import Pagination from '@/components/pagination.vue';
+import { useUsers } from '@/composables/api/users';
 
-onMounted(async ()=>{
-    await getStaff()
-});
+const { staffData, isLoading, errorMessage, getStaff, deleteUser: deleteUserApi, getRoleName } = useUsers();
 
-const staffData = ref({
-    data: [],
-    current_page: 1,
-    last_page: 1,
-    total: 0,
-    from: 0,
-    to: 0
-});
 const searchQuery = ref('');
 const isModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
@@ -141,7 +137,7 @@ const filteredStaff = computed(() => {
     if (!query) return staffData.value.data;
     
     return staffData.value.data.filter(user => {
-        const roleName = user.rol_id === 3 ? 'admin' : 'encuestador';
+        const roleName = getRoleName(user.rol_id).toLowerCase();
         return (
             user.name.toLowerCase().includes(query) ||
             user.email.toLowerCase().includes(query) ||
@@ -150,51 +146,31 @@ const filteredStaff = computed(() => {
     });
 });
 
-const getStaff = async (page = 1) => {
-    try {
-        const response = await axios.get(`${apiHost}person/pollster-admin/list?page=${page}`);
-        console.log("Respuesta API:", response.data);
-        // Si la API devuelve un objeto con 'data' y metadatos, úsalo directamente.
-        // Si devuelve solo el array, ajusta para que el componente funcione.
-        if (response.data && response.data.data) {
-            staffData.value = response.data;
-        } else {
-            // Caso de fallback si la API no devuelve estructura de paginación
-            staffData.value = {
-                data: response.data || [],
-                current_page: 1,
-                last_page: 1,
-                total: response.data ? response.data.length : 0,
-                from: 1,
-                to: response.data ? response.data.length : 0
-            };
-        }
-    } catch (error) {
-        console.error("Error al cargar personal:", error);
-    }
-};
-
-const deleteUser = async () => {
-    if (!userToDelete.value) return;
-    try {
-        await axios.delete(`${apiHost}person/delete/${userToDelete.value}`);
-        await getStaff(staffData.value.current_page);
-        isDeleteModalOpen.value = false;
-        userToDelete.value = null;
-    } catch (error) {
-        console.error("Error al eliminar usuario:", error);
-    }
-};
-
 const confirmDelete = (id) => {
     userToDelete.value = id;
     isDeleteModalOpen.value = true;
+};
+
+const handleDeleteUser = async () => {
+    if (!userToDelete.value) return;
+    const success = await deleteUserApi(userToDelete.value);
+    if (success) {
+        isDeleteModalOpen.value = false;
+        userToDelete.value = null;
+    }
+};
+
+const editUser = (user) => {
+    // TODO: Implementar edición de usuario
+    console.log('Editar usuario:', user);
 };
 
 const handleUserCreated = () => {
     isModalOpen.value = false;
     getStaff();
 };
+
+onMounted(getStaff);
 </script>
 
 <style scoped>

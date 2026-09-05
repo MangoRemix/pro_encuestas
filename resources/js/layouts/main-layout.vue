@@ -26,7 +26,7 @@
                 <img src="/images/logoAlcaldia.png" class="bg-white rounded-full object-cover h-30 w-30 mx-auto border-2 border-white" alt="Logo">
             </div>
 
-            <div class="w-full max-w-7xl 2xl:max-w-500 min-h-screen mx-auto mt-4 px-4 pb-10">
+            <div class="w-full max-w-7xl 2xl:max-w-500 mx-auto mt-4 px-4 pb-10">
                 <slot />
             </div>
         </div>
@@ -122,3 +122,4 @@ const menuItems = ref([
     }
 ]);
 </script>
+

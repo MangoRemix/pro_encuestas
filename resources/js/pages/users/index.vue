@@ -47,11 +47,10 @@
             </div>
 
             <!-- Tabla con estilo Dashboard (Vista Escritorio) -->
-            <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
-                <div class="overflow-x-auto">
+            <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden max-h-150 overflow-y-auto custom-scrollbar">
                     <table class="w-full text-left border-collapse">
-                    <thead>
-                            <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                    <thead class="sticky top-0 z-10 bg-slate-900">
+                        <tr class="border-b border-slate-700 text-white text-xs uppercase tracking-wider">
                                 <th class="p-4">Nombre</th>
                                 <th class="p-4">Email</th>
                                 <th class="p-4">Sexo</th>
@@ -59,7 +58,7 @@
                                 <th class="p-4">Acciones</th>
                         </tr>
                     </thead>
-                        <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                        <tbody class="divide-y divide-slate-700/50">
                             <tr v-if="isLoading">
                                 <td colspan="5" class="p-4 text-center text-slate-400">Cargando...</td>
                             </tr>
@@ -86,8 +85,6 @@
                 </table>
             </div>
         </div>
-        </div>
-
         <Modal :show="isModalOpen" @close="isModalOpen = false">
             <UserForm class="w-100" @created="handleUserCreated" />
         </Modal>
@@ -174,8 +171,23 @@ onMounted(getStaff);
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #64748b #0f172a;
+}
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
 </style>
+

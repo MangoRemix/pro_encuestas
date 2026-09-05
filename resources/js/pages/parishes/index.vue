@@ -62,22 +62,22 @@ const remove = async (id) => {
         </div>
 
         <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="max-h-110 overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                        <tr class="sticky top-0 z-10 border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider">
                             <th class="p-4">Nombre</th>
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                    <tbody class="divide-y divide-slate-700/50">
                         <tr v-for="p in parishes" :key="p.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
                             <td class="p-4 font-medium">{{ p.name }}</td>
                             <td class="p-4">
                                 <div class="flex gap-3 justify-center">
-                                    <Icon @click="openModal(p)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
-                                    <Icon @click="remove(p.id)" class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
-            </div>
+                                    <Icon @click="openModal(p)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit" />
+                                    <Icon @click="remove(p.id)" class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash" />
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -101,9 +101,23 @@ const remove = async (id) => {
 </template>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #64748b #0f172a;
+}
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
 </style>
 

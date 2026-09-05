@@ -42,8 +42,23 @@ defineProps(['categories'])
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #64748b #0f172a;
+}
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
 </style>
+

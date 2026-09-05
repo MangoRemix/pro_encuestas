@@ -84,10 +84,10 @@
 
         <!-- Vista Escritorio: Tabla -->
         <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="max-h-150 overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                    <thead class="sticky top-0 bg-slate-900 z-10">
+                        <tr class="border-b border-slate-700 text-white text-xs uppercase tracking-wider">
                             <th class="p-4">Nombre</th>
                             <th class="p-4">Fecha de inicio</th>
                             <th class="p-4">Fecha de finalización</th>
@@ -95,7 +95,7 @@
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                    <tbody class="divide-y divide-slate-700/50">
                         <tr v-for="survey in filteredSurveys" :key="survey.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
                             <td class="p-4 font-medium">{{ survey.name }}</td>
                             <td class="p-4">{{ formatedDate(survey.init_date) }}</td>
@@ -204,8 +204,22 @@ const handleImportProcess = async (formData) => {
 };
 </script>
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #64748b #0f172a;
+}
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
 </style>

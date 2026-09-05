@@ -13,28 +13,23 @@
                 <span class="text-white font-bold">Total encuestados:</span>
             <span class="text-white">{{ survey.results_count }}</span>
             </div>
-            <div class="w-fit">
-                <button @click="newQuestions()" class="text-white font-bold flex items-center gap-x-3 yellow-button-app rounded-2xl px-2 cursor-pointer"
-                :disabled="!categorySelected"
-                >
-                    Crear preguntas
-                    <Icon class="h-9 w-9 p-1 " icon="ic:outline-plus" />
-                </button>
-            </div>
-
         </div>
         <div class="flex space-x-2">
-            <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
+            <div class="bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
             w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
-            h-125 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                <div class="flex w-full justify-end">
+            h-125 overflow-y-auto custom-scrollbar">
+                
+                <div class="w-full flex items-center justify-between mb-3">
+                    <h3 class="text-lg xl:text-xl text-center text-white font-extrabold ">Categorías</h3>
+                    <div class="">
                     <button @click="isModalOpen_categories = true" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
                     >
-                        <Icon class="h-6 w-6 " icon="ic:outline-plus" />
+                        <Icon class="text-2xl" icon="ic:outline-plus" />
                     </button>
                 </div>
-                <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de Categorías</h3>
-                <ul class="text-blue-100 mt-2">
+                </div>
+                
+                <ul class="text-blue-100 mt-2 text-md">
                     <li @click="categorySelected = category.id" v-for="category in categories" 
                     :class="`cursor-pointer hover:underline hover:text-yellow-400 hover:font-bold transition-all duration-75 py-1
                     ${categorySelected==category.id?'text-yellow-400':''}
@@ -44,88 +39,102 @@
                 </ul>
             </div>
                 
-            <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
+            <div class="bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-3 border border-blue-700/50 
             w-full
-            h-125">
-                <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de preguntas</h3>
-                <div id="table-header" class="h-10 w-full">
-                    <table class="table-fixed w-full text-left">
-                        <thead>
-                            <tr class="border-b border-white/30 text-white text-lg">
-                                <th class="w-30">Orden</th>
-                                <th>Nombre</th>
-                                <th class="w-55 text-center">Acciones</th>
+            h-125 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xl text-center text-white font-extrabold">Preguntas</h3>
+                <div class="">
+                    <button @click="newQuestions()" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
+                    :disabled="!categorySelected"
+                    >
+                        <Icon class="text-2xl" icon="ic:outline-plus" />                        
+                        
+                    </button>
+                </div>
+            </div>
+                
+                
+                <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+                    <table class="w-full text-left border-collapse shrink-0 table-fixed">
+                        <thead class="sticky top-0 z-10 bg-slate-900">
+                            <tr class="border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider">
+                                <th class="p-4 w-30">Orden</th>
+                                <th class="p-4">Nombre</th>
+                                <th class="p-4 w-55 text-center">Acciones</th>
                             </tr>
                         </thead>
                     </table>
-                </div>
-                <div id="table-body" class="w-full max-h-90 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                    <table class="table-fixed w-full">
-                        <tbody class="">
-                            <tr :id="`question-${index}`" v-for="(question,index) in questions" class="text-white border-b border-neutral-400">
-                                <td class="py-2 w-30">{{ question.order }}</td>
-                                <td class="py-2">
-                                    <span @click="questionSelected=question.id"
-                                    :class="`${questionSelected==question.id?'text-yellow-400':''}`"
-                                    >
-                                        {{ question.name }}
-                                    </span>
-                                </td>
-                                <td class="py-2 w-45">
-                                    <div class="flex items-center justify-center gap-x-3 w-full">
-                                        <Link :href="`/questions/details/${question.id}`">
-                                            <Icon class="text-lg md:text-2xl text-blue-600 hover:text-blue-500 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
-                                        </Link>
-                                        
-                                        <Icon @click="getQuestionToEdit(question.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                        <Icon class="text-lg md:text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
-                                    </div>
-                                </td>
-                            </tr>
-                            
-                        </tbody>
-                    </table>
+                    <div class="overflow-y-auto custom-scrollbar flex-1 w-full">
+                        <table class="w-full text-left border-collapse table-fixed">
+                            <tbody class="divide-y divide-slate-700/50">
+                                <tr :id="`question-${index}`" v-for="(question,index) in questions" :key="question.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
+                                    <td class="p-4 w-30 font-medium">{{ question.order }}</td>
+                                    <td class="p-4 truncate">
+                                        <span @click="questionSelected=question.id"
+                                        :class="`cursor-pointer ${questionSelected==question.id?'text-yellow-400 font-bold':''}`"
+                                        >
+                                            {{ question.name }}
+                                        </span>
+                                    </td>
+                                    <td class="p-4 w-55">
+                                        <div class="flex items-center justify-center gap-x-3 w-full">
+                                            <Link :href="`/questions/details/${question.id}`">
+                                                <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
+                                            </Link>
+                                            
+                                            <Icon @click="getQuestionToEdit(question.id)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                            <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- aquí irán las respuestas -->
 
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full mt-10 h-100">
-                <h3 class="text-xl text-center text-white font-extrabold mb-3">Listado de respuestas</h3>
-                <div class="flex items-center justify-end w-full mb-2">
+        <div class="bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-3 border border-blue-700/50 w-full mt-10 flex flex-col h-100">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xl text-center text-white font-extrabold">Respuestas</h3>
+                <div class="">
                     <button @click="newAnswers()" class="cursor-pointer btn-circle btn-circle-yellow h-10 w-10"
                     :disabled="!questionSelected">
-                        <Icon class="h-6 w-6" icon="ic:outline-plus" />
+                        <Icon class="text-2xl" icon="ic:outline-plus" />
                     </button>
                 </div>
                 
-                <div id="table-header" class="h-10 w-full">
-                    <table class="table-fixed w-full text-left">
+            </div>
+                
+                <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+                    <table class="w-full text-left border-collapse shrink-0 table-fixed">
                         <thead>
-                            <tr class="border-b border-white/30 text-white text-lg">
-                                <th class="w-30">Orden</th>
-                                <th>Nombre</th>
-                                <th class="w-55 text-center">Acciones</th>
+                            <tr class="border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider">
+                                <th class="p-4 w-30">Orden</th>
+                                <th class="p-4">Nombre</th>
+                                <th class="p-4 w-55 text-center">Acciones</th>
                             </tr>
                         </thead>
                     </table>
-                </div>
-                <div id="table-body" class="w-full max-h-60 overflow-y-scroll scrollbar-thumb-blue-800 scrollbar-track-white/30">
-                    <table class="table-fixed w-full">
-                        <tbody class="text-white">
-                            <tr class="border-b border-neutral-400" v-for="(answer,index) in answersByQuestion" :key="answer.id">
-                                <td class="py-2 w-30">{{ answer.order }}</td>
-                                <td class="py-2">{{ answer.name }}</td>
-                                <td class="py-2 w-55">
-                                    <div class="flex items-center justify-center gap-x-3 w-full">
-                                        <Icon @click="getAnswerToEdit(answer.id) " class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                        <Icon @click="deleteAnswer(answer.id,index)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="overflow-y-auto custom-scrollbar flex-1 w-full">
+                        <table class="w-full text-left border-collapse table-fixed">
+                            <tbody class="divide-y divide-slate-700/50 text-slate-200">
+                                <tr class="hover:bg-slate-600/30 transition-colors" v-for="(answer,index) in answersByQuestion" :key="answer.id">
+                                    <td class="p-4 w-30 font-medium">{{ answer.order }}</td>
+                                    <td class="p-4 truncate">{{ answer.name }}</td>
+                                    <td class="p-4 w-55">
+                                        <div class="flex items-center justify-center gap-x-3 w-full">
+                                            <Icon @click="getAnswerToEdit(answer.id)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                            <Icon @click="deleteAnswer(answer.id,index)" class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -473,3 +482,25 @@ const updateCategories = async () => {
 }
 
 </script>
+
+<style scoped>
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #64748b #0f172a;
+}
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>
+

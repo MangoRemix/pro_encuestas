@@ -1,5 +1,5 @@
 <template>
-    <div class="lg:pl-12">
+    <div class="lg:pl-6">
         <h1 class="text-3xl lg:text-4xl text-blue-100 font-extrabold">
             Dashboard
         </h1>

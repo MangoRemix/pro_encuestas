@@ -46,7 +46,7 @@
     </form>
 
     <!-- Mensajes de Estado -->
-    <NotificationBox v-if="message" :message="message" :isError="isError" />
+    <NotificationBox v-if="message" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100" />
   </div>
 </template>
 
@@ -105,6 +105,10 @@ const handleSubmit = async () => {
   } catch (error) {
     isError.value = true;
     message.value = error.response?.data?.message || 'Ocurrió un error al registrar.';
+    setTimeout(() => {
+      message.value = '';
+      isError.value = false;
+    }, 3000);
     console.error('Error al crear persona:', error.response?.data?.errors || error);
   } finally {
     loading.value = false;

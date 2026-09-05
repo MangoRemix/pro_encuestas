@@ -51,34 +51,33 @@ const remove = async (id) => {
             <h2 class="text-3xl text-white font-bold mt-8 underline">Gestión de Parroquias</h2>
         </div>
 
-        <div class="w-full flex justify-end items-center mb-3">
-            <button @click="openModal()" class="flex items-center rounded-full text-white bg-yellow-400 cursor-pointer hover:bg-yellow-300 h-9 w-fit p-2 font-bold justify-center">
-                <Icon class="text-2xl" icon="ic:outline-plus" />
-                Nueva Parroquia
-            </button>
+        <div class="flex items-center justify-end mb-6">
+            <div class="w-full sm:w-fit">
+
+                <button @click="openModal()" class="green-button-app flex items-center gap-x-2 justify-center cursor-pointer">
+                    <Icon class="text-2xl" icon="ic:outline-plus" />
+                    Nueva Parroquia
+                </button>
+            </div>
         </div>
 
-        <div class="bg-white/30 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 w-full">
-            <div id="table-header" class="h-10 w-full mb-3">
-                <table class="table-fixed w-full text-left">
+        <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-white/30 text-white text-lg">
-                            <th class="p-2">Nombre</th>
-                            <th class="p-2 text-center w-40">Acciones</th>
+                        <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                            <th class="p-4">Nombre</th>
+                            <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                </table>
+                    <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
+                        <tr v-for="p in parishes" :key="p.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
+                            <td class="p-4 font-medium">{{ p.name }}</td>
+                            <td class="p-4">
+                                <div class="flex gap-3 justify-center">
+                                    <Icon @click="openModal(p)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                    <Icon @click="remove(p.id)" class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
             </div>
-            <div id="table-body" class="w-full max-h-100 overflow-y-auto">
-                <table class="table-fixed w-full">
-                    <tbody class="text-white">
-                        <tr v-for="p in parishes" :key="p.id" class="border-b border-neutral-400">
-                            <td class="py-3 px-2">{{ p.name }}</td>
-                            <td class="py-3 px-2 text-center w-40">
-                                <div class="flex gap-x-3 justify-center">
-                                    <Icon @click="openModal(p)" class="text-2xl text-yellow-600 hover:text-yellow-500 cursor-pointer" icon="ic:baseline-edit"/>
-                                    <Icon @click="remove(p.id)" class="text-2xl text-red-600 hover:text-red-500 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
-                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -94,10 +93,17 @@ const remove = async (id) => {
 
                 <div class="mt-6 flex justify-end gap-3">
                     <button @click="isModalOpen = false" class="px-4 py-2 text-slate-600 hover:text-slate-800">Cancelar</button>
-                    <button @click="save" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Guardar</button>
+                    <button @click="save" class="primary-button-app">Guardar</button>
                 </div>
             </div>
         </Modal>
     </MainLayout>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+</style>
 

@@ -133,10 +133,8 @@
     </MainLayout>
 </template>
 <script setup>
-import { Head, Link, usePage, router } from '@inertiajs/vue3';
-import axios from 'axios';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Icon } from "@iconify/vue";
-import {apiHost} from '../../store/store'
 import { computed, onMounted, ref } from 'vue';
 
 import MainLayout from '@/layouts/main-layout.vue';
@@ -146,24 +144,23 @@ import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
 import { formatedDate } from '@/composables/shared';
 import SurveyForm from '@/components/forms/survey-form.vue';
 import { useNotification } from '@/composables/useNotification';
-import { importSurveyFromExcel } from '@/composables/api/surveys';
+import { getSurveysPaginated, importSurveyFromExcel } from '@/composables/api/surveys';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 
 const { notify } = useNotification();
 const { isProcessing, pollBatchStatus } = useBatchProcessor();
 const isModalOpen = ref(false);
 const isImportModalOpen = ref(false);
-const surveys = ref([])
-const pagination = ref(null)
+const surveys = ref([]);
+const pagination = ref(null);
 
-const idSurveyToEdit = ref(0)
-const searchQuery = ref('')
+const idSurveyToEdit = ref(0);
+const searchQuery = ref('');
     
 onMounted(async () => {
         const params = new URLSearchParams(window.location.search);
     await getSurveys(parseInt(params.get('page')) || 1);
-})
-
+});
 const filteredSurveys = computed(() => {
     return surveys.value.filter(survey => 
         survey.name.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -177,37 +174,32 @@ const getSurveys = async (page = 1) => {
         replace: true,
     });
 
-    try {
-        const response = await axios.get(`${apiHost}survey/show-all`,{ 
-            params:{ page }
-        })
-        
-        surveys.value = response.data.data
-        pagination.value = response.data
-    } catch (error) {
-        console.log(error)   
+    const result = await getSurveysPaginated(page);
+    
+    if (!result.errorFlag && result.data) {
+        surveys.value = result.data.data;
+        pagination.value = result.data;
+    } else {
+        notify(result.responseMessage || 'Error al cargar las encuestas', 'error');
     }
-}   
+};
 
 const importSurvey = () => {
     isImportModalOpen.value = true;
-}
+};
 
 const handleImportProcess = async (formData) => {
     isImportModalOpen.value = false;
     isProcessing.value = true;
 
-    try {
-        const { data } = await axios.post(`${apiHost}survey/import-excel`, formData);
-
-        await pollBatchStatus(data.batch_id);
-
-            notify("Encuesta importada exitosamente");
+    const result = await importSurveyFromExcel(formData);
+    if (!result.errorFlag && result.data) {
+        await pollBatchStatus(result.data.batch_id);
+        notify("Encuesta importada exitosamente");
         await getSurveys();
-    } catch (error) {
+    } else {
         isProcessing.value = false;
-        console.error("Error en la importación:", error);
-        notify("Error al importar la encuesta", 'error');
+        notify(result.responseMessage || "Error al importar la encuesta", 'error');
     }
 };
 </script>

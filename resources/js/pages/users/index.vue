@@ -54,6 +54,7 @@
                                 <th class="p-4">Email</th>
                                 <th class="p-4">Sexo</th>
                                 <th class="p-4">Rol</th>
+                                <th class="p-4">Acciones</th>
                         </tr>
                     </thead>
                         <tbody class="divide-y divide-slate-700/50 custom-scrollbar">
@@ -66,6 +67,13 @@
                                         {{ user.rol_id === 3 ? 'Admin' : 'Encuestador' }}
                                     </span>
                                 </td>
+                                <td class="p-4">
+                                <div class="flex gap-3 justify-center">
+                                    
+                                                                        <Icon @click="" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                    <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash" @click="confirmDelete(user.id)"/>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -76,6 +84,27 @@
         <Modal :show="isModalOpen" @close="isModalOpen = false">
             <UserForm class="w-100" @created="handleUserCreated" />
         </Modal>
+
+        <Modal :show="isDeleteModalOpen" @close="isDeleteModalOpen = false">
+            <div class="p-4 text-center">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Confirmar eliminación</h3>
+                <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
+                <div class="flex justify-center gap-4">
+                    <button @click="isDeleteModalOpen = false" class="px-4 py-2 bg-slate-200 text-slate-800 rounded hover:bg-slate-300">Cancelar</button>
+                    <button @click="deleteUser" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer">Confirmar</button>
+                </div>
+            </div>
+        </Modal>
+
+        <Pagination 
+            v-if="staffData.total > 0"
+            :current-page="staffData.current_page"
+            :last-page="staffData.last_page"
+            :total="staffData.total"
+            :from="staffData.from"
+            :to="staffData.to"
+            @page-change="getStaff"
+        />
     </MainLayout>
 </template>
 
@@ -88,20 +117,30 @@ import { onMounted, ref, computed, watch } from 'vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import Modal from '@/components/modal.vue';
 import UserForm from '@/components/forms/user-form.vue';
+import Pagination from '@/components/pagination.vue';
 
 onMounted(async ()=>{
     await getStaff()
 });
 
-const staff = ref([]);
+const staffData = ref({
+    data: [],
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+    from: 0,
+    to: 0
+});
 const searchQuery = ref('');
 const isModalOpen = ref(false);
+const isDeleteModalOpen = ref(false);
+const userToDelete = ref(null);
 
 const filteredStaff = computed(() => {
     const query = searchQuery.value.toLowerCase();
-    if (!query) return staff.value;
+    if (!query) return staffData.value.data;
     
-    return staff.value.filter(user => {
+    return staffData.value.data.filter(user => {
         const roleName = user.rol_id === 3 ? 'admin' : 'encuestador';
         return (
             user.name.toLowerCase().includes(query) ||
@@ -111,13 +150,45 @@ const filteredStaff = computed(() => {
     });
 });
 
-const getStaff = async () => {
+const getStaff = async (page = 1) => {
     try {
-        const response = await axios.get(`${apiHost}person/pollster-admin/list`);
-        staff.value = response.data || [];
+        const response = await axios.get(`${apiHost}person/pollster-admin/list?page=${page}`);
+        console.log("Respuesta API:", response.data);
+        // Si la API devuelve un objeto con 'data' y metadatos, úsalo directamente.
+        // Si devuelve solo el array, ajusta para que el componente funcione.
+        if (response.data && response.data.data) {
+            staffData.value = response.data;
+        } else {
+            // Caso de fallback si la API no devuelve estructura de paginación
+            staffData.value = {
+                data: response.data || [],
+                current_page: 1,
+                last_page: 1,
+                total: response.data ? response.data.length : 0,
+                from: 1,
+                to: response.data ? response.data.length : 0
+            };
+        }
     } catch (error) {
         console.error("Error al cargar personal:", error);
     }
+};
+
+const deleteUser = async () => {
+    if (!userToDelete.value) return;
+    try {
+        await axios.delete(`${apiHost}person/delete/${userToDelete.value}`);
+        await getStaff(staffData.value.current_page);
+        isDeleteModalOpen.value = false;
+        userToDelete.value = null;
+    } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+    }
+};
+
+const confirmDelete = (id) => {
+    userToDelete.value = id;
+    isDeleteModalOpen.value = true;
 };
 
 const handleUserCreated = () => {

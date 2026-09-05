@@ -42,6 +42,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             Route::post('create', [PersonController::class, 'store']);
             Route::get('list', [PersonController::class, 'getStaff']);
         });
+        Route::delete('delete/{id}', [PersonController::class, 'destroy']);
     });
 
     /** AGE RANGE (Escritura protegida) **/

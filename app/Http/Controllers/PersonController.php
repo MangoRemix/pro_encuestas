@@ -74,10 +74,19 @@ class PersonController extends Controller
         return response()->json($person);
     }
 
-    public function getStaff()
+    public function getStaff(Request $request)
     {
-        $staff = Person::whereIn('rol_id', [1, 3])->get();
+        $perPage = $request->query('per_page', 15);
+        $staff = Person::whereIn('rol_id', [1, 3])->paginate($perPage);
         return response()->json($staff, 200);
+    }
+
+    public function destroy(int $id)
+    {
+        $person = Person::findOrFail($id);
+        $person->delete();
+
+        return response()->json(['message' => 'Usuario marcado como eliminado']);
     }
 }
 

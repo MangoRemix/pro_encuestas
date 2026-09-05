@@ -127,12 +127,8 @@
         </Modal>
         <Pagination
             v-if="pagination"
-            :current-page="pagination.current_page"
-            :last-page="pagination.last_page"
-            :total="pagination.total"
-            :from="pagination.from"
-            :to="pagination.to"
-            @page-change="getSurveys"
+            :pagination="pagination"
+            @change="getSurveys"
         />
     </MainLayout>
 </template>

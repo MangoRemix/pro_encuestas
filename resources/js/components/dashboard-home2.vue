@@ -5,7 +5,7 @@
         </h1>
     </div>
 
-    <div id="cards" class="flex items-center justify-between xl:justify-around flex-wrap gap-2 mb-6 md:px-6 mt-3">
+    <div id="cards" class="flex items-center justify-between 2xl:justify-start flex-wrap gap-2 mb-6 md:px-6 mt-3">
         <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Usuarios" value="1,234" />
         <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestas" value="48" />
         <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Respuestas" value="12,890" />
@@ -76,8 +76,11 @@ onMounted(async () => {
             axios.get(`${apiHost}survey/show-recent`),
             axios.get(`${apiHost}result/reports/top-pollsters`)
         ]);
-        recentSurveys.value = surveysRes.data;
-        topPollsters.value = pollstersRes.data;
+
+        recentSurveys.value = surveysRes.data.length>0?surveysRes.data:[];
+
+        topPollsters.value = pollstersRes.data.length>0?pollstersRes.data:[];
+
     } catch (error) {
         console.error("Error al cargar datos del dashboard:", error);
     }

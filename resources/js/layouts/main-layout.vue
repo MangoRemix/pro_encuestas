@@ -117,7 +117,7 @@ const menuItems = ref([
         icon: 'ic:baseline-settings',
         children: [
             { label: 'Configuración general', link: '/settings' },
-            { label: 'Gestión de parroquias', link: '/parishes' }
+            { label: 'Gestión de parroquias', link: '/parishes', permission:'ADMIN' }
         ]
     }
 ]);

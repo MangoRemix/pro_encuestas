@@ -1,7 +1,7 @@
 <template>
     <div class="px-10 py-1">
         <div v-if="categories && categories.length" class="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden w-full">
-            <div id="table-body" class="w-full overflow-x-auto">
+            <div id="table-body" class="w-full overflow-x-auto max-h-150">
                 <table class="w-full text-left border-collapse text-slate-200">
                     <thead class="sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
                         <tr class="border-b border-slate-700 text-xs uppercase tracking-wider text-white">

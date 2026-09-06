@@ -15,7 +15,7 @@
         <div class="mt-6 bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
             <table class="w-full text-left border-collapse flex flex-col">
                 <thead>
-                        <tr class="border-b border-slate-700 bg-slate-900/50 text-white text-xs uppercase tracking-wider flex">
+                        <tr class="border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider flex">
                             <th class="p-4 w-1/3">Fecha</th>
                             <th class="p-4 w-1/2">Encuesta</th>
                             <th class="p-4 w-1/4 text-center">Estado</th>
@@ -31,11 +31,11 @@
                                     <Icon v-else-if="survey.status === 'GUARDADA'" icon="mdi:check-circle-outline" class="text-green-500 text-xl" />
                             </td>
                         </tr>
-                    </tbody>
+                     </tbody>
                 </table>
             </div>
-        <div class="w-full md:w-1/3 mx-auto flex gap-2 mt-6">
-            <div class="w-1/2">
+        <div class="w-full md:w-fit mx-auto flex gap-2 mt-6">
+            <div class="w-fit">
                 <button
                     @click="saveManyResults()"
                     class="green-button-app cursor-pointer flex items-center justify-center"
@@ -45,7 +45,7 @@
                     {{ isProcessing ? 'Procesando...' : 'Guardar Todas' }}
                 </button>
             </div>
-            <div class="w-1/2">
+            <div class="w-fit">
                 <button @click="clearSavedSurveys()" class="cursor-pointer primary-button-app">
                     Limpiar Guardadas
                 </button>

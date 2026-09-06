@@ -156,7 +156,7 @@ Route::prefix('reports')->middleware(['auth', 'admin'])->group(function (){
 // ... existing code ...
 Route::get('/parishes', function () {
     return Inertia::render('parishes/index');
-})->name('parishes.index');
+})->middleware('auth','admin')->name('parishes.index');
 
 Route::middleware('guest')->group(function () {
     Route::inertia('login', 'login/index')->name('login');

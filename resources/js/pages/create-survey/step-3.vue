@@ -89,7 +89,7 @@
                                 <td class="p-2 sm:p-4">
                                     <div class="flex items-center justify-center gap-x-2 sm:gap-x-3">
                                         <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
-                                        <Icon @click="getQuestionToEdit(question.id)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                        <Icon @click="getAnswerToEdit(answer)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
                                         <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                     </div>
                                 </td>
@@ -101,15 +101,13 @@
         </div>
 
         <Modal :show="isQuestionModalOpen" @close="isQuestionModalOpen = false">
-            <!-- FORMULARIO CATEGORIES -->
-            
+            <!-- FORMULARIO PREGUNTAS -->
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
                 {{ operation_name }} preguntas
             </h2>
             
-            
-            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class="w-full md:w-150 h-70">
-                <div class="flex item-center justify-end space-x-3">
+            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class="w-full md:w-150 h-72 flex flex-col">
+                <div class="flex items-center justify-end space-x-3 mb-3">
                     <button @click.prevent="incrementFormRow('question')" class="" v-if="operation_name!='Editar'">
                         <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
                     </button>
@@ -117,10 +115,9 @@
                     <button type="submit" class="cursor-pointer">
                         <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
                     </button>
-                    
                 </div>
-                <div class="w-full h-full max-h-full overflow-y-scroll">
-                    <div v-for="(formRow,index) in formQuestion" :key="index" class="mb-3 ">
+                <div class="w-full flex-1 overflow-y-auto modal-scrollbar pr-2">
+                    <div v-for="(formRow,index) in formQuestion" :key="index" class="mb-3">
                         <div class="text-center font-bold mb-3">
                             <span>Pregunta {{ index+1 }}</span>
                         </div>
@@ -135,50 +132,45 @@
                                 <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form w-full">
                             </div>
                         </div>
-                        
                     </div>
                 </div>
-                
             </form>
         </Modal>
         <!--Modal Respuestas-->
         <Modal :show="isAnswerModalOpen" @close="isAnswerModalOpen = false">
             <!-- FORMULARIO RESPUESTAS -->
-            
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
                 {{ operation_name }} respuestas
             </h2>
             
-            
-            <form @submit.prevent="operation_name =='Crear'?createManyAnswers_(formAnswer):updateAnswer(selectedAnswer?.id)" action="" class="w-full md:w-150 min-h-50 max-h-70 overflow-y-scroll">
-                <div class="flex item-center justify-end space-x-3">
-                <button @click.prevent="incrementFormRow('answer')" v-if="operation_name!='Editar'">
-                    <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
-                </button>
-                
-                <button type="submit" class="cursor-pointer">
-                    <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
-                </button>
-                
-            </div>
-                <div v-for="(formRow,index) in formAnswer" :key="index" class="mb-3">
-                    <div class="text-center font-bold mb-3">
-                        <span>Respuesta {{ index+1 }}</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-y-3 sm:gap-y-0 sm:space-x-2">
-                        <div class="w-full sm:w-35 flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
-                            <label for="" class="text-sm font-bold">Orden: </label>
-                            <input required v-model="formRow.order" min="1" type="number" class="inputs-form w-full sm:w-auto">
-                        </div>
-
-                        <div class="w-full flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
-                            <label for="" class="text-sm font-bold">Nombre: </label>
-                            <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form w-full">
-                        </div>
-                    </div>
+            <form @submit.prevent="handleSaveAnswers" action="" class="w-full md:w-150 h-72 flex flex-col">
+                <div class="flex items-center justify-end space-x-3 mb-3">
+                    <button @click.prevent="incrementFormRow('answer')" v-if="operation_name!='Editar'">
+                        <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
+                    </button>
                     
+                    <button type="submit" class="cursor-pointer">
+                        <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
+                    </button>
                 </div>
-                
+                <div class="w-full flex-1 overflow-y-auto modal-scrollbar pr-2">
+                    <div v-for="(formRow,index) in formAnswer" :key="index" class="mb-3">
+                        <div class="text-center font-bold mb-3">
+                            <span>Respuesta {{ index+1 }}</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-y-3 sm:gap-y-0 sm:space-x-2">
+                            <div class="w-full sm:w-35 flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
+                                <label for="" class="text-sm font-bold">Orden: </label>
+                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form w-full sm:w-auto">
+                            </div>
+
+                            <div class="w-full flex flex-col sm:flex-row sm:items-center gap-y-1 sm:space-x-2">
+                                <label for="" class="text-sm font-bold">Nombre: </label>
+                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form w-full">
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
         </Modal>
 
@@ -351,7 +343,7 @@ const getQuestions = async (value)=>{
 }
 
 function incrementFormRow (type) {
-    console.log("increment", type)
+    
     if(type == 'question'){
         formQuestion.value.push({
             name:'',
@@ -429,29 +421,45 @@ const newAnswers = ()=>{
     }]
 }
 
-const createManyAnswers_ = async (formData)=>{
-    const {success} = await createManyAnswers(formData)
-    
-    try {
-        if(success){
-            const {data} = await getAnswersByQuestion(questionSelected.value.id)
-
-            answers.value = data
-        }       
-    } catch (error) {
-        
+const getAnswerToEdit = (answer) => {
+    selectedAnswer.value = answer
+    operation_name.value = 'Editar'
+    formAnswer.value = [{
+        name: answer.name,
+        order: answer.order,
+        question_id: answer.question_id
+    }]
+    isAnswerModalOpen.value = true
+}
+const handleSaveAnswers = async () => {
+    if (operation_name.value === 'Crear') {
+        await createManyAnswers_(formAnswer.value)
+    } else {
+        await updateAnswer(selectedAnswer.value.id, formAnswer.value[0])
+        await refreshAnswers()
+        isAnswerModalOpen.value = false
     }
-    
     nextStepFlag.value = !(await validateQuestionsAnswers())
 }
+const refreshAnswers = async () => {
+    const { data } = await getAnswersByQuestion(questionSelected.value.id)
+    answers.value = data
+}
 
+const createManyAnswers_ = async (formData) => {
+    const { success } = await createManyAnswers(formData)
+    if (success) {
+        await refreshAnswers()
+        isAnswerModalOpen.value = false
+    }
+}
 const updateAnswers = async (id)=>{
     await updateAnswer(id,formAnswer.value)
 }
 
 const validateQuestionsAnswers = async () => {
     const {data:survey} = await showFullSurvey(page.props.surveyId)
-    console.log(survey)
+    
     if (!survey?.categories || survey.categories.length === 0) return false;
 
     return survey.categories.every(category => {
@@ -476,5 +484,14 @@ const NextStep = () =>{
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+.modal-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+.modal-scrollbar::-webkit-scrollbar { width: 6px; }
+.modal-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.modal-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.modal-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>
 

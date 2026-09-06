@@ -162,9 +162,13 @@ onMounted(async () => {
     await getSurveys(parseInt(params.get('page')) || 1);
 });
 const filteredSurveys = computed(() => {
-    return surveys.value.filter(survey => 
-        survey.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
+    const query = searchQuery.value.toLowerCase().trim();
+    return surveys.value.filter(survey => {
+        const nameMatch = survey.name.toLowerCase().includes(query);
+        const initDateMatch = formatedDate(survey.init_date).toLowerCase().includes(query);
+        const finishDateMatch = formatedDate(survey.finish_date).toLowerCase().includes(query);
+        return nameMatch || initDateMatch || finishDateMatch;
+    });
 });
 
 const getSurveys = async (page = 1) => {

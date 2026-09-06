@@ -1,6 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { Bar } from 'vue-chartjs';
+import axios from 'axios';
 import { 
     Chart as ChartJS, 
     Title, 
@@ -10,7 +9,8 @@ import {
     CategoryScale, 
     LinearScale 
 } from 'chart.js';
-import axios from 'axios';
+import { ref, computed } from 'vue';
+import { Bar } from 'vue-chartjs';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -28,6 +28,7 @@ const loading = ref(false);
 
 const fetchData = async () => {
     loading.value = true;
+
     try {
         const minVal = min.value === '' ? '*' : min.value;
         const maxVal = max.value === '' ? '*' : max.value;

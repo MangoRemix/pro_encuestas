@@ -41,13 +41,13 @@
     </MainLayout>
 </template>
 <script setup>
+import { Icon } from "@iconify/vue";
+import { router, usePage } from '@inertiajs/vue3';
+import { onMounted, reactive, ref } from 'vue';
 import StepNavigation from '@/components/StepNavigation.vue';
 import { showFullSurvey } from '@/composables/api/surveys';
 import MainLayout from '@/layouts/main-layout.vue';
 import { currentStep, stepsBreadcrumb } from '@/store/store';
-import { router, usePage } from '@inertiajs/vue3';
-import { onMounted, reactive, ref } from 'vue';
-import { Icon } from "@iconify/vue";
 
 const page = usePage()
 

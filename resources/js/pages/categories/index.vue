@@ -118,14 +118,14 @@
     </MainLayout>
 </template>
 <script setup>
-import NotificationBox from '@/components/notification-box.vue';
-import Modal from '@/components/modal.vue';
-import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
-import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
-import MainLayout from '@/layouts/main-layout.vue';
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
+import Modal from '@/components/modal.vue';
+import NotificationBox from '@/components/notification-box.vue';
+import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
+import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
+import MainLayout from '@/layouts/main-layout.vue';
 
 const operation_name = ref('create')
 const isModalOpen = ref(false)
@@ -157,15 +157,16 @@ onMounted(async()=>{
         if(page.props.categoryId){
             surveySelected.value = page.props.surveyId
             categorySelected.value = parseInt(page.props.categoryId)
-        }
-        else{
-            if(page.props.surveyId)
-                surveySelected.value = page.props.surveyId
+        } else{
+            if(page.props.surveyId) {
+surveySelected.value = page.props.surveyId
+}
         }
     }, 750);   
 
-    if(data)
-        surveys.value = data
+    if(data) {
+surveys.value = data
+}
 })
 
 watch(surveySelected,async (value)=>{
@@ -184,8 +185,7 @@ watch(surveySelected,async (value)=>{
         
         categories.value = data
         
-    }
-    else{
+    } else{
         if(errorFlag){
             isError.value = true
             message.value = responseMessage
@@ -213,8 +213,7 @@ watch(categorySelected,async (value)=>{
         
         questions.value = data
         
-    }
-    else{
+    } else{
         if(errorFlag){
             isError.value = true
             message.value = responseMessage
@@ -237,6 +236,7 @@ const getQuestionToEdit = async (id) => {
     try {
         const {data,errorFlag,responseMessage} = await getQuestion(id)
         console.log("question: ",data)
+
         if(data){
             
             formQuestion.value[0].name = data.name
@@ -276,6 +276,7 @@ const createManyQuestions = async () => {
             ]
 
         }
+
         if(errorFlag){
             isError.value = true
             message.value = responseMessage

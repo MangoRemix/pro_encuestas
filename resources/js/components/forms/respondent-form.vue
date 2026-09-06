@@ -51,11 +51,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import axios from 'axios';
-import NotificationBox from '../notification-box.vue';
-import { apiHost } from '@/store/store.js';
 import { router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { ref, reactive, onMounted } from 'vue';
+import { apiHost } from '@/store/store.js';
+import NotificationBox from '../notification-box.vue';
 
 onMounted(async () => {
   sexes.value = await getSexList()
@@ -68,6 +68,7 @@ const page = usePage()
 // PERSON RESOURCES
 const updatePerson = async (data) => {
   data['rol_id'] = 2
+
   return await axios.patch(`${apiHost}person/respondent/update/${parseInt(page.props.id)}`, data);
 };
 
@@ -91,11 +92,13 @@ const handleSubmit = async () => {
 
   try {
     const {data,status} = await updatePerson(form);
+
     if(status == 200){
       setTimeout(() => {
         router.get(`/poll-users/step-3/${page.props.id}/survey/${page.props.surveyId}`)
       }, 2000);
     }
+
     message.value = 'Participante registrado con éxito.';
     
     // Limpiar el formulario
@@ -117,6 +120,7 @@ const handleSubmit = async () => {
 const getSexList = async () =>{
   try {
     const sex = await axios.get(`${apiHost}sex/show-all`)
+
     return sex.data
   } catch (error) {
     console.log(error)
@@ -126,6 +130,7 @@ const getSexList = async () =>{
 const getParishList = async () => {
   try {
     const response = await axios.get(`${apiHost}parish/show-all`)
+
     return response.data
   } catch (error) {
     console.error(error)
@@ -140,6 +145,7 @@ const preCreatePerson = async ()=>{
       surveyId:page.props.surveyId
     })
     console.log(response.data.id)
+
     return response.data
   } catch (error) {
     console.error(error)

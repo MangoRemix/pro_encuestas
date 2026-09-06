@@ -62,12 +62,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
-import axios from 'axios';
-import NotificationBox from '../notification-box.vue';
-import { apiHost } from '@/store/store.js';
-import { formatedDate } from '@/composables/shared.js';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { ref, reactive, onMounted, watch } from 'vue';
+import { formatedDate } from '@/composables/shared.js';
+import { apiHost } from '@/store/store.js';
+import NotificationBox from '../notification-box.vue';
 
 const {surveyId} = defineProps(['surveyId'])
 
@@ -99,10 +99,11 @@ const isError = ref(false);
     try {
         const response = await axios.get(`${apiHost}survey/show-one/${id}`)
         
-        if(response.data.length > 0)
-            return response.data[0]
-        else
-            return 'No hay encuestas registradas.'
+        if(response.data.length > 0) {
+return response.data[0]
+} else {
+return 'No hay encuestas registradas.'
+}
     } catch (error) {
         console.log(error)   
     }
@@ -117,10 +118,12 @@ const handleSubmit = async () => {
   try {
     // Ajusta la URL según la configuración de tu entorno
     let response = null
-    if(!surveyId)
-      response = await axios.post(`${apiHost}survey/create`, form);
-    else
-      response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
+
+    if(!surveyId) {
+response = await axios.post(`${apiHost}survey/create`, form);
+} else {
+response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
+}
     
     message.value = '¡Encuesta creada con éxito!';
     setTimeout(() => {
@@ -134,10 +137,11 @@ const handleSubmit = async () => {
       if(response.status == 201){
         //console.log(response)
         setTimeout(() => {
-          if(response.data.data.id)
-          router.get('/surveys/create-survey/step-2',{
+          if(response.data.data.id) {
+router.get('/surveys/create-survey/step-2',{
             surveyId:response.data.data.id
           })
+}
         }, 250);
         //setTimeout(() => {
         //  if(response.data.data.id)
@@ -147,17 +151,20 @@ const handleSubmit = async () => {
         //}, 750);
       }
     }
+
     // Limpiar el formulario
     form.name = '';
     form.init_date = '';
     form.finish_date = '';
   } catch (error) {
     isError.value = true;
+
     if (error.response?.data?.message) {
       message.value = `Error: ${error.response.data.message}`;
     } else {
       message.value = 'Ocurrió un error al procesar la solicitud.';
     }
+
     setTimeout(() => {
       message.value = '';
       isError.value = false;

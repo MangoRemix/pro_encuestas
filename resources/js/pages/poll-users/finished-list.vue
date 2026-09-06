@@ -55,18 +55,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
-import MainLayout from '@/layouts/main-layout.vue';
+import { Head } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
 import NotificationBox from '@/components/notification-box.vue';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
+import MainLayout from '@/layouts/main-layout.vue';
 const pendingSurveys = ref([]);
 const { isProcessing, processBatch } = useBatchProcessor();
 const notification = ref({ message: '', isError: false });
 
 onMounted(() => {
     const data = localStorage.getItem('allSurveysPending');
+
     if (data) {
         pendingSurveys.value = JSON.parse(data);
     }

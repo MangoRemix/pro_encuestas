@@ -7,6 +7,7 @@ export function useParishes() {
 
     const fetchParishes = async () => {
         loading.value = true;
+
         try {
             const { data } = await axios.get('/api/parish/show-all');
             parishes.value = data;

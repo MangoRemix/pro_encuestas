@@ -60,12 +60,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import axios from 'axios';
-import NotificationBox from '@/components/notification-box.vue';
-import { apiHost } from '@/store/store.js';
-import MainLayout from '@/layouts/main-layout.vue';
 import { Head } from '@inertiajs/vue3';
+import axios from 'axios';
+import { ref, reactive, onMounted } from 'vue';
+import NotificationBox from '@/components/notification-box.vue';
+import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store.js';
 
 const form = reactive({
   name: '',
@@ -96,6 +96,7 @@ const handleSubmit = async () => {
 
   try {
     const { status } = await axios.post(`${apiHost}person/pollster-admin/create`, form);
+
     if (status === 201 || status === 200) {
       message.value = 'Usuario creado con éxito.';
       Object.assign(form, { name: '', email: '', password: '', sex_id: '', rol_id: '' });

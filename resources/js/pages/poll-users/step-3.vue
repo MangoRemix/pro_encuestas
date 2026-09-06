@@ -63,9 +63,9 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch, computed } from 'vue';
 import {Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import { onMounted, ref, watch, computed } from 'vue';
 import QuestionsAndAnswer from '@/components/poll/QuestionsAndAnswer.vue';
 import SuccessModal from '@/components/SuccessModal.vue';
 
@@ -98,16 +98,24 @@ const disabledRewind = ref (true)
 const visibilityFinishButton = ref(false)
 
 const totalQuestionsCount = computed(() => {
-    if (!survey.value) return 0;
+    if (!survey.value) {
+return 0;
+}
+
     return survey.value.categories.reduce((acc, cat) => acc + (cat.questions?.length || 0), 0);
 });
 
 const currentQuestionIndex = computed(() => {
-    if (!survey.value) return 0;
+    if (!survey.value) {
+return 0;
+}
+
     let index = 0;
+
     for (let i = 0; i < counts.value.actual_category; i++) {
         index += survey.value.categories[i].questions?.length || 0;
     }
+
     return index + counts.value.actual_question + 1;
 });
 
@@ -225,7 +233,7 @@ const decrementQuestion = () => {
 
 const storageResults = ()=>{
     
-    let historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
+    const historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
 
     const index = historial.findIndex(item => item.question_id === result.value.question_id);
 
@@ -243,7 +251,9 @@ const finishSurvey = async () => {
 
     const historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
 
-    if (historial.length === 0) return;
+    if (historial.length === 0) {
+return;
+}
 
     const allSurveys = JSON.parse(localStorage.getItem('allSurveysPending')) || [];
     const surveyToSave = {

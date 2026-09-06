@@ -233,22 +233,22 @@
     </MainLayout>
 </template>
 <script setup>
-import MainLayout from '@/layouts/main-layout.vue';
-import NotificationBox from '@/components/notification-box.vue';
-import Modal from '@/components/modal.vue';
-import CategoryForm from '@/components/forms/category-form.vue';
 
-import { onMounted, ref, watch } from 'vue';
-import axios from 'axios';
-import { apiHost } from '@/store/store';
 
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { onMounted, ref, watch } from 'vue';
+import CategoryForm from '@/components/forms/category-form.vue';
+import Modal from '@/components/modal.vue';
+import NotificationBox from '@/components/notification-box.vue';
 
 import { useAnswers } from '@/composables/api/answers';
-import { useNotification } from '@/composables/useNotification';
 import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
 import { getCategoriesBySurvey, getSurvey } from '@/composables/api/surveys';
+import { useNotification } from '@/composables/useNotification';
+import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store';
 
 
 const { message, isError, notify } = useNotification();
@@ -298,14 +298,14 @@ onMounted(async()=>{
         if(page.props.categoryId){
             surveySelected.value = page.props.id
             categorySelected.value = parseInt(page.props.categoryId)
-        }
-        else if(page.props.id){
+        } else if(page.props.id){
                 surveySelected.value = page.props.id
         }
     }, 750);   
 
-    if(data)
-        survey.value = data
+    if(data) {
+survey.value = data
+}
 })
 
 watch(surveySelected,async (value)=>{
@@ -334,8 +334,7 @@ watch(categorySelected,async (value)=>{
         
         questions.value = data
         answersByQuestion.value = []
-    }
-    else if(errorFlag){
+    } else if(errorFlag){
         notify(responseMessage, true);
     }
 })
@@ -349,6 +348,7 @@ const incrementFormRow = () =>{
 
 const getQuestionToEdit = async (id) => {
         const {data,errorFlag,responseMessage} = await getQuestion(id)
+
         if(data){
             
             formQuestion.value[0].name = data.name
@@ -356,12 +356,15 @@ const getQuestionToEdit = async (id) => {
             isModalOpen.value = true
             operation_name.value = 'Editar'
             questionSelected.value = id
-    } else if(errorFlag) notify(responseMessage, true);
+    } else if(errorFlag) {
+notify(responseMessage, true);
+}
         }
 
 const createManyQuestions = async () => {
     const {data,errorFlag,responseMessage} = await createMany(formQuestion.value)
             console.log(data)
+
         if(data){
         const {data: questions_} = await getQuestionsByCategory(page.props.categoryId)
         questions.value = questions_
@@ -374,7 +377,9 @@ const createManyQuestions = async () => {
                 }
             ]
 
-    } else if(errorFlag) notify(responseMessage, true);
+    } else if(errorFlag) {
+notify(responseMessage, true);
+}
         }
 const newQuestions = ()=>{
     isModalOpen.value = true; operation_name.value = 'Crear'
@@ -415,6 +420,7 @@ watch(questionSelected,async (value)=>{
 // }
 const createManyAnswers = async () => {
     const { success } = await createManyAnswersApi(formAnswer.value)
+
     if(success){
         answersByQuestion.value = await getAnswersByQuestionApi(questionSelected.value)
         formAnswer.value = [{
@@ -424,20 +430,26 @@ const createManyAnswers = async () => {
             }]
         notify("Respuestas creadas correctamente");
         isModalOpen_answers.value = false;
-    } else notify("Error al crear respuestas", true);
+    } else {
+notify("Error al crear respuestas", true);
+}
         }
             
 const deleteAnswer = async (id,index) => {
     const success = await deleteAnswerApi(id)
+
     if(success){
             answersByQuestion.value.splice(index,1)
         notify("Respuesta eliminada");
-    } else notify("Error al eliminar", true);
+    } else {
+notify("Error al eliminar", true);
+}
         }
         
 const getAnswerToEdit = async (id) => {
     try {
         const {data, status} = await axios.get(`${apiHost}answer/show-one/${id}`)
+
         if(status==200){
             formAnswer.value[0].name = data.answer.name
             formAnswer.value[0].order = data.answer.order
@@ -447,16 +459,21 @@ const getAnswerToEdit = async (id) => {
             answerSelectedId.value = id
         }
         
-    } catch (error) { console.log(error) }
+    } catch (error) {
+ console.log(error) 
+}
     }
 const updateAnswer = async (id) => {
     const { success } = await updateAnswerApi(id, formAnswer.value[0])
+
     if(success){
         notify("Respuesta actualizada");
         
         answersByQuestion.value = await getAnswersByQuestionApi(questionSelected.value)
         isModalOpen_answers.value = false;
-    } else notify("Error al actualizar", true);
+    } else {
+notify("Error al actualizar", true);
+}
 }
 const incrementFormRow_answer = () =>{
     formAnswer.value.push({
@@ -475,8 +492,7 @@ const updateCategories = async () => {
         
         categories.value = data
         
-    }
-    else if(errorFlag){
+    } else if(errorFlag){
         notify(responseMessage, true);
     }
 }

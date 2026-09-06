@@ -1,5 +1,5 @@
-import { ref } from 'vue';
 import axios from 'axios';
+import { ref } from 'vue';
 import { apiHost } from '@/store/store';
 
 export function useAnswers() {
@@ -17,6 +17,7 @@ export function useAnswers() {
             };
         } catch (e) {
             error.value = e;
+
             return [];
         } finally {
             loading.value = false;
@@ -28,9 +29,11 @@ export function useAnswers() {
             loading.value = true;
             const { data } = await axios.delete(`${apiHost}answer/delete/${id}`);
             message.value = data.message;
+
             return true;
         } catch (e) {
             error.value = e.response?.data?.message || 'Error al eliminar';
+
             return false;
         } finally {
             loading.value = false;
@@ -42,9 +45,11 @@ export function useAnswers() {
             loading.value = true;
             const { data } = await axios.post(`${apiHost}answer/create-many`, payload);
             message.value = data.message;
+
             return { success: true, data };
         } catch (e) {
             error.value = e.response?.data || 'Error al crear';
+
             return { success: false };
         } finally {
             loading.value = false;
@@ -56,9 +61,11 @@ export function useAnswers() {
             loading.value = true;
             const { data } = await axios.put(`${apiHost}answer/update/${id}`, payload);
             message.value = data.message;
+
             return { success: true, data };
         } catch (e) {
             error.value = e.response?.data || 'Error al actualizar';
+
             return { success: false };
         } finally {
             loading.value = false;
@@ -74,11 +81,13 @@ export function useAnswers() {
 
 export async function getAnswersByQuestion(questionId) {
     const { data } = await axios.get(`${apiHost}answer/show-by-question/${questionId}`);
+
     return { data: data.answers || [] };
 }
 
 export async function updateAnswer(id, payload) {
     const { data } = await axios.put(`${apiHost}answer/update/${id}`, payload);
+
     return { success: true, data };
 }
 

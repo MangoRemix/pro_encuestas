@@ -1,5 +1,5 @@
-import { ref } from 'vue';
 import axios from 'axios';
+import { ref } from 'vue';
 
 export function useBatchProcessor() {
     const isProcessing = ref(false);
@@ -8,6 +8,7 @@ export function useBatchProcessor() {
         isProcessing.value = true;
         const { data } = await axios.post(url, payload);
         console.log(payload)
+
         return await pollBatchStatus(data.batch_id);
     };
 
@@ -16,6 +17,7 @@ export function useBatchProcessor() {
                 const interval = setInterval(async () => {
                     try {
                         const { data: statusData } = await axios.get(`/api/result/batch-status/${batchId}`);
+
                         if (statusData.finished) {
                             clearInterval(interval);
                             isProcessing.value = false;

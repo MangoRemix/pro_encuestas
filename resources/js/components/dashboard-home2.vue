@@ -60,12 +60,12 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import { apiHost } from '@/store/store';
-import { formatedDate } from '@/composables/shared';
+import { onMounted, ref } from 'vue';
 import DashboardCard from '@/components/DashboardCard.vue';
+import { formatedDate } from '@/composables/shared';
+import { apiHost } from '@/store/store';
 
 const recentSurveys = ref([]);
 const topPollsters = ref([]);

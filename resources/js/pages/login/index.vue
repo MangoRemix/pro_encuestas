@@ -65,13 +65,13 @@
     </MainLayout>
 </template>
 <script setup>
-import MainLayout from '@/layouts/main-layout.vue';
-import NotificationBox from '@/components/notification-box.vue'; // Importar el componente
 import { Icon } from '@iconify/vue';
-import { apiHost } from '@/store/store';
 import { Head, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref, watch } from 'vue';
+import NotificationBox from '@/components/notification-box.vue'; // Importar el componente
+import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store';
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const errorMessage = ref(''); // Estado para el mensaje de error
@@ -87,6 +87,7 @@ const disabledLoginButton = ref(true);
 
 const login = async () => {
     errorMessage.value = ''; // Limpiar error previo
+
     try {
         await axios.post('login', {
             email: form.email,

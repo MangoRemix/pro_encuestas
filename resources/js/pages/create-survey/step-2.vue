@@ -57,15 +57,15 @@
 <script setup>
 const message = ref('')
 const isError = ref(false)
-import { onMounted, ref } from 'vue';
-import MainLayout from '@/layouts/main-layout.vue';
-import CategoryForm from '@/components/forms/category-form.vue';
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { getCategoriesBySurvey } from '@/composables/api/surveys';
+import { onMounted, ref } from 'vue';
+import CategoryForm from '@/components/forms/category-form.vue';
 import NotificationBox from '@/components/notification-box.vue';
-import { currentStep, stepsBreadcrumb } from '@/store/store';
 import StepNavigation from '@/components/StepNavigation.vue';
+import { getCategoriesBySurvey } from '@/composables/api/surveys';
+import MainLayout from '@/layouts/main-layout.vue';
+import { currentStep, stepsBreadcrumb } from '@/store/store';
 
 const page = usePage()
 const categories = ref([])
@@ -84,7 +84,9 @@ const updateCategories = async (status)=>{
        message.value = status.message;
        isError.value = !status.success;
 
-       setTimeout(() => { message.value = '' }, 3000);
+       setTimeout(() => {
+ message.value = '' 
+}, 3000);
 
        if (status.success) {
        const {data} = await getCategoriesBySurvey(page.props.surveyId)

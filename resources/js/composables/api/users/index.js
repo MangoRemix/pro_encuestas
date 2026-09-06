@@ -1,5 +1,5 @@
-import { ref } from 'vue';
 import axios from 'axios';
+import { ref } from 'vue';
 import { apiHost } from '@/store/store';
 
 export function useUsers() {
@@ -17,6 +17,7 @@ export function useUsers() {
     const getStaff = async (page = 1) => {
         isLoading.value = true;
         errorMessage.value = '';
+
         try {
             const { data } = await axios.get(`${apiHost}person/pollster-admin/list?page=${page}`);
             staffData.value = data?.data ? data : {
@@ -39,10 +40,12 @@ export function useUsers() {
         try {
             await axios.delete(`${apiHost}person/delete/${id}`);
             await getStaff(staffData.value.current_page);
+
             return true;
         } catch (error) {
             console.error("Error al eliminar usuario:", error);
             errorMessage.value = 'Error al eliminar el usuario. Inténtalo de nuevo.';
+
             return false;
         }
     };

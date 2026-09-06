@@ -34,8 +34,12 @@ const props = defineProps({
 const chartData = ref(null);
 
 const loadData = async () => {
-    if (!props.surveyId || !props.totalRespondent) return;
+    if (!props.surveyId || !props.totalRespondent) {
+return;
+}
+
     const { data } = await getRespondentCountByParish(props.surveyId);
+
     if (data) {
         const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
         

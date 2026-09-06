@@ -1,6 +1,6 @@
 <script setup>
-import { selectedListComponentValue } from '@/store/store';
 import { onMounted } from 'vue';
+import { selectedListComponentValue } from '@/store/store';
 
     const {elements,defaultValue} = defineProps(['elements','defaultValue'])
     const selectedListValue = selectedListComponentValue

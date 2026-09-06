@@ -9,8 +9,10 @@ const response = {
 export async function getQuestions(){
     try {
         const {data,error,status} = await axios.get(`${apiHost}question/show-all`)
+
         if(status==200){
             response.data = data
+
             return response
         }
             
@@ -25,8 +27,10 @@ export async function getQuestions(){
 export async function getQuestion(id){
     try {
         const {data,error,status} = await axios.get(`${apiHost}question/show-one/${id}`)
+
         if(status==200){
             response.data = data.question
+
             return response
         }
             

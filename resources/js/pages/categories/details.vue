@@ -91,14 +91,14 @@
     </MainLayout>
 </template>
 <script setup>
-import Modal from '@/components/modal.vue';
-import NotificationBox from '@/components/notification-box.vue';
-import MainLayout from '@/layouts/main-layout.vue';
-import { apiHost } from '@/store/store';
 import { Icon } from '@iconify/vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
+import Modal from '@/components/modal.vue';
+import NotificationBox from '@/components/notification-box.vue';
+import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store';
 
 const page = usePage()
 
@@ -123,8 +123,10 @@ const form = ref([
 onMounted(async ()=>{
     if(page.props.id){
         category.value = await getCategory(parseInt(page.props.id))
-        if(category.value.id)
-            questionsByCategory.value = await getQuestionsByCategory(category.value.id)
+
+        if(category.value.id) {
+questionsByCategory.value = await getQuestionsByCategory(category.value.id)
+}
     }
 })
 
@@ -147,8 +149,10 @@ const getCategory = async (id) => {
         const {data,error,status} = await axios.get(`${apiHost}category/show-one/${id}`)
         
         
-        if(data.category)
-            return data.category
+        if(data.category) {
+return data.category
+}
+
         return null
     } catch (error) {
         console.log(error)
@@ -160,8 +164,10 @@ const getQuestionsByCategory = async (id) => {
     try {
         const {data,error} = await axios.get(`${apiHost}question/show-by-category/${id}`)
         
-        if(data.questions)
-            return data.questions
+        if(data.questions) {
+return data.questions
+}
+
         return null
     } catch (error) {
         console.log(error)
@@ -196,8 +202,10 @@ const deleteQuestion = async (id,index) => {
     try {
         const {data,error,status} = await axios.delete(`${apiHost}question/delete/${id}`)
         
-        if(status == 200)
-            questionsByCategory.value.splice(index,1)
+        if(status == 200) {
+questionsByCategory.value.splice(index,1)
+}
+
         return null
     } catch (error) {
         console.log(error)
@@ -207,6 +215,7 @@ const deleteQuestion = async (id,index) => {
 const getQuestionToEdit = async (id) => {
     try {
         const {data,error,status} = await axios.get(`${apiHost}question/show-one/${id}`)
+
         if(status==200){
             
             form.value[0].name = data.name
@@ -225,6 +234,7 @@ const updateQuestion = async (id) => {
     try {
         loading.value = true
         const {data,error,status} = await axios.put(`${apiHost}question/update/${id}`,form.value[0])
+
         if(status == 200){
             
             message.value = data.message

@@ -12,12 +12,12 @@
 </template>
 <script setup>
 
+import { Head } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
 import SurveyForm from '@/components/forms/survey-form.vue';
 import StepNavigation from '@/components/StepNavigation.vue';
 import MainLayout from '@/layouts/main-layout.vue';
 import { currentStep, stepsBreadcrumb } from '@/store/store';
-import { Head } from '@inertiajs/vue3';
-import { onMounted } from 'vue';
 const steps = stepsBreadcrumb
 const current = currentStep;
 

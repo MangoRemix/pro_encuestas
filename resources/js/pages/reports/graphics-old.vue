@@ -61,6 +61,7 @@ const groupedReportData = computed(() => {
   if (Array.isArray(props.reportData)) {
     return groupBy(props.reportData, ['category_name','question_name']);
   }
+
   return {}; 
 });
 

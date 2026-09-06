@@ -87,9 +87,9 @@
 </template>
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import {getSurveys,getCategoriesBySurvey} from '../composables/api/surveys'
-import {getQuestionsByCategory} from '../composables/api/questions'
 import { useAnswers} from '../composables/api/answers'
+import {getQuestionsByCategory} from '../composables/api/questions'
+import {getSurveys,getCategoriesBySurvey} from '../composables/api/surveys'
 import NotificationBox from './notification-box.vue';
 
 const {
@@ -142,12 +142,15 @@ onMounted(async ()=>{
         surveySelected.value = surveyId
         categorySelected.value = null
         questionSelected.value = null
+
         try {
             const {data,errorFlag,responseMessage} = await getCategoriesBySurvey(surveyId)
+
             if(errorFlag){
                 isError.value = errorFlag
                 message.value = responseMessage
             }
+
             categories.value = data    
         } catch (error) {
             console.log("error",{error})
@@ -163,12 +166,15 @@ onMounted(async ()=>{
        answers.value = []
        categorySelected.value = categoryId
        questionSelected.value = null
+
         try {
             const {data,errorFlag,responseMessage} = await getQuestionsByCategory(categoryId)
+
             if(errorFlag){
                 isError.value = errorFlag
                 message.value = responseMessage
             }
+
             questions.value = data    
         } catch (error) {
             console.log("error",{error})
@@ -183,6 +189,7 @@ onMounted(async ()=>{
     const callAnswers = async(questionId) => {
         answers.value = []
         questionSelected.value = questionId
+
         try {
             const {data,errorFlag,responseMessage} = await getAnswersByQuestionApi(questionId)
             
@@ -190,6 +197,7 @@ onMounted(async ()=>{
                 isError.value = errorFlag
                 message.value = responseMessage
             }
+
             answers.value = data    
         } catch (error) {
             console.log("error",{error})

@@ -34,8 +34,12 @@ const props = defineProps({
 const chartData = ref(null);
 
 const loadData = async () => {
-    if (!props.surveyId || !props.totalRespondent) return;
+    if (!props.surveyId || !props.totalRespondent) {
+return;
+}
+
     const { data } = await getRespondentCountBySex(props.surveyId);
+
     if (data) {
         chartData.value = {
             labels: data.map(item => item.sex_id == 1 ? 'Masculino' : (item.sex_id == 2 ? 'Femenino' : 'Otro')),

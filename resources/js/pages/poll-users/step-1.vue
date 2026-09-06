@@ -18,19 +18,21 @@
     </MainLayout>
 </template>
 <script setup>
-import { getSurveys } from '@/composables/api/surveys';
-import MainLayout from '@/layouts/main-layout.vue';
-import { apiHost } from '@/store/store';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
+import { getSurveys } from '@/composables/api/surveys';
+import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store';
 
     const surveys = ref([])
     const survey_selected = ref()
     onMounted(async ()=>{
         const {data} = await getSurveys({all:true})
-        if(data)
-            surveys.value = data
+
+        if(data) {
+surveys.value = data
+}
     })
 
     async function redirectToStep2  (){

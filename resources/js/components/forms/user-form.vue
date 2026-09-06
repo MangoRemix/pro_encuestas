@@ -113,8 +113,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
+import { ref, reactive, onMounted } from 'vue';
 import NotificationBox from '@/components/notification-box.vue';
 import { apiHost } from '@/store/store.js';
 
@@ -138,6 +138,7 @@ onMounted(async () => {
 const handleSubmit = async () => {
   loading.value = true;
   message.value = '';
+
   try {
     await axios.post(`${apiHost}person/pollster-admin/create`, form);
     emit('created');

@@ -199,18 +199,18 @@
     </MainLayout>
 </template>
 <script setup>
-import NotificationBox from '@/components/notification-box.vue';
+import { Icon } from '@iconify/vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { onMounted, ref, watch } from 'vue';
 import Modal from '@/components/modal.vue';
-import MainLayout from '@/layouts/main-layout.vue';
+import NotificationBox from '@/components/notification-box.vue';
 import StepNavigation from '@/components/StepNavigation.vue';
 
-import { onMounted, ref, watch } from 'vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Icon } from '@iconify/vue';
 
+import { getAnswersByQuestion,updateAnswer,createManyAnswers } from '@/composables/api/answers';
 import { createMany, getQuestion, getQuestionsByCategory } from '@/composables/api/questions';
 import { getCategoriesBySurvey, getSurveys, showFullSurvey } from '@/composables/api/surveys';
-import { getAnswersByQuestion,updateAnswer,createManyAnswers } from '@/composables/api/answers';
+import MainLayout from '@/layouts/main-layout.vue';
 import { currentStep, stepsBreadcrumb } from '@/store/store';
 
 const operation_name = ref('create')
@@ -254,10 +254,10 @@ onMounted(async()=>{
         if(page.props.categoryId){
             surveySelected.value = page.props.surveyId
             categorySelected.value = parseInt(page.props.categoryId)
-        }
-        else{
-            if(page.props.surveyId)
-                surveySelected.value = page.props.surveyId
+        } else{
+            if(page.props.surveyId) {
+surveySelected.value = page.props.surveyId
+}
         }
     }, 750);   
     nextStepFlag.value = !(await validateQuestionsAnswers())
@@ -272,8 +272,7 @@ watch(surveySelected,async (value)=>{
         
         categories.value = data
         
-    }
-    else{
+    } else{
         if(errorFlag){
             isError.value = true
             message.value = responseMessage
@@ -330,8 +329,7 @@ const getQuestions = async (value)=>{
                 category_id:parseInt(page.props.categoryId)
             }
         ]
-    }
-    else{
+    } else{
         if(errorFlag){
             isError.value = true
             message.value = responseMessage
@@ -439,6 +437,7 @@ const handleSaveAnswers = async () => {
         await refreshAnswers()
         isAnswerModalOpen.value = false
     }
+
     nextStepFlag.value = !(await validateQuestionsAnswers())
 }
 const refreshAnswers = async () => {
@@ -448,6 +447,7 @@ const refreshAnswers = async () => {
 
 const createManyAnswers_ = async (formData) => {
     const { success } = await createManyAnswers(formData)
+
     if (success) {
         await refreshAnswers()
         isAnswerModalOpen.value = false
@@ -460,11 +460,15 @@ const updateAnswers = async (id)=>{
 const validateQuestionsAnswers = async () => {
     const {data:survey} = await showFullSurvey(page.props.surveyId)
     
-    if (!survey?.categories || survey.categories.length === 0) return false;
+    if (!survey?.categories || survey.categories.length === 0) {
+return false;
+}
 
     return survey.categories.every(category => {
         // Obliga a que haya mínimo 1 pregunta
-        if (!category.questions || category.questions.length === 0) return false;
+        if (!category.questions || category.questions.length === 0) {
+return false;
+}
         
         // Y mínimo 2 respuestas por pregunta
         return category.questions.every(question => 

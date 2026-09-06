@@ -86,14 +86,14 @@
     </MainLayout>
 </template>
 <script setup>
-import Modal from '@/components/modal.vue';
-import NotificationBox from '@/components/notification-box.vue';
-import MainLayout from '@/layouts/main-layout.vue';
-import { apiHost } from '@/store/store';
 import { Icon } from '@iconify/vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
+import Modal from '@/components/modal.vue';
+import NotificationBox from '@/components/notification-box.vue';
+import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store';
 
 const page = usePage()
 
@@ -117,8 +117,10 @@ const form = ref([
 
 onMounted(async ()=>{
     question.value = await getQuestion(parseInt(page.props.id))
-    if(question.value.id)
-        answersByQuestion.value = await getAnswersByQuestion(question.value.id)
+
+    if(question.value.id) {
+answersByQuestion.value = await getAnswersByQuestion(question.value.id)
+}
 })
 
 const newAnswers = ()=>{
@@ -140,8 +142,10 @@ const getQuestion = async (id) => {
         const {data,error,status} = await axios.get(`${apiHost}question/show-one/${id}`)
         
         
-        if(data.question)
-            return data.question
+        if(data.question) {
+return data.question
+}
+
         return null
     } catch (error) {
         console.log(error)
@@ -153,8 +157,10 @@ const getAnswersByQuestion = async (id) => {
     try {
         const {data,error} = await axios.get(`${apiHost}answer/show-by-question/${id}`)
         
-        if(data.answers)
-            return data.answers
+        if(data.answers) {
+return data.answers
+}
+
         return null
     } catch (error) {
         console.log(error)
@@ -191,6 +197,7 @@ const createManyAnswers = async () => {
 
 const deleteAnswer = async (id,index) => {
     loading.value = true
+
     try {
         const {data,error,status} = await axios.delete(`${apiHost}answer/delete/${id}`)
         
@@ -215,6 +222,7 @@ const deleteAnswer = async (id,index) => {
 const getAnswerToEdit = async (id) => {
     try {
         const {data,error,status} = await axios.get(`${apiHost}answer/show-one/${id}`)
+
         if(status==200){
             
             form.value[0].name = data.name
@@ -233,6 +241,7 @@ const updateAnswer = async (id) => {
     try {
         loading.value = true
         const {data,error,status} = await axios.put(`${apiHost}answer/update/${id}`,form.value[0])
+
         if(status == 200){
             
             message.value = data.message

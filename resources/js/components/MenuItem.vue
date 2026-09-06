@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -15,17 +15,28 @@ const emit = defineEmits(['close']);
 
 const isVisible = computed(() => {
   const hasPerm = !props.item.permission || props.userRole === props.item.permission;
-  if (!hasPerm) return false;
+
+  if (!hasPerm) {
+return false;
+}
+
   if (props.item.children) {
     return visibleChildren.value.length > 0;
   }
+
   return !!props.item.link;
 });
 
 const visibleChildren = computed(() => {
-  if (!props.item.children) return [];
+  if (!props.item.children) {
+return [];
+}
+
   return props.item.children.filter((child) => {
-    if (!child.permission) return true;
+    if (!child.permission) {
+return true;
+}
+
     return props.userRole === child.permission;
   });
 });

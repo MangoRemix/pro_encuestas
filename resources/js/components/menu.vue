@@ -1,7 +1,7 @@
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Icon } from '@iconify/vue';
 import { router } from '@inertiajs/vue3';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import MenuItem from '@/components/MenuItem.vue';
 
 const props = defineProps({

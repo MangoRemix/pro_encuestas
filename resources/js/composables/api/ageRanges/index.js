@@ -9,8 +9,10 @@ const createResponse = () => ({
 
 export async function getAgeRanges() {
     const response = createResponse();
+
     try {
         const { data, status } = await axios.get(`${apiHost}age-range/show-all`);
+
         if (status === 200) {
             response.data = data;
         }
@@ -18,11 +20,13 @@ export async function getAgeRanges() {
         response.errorFlag = true;
         response.responseMessage = error.response?.data?.error || 'Error al obtener rangos';
     }
+
     return response;
 }
 
 export async function saveAgeRange(payload, id = null) {
     const response = createResponse();
+
     try {
         const url = id ? `${apiHost}age-ranges/update/${id}` : `${apiHost}age-range/create`;
         const method = id ? 'put' : 'post';
@@ -33,11 +37,13 @@ export async function saveAgeRange(payload, id = null) {
         response.errorFlag = true;
         response.responseMessage = error.response?.data?.error || 'Error al guardar';
     }
+
     return response;
 }
 
 export async function deleteAgeRange(id) {
     const response = createResponse();
+
     try {
         const { data, status } = await axios.delete(`${apiHost}age-range/delete/${id}`);
         response.responseMessage = data.message;
@@ -45,5 +51,6 @@ export async function deleteAgeRange(id) {
         response.errorFlag = true;
         response.responseMessage = error.response?.data?.error || 'Error al eliminar';
     }
+
     return response;
 }

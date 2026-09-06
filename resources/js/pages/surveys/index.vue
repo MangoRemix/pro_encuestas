@@ -56,6 +56,22 @@
         </div>
 
         <!-- Vista Móvil: Tarjetas -->
+        <div class="md:hidden flex flex-wrap gap-2 mb-4">
+            <button
+                v-for="field in sortableFields"
+                :key="field.key"
+                @click="toggleSort(field.key)"
+                class="px-3 py-1 rounded-full text-xs font-medium border transition-colors"
+                :class="sortField === field.key
+                    ? 'bg-blue-600 border-blue-500 text-white'
+                    : 'bg-slate-800 border-slate-700 text-slate-400'"
+            >
+                {{ field.label }}
+                <span v-if="sortField === field.key">
+                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                </span>
+            </button>
+        </div>
         <div class="md:hidden space-y-4">
             <div v-for="survey in filteredSurveys" :key="survey.id" class="bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-sm">
                 <div class="flex justify-between items-start mb-3">
@@ -88,10 +104,30 @@
                 <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 bg-slate-900 z-10">
                         <tr class="border-b border-slate-700 text-white text-xs uppercase tracking-wider">
-                            <th class="p-4">Nombre</th>
-                            <th class="p-4">Fecha de inicio</th>
-                            <th class="p-4">Fecha de finalización</th>
-                            <th class="p-4 text-center">Encuestados</th>
+                            <th class="p-4 cursor-pointer select-none" @click="toggleSort('name')">
+                                <div class="flex items-center gap-2">
+                                    Nombre
+                                    <SortIcon field="name" :current-field="sortField" :direction="sortDirection" />
+                                </div>
+                            </th>
+                            <th class="p-4 cursor-pointer select-none" @click="toggleSort('init_date')">
+                                <div class="flex items-center gap-2">
+                                    Fecha de inicio
+                                    <SortIcon field="init_date" :current-field="sortField" :direction="sortDirection" />
+                                </div>
+                            </th>
+                            <th class="p-4 cursor-pointer select-none" @click="toggleSort('finish_date')">
+                                <div class="flex items-center gap-2">
+                                    Fecha de finalización
+                                    <SortIcon field="finish_date" :current-field="sortField" :direction="sortDirection" />
+                                </div>
+                            </th>
+                            <th class="p-4 text-center cursor-pointer select-none" @click="toggleSort('results_count')">
+                                <div class="flex items-center justify-center gap-2">
+                                    Encuestados
+                                    <SortIcon field="results_count" :current-field="sortField" :direction="sortDirection" />
+                                </div>
+                            </th>
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -133,19 +169,20 @@
     </MainLayout>
 </template>
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
 import { Icon } from "@iconify/vue";
+import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
-import MainLayout from '@/layouts/main-layout.vue';
+import SurveyForm from '@/components/forms/survey-form.vue';
+import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
 import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
-import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
-import { formatedDate } from '@/composables/shared';
-import SurveyForm from '@/components/forms/survey-form.vue';
-import { useNotification } from '@/composables/useNotification';
+import SortIcon from '@/components/sort-icon.vue';
 import { getSurveysPaginated, importSurveyFromExcel } from '@/composables/api/surveys';
+import { formatedDate } from '@/composables/shared';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
+import { useNotification } from '@/composables/useNotification';
+import MainLayout from '@/layouts/main-layout.vue';
 
 const { notify } = useNotification();
 const { isProcessing, pollBatchStatus } = useBatchProcessor();
@@ -156,18 +193,53 @@ const pagination = ref(null);
 
 const idSurveyToEdit = ref(0);
 const searchQuery = ref('');
-    
+const sortField = ref('name');
+const sortDirection = ref('asc');
+const sortableFields = [
+    { key: 'name', label: 'Nombre' },
+    { key: 'init_date', label: 'Inicio' },
+    { key: 'finish_date', label: 'Fin' },
+    { key: 'results_count', label: 'Respuestas' },
+];
+
+const toggleSort = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+};
+
 onMounted(async () => {
         const params = new URLSearchParams(window.location.search);
     await getSurveys(parseInt(params.get('page')) || 1);
 });
+
 const filteredSurveys = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
-    return surveys.value.filter(survey => {
+    const filtered = surveys.value.filter(survey => {
         const nameMatch = survey.name.toLowerCase().includes(query);
         const initDateMatch = formatedDate(survey.init_date).toLowerCase().includes(query);
         const finishDateMatch = formatedDate(survey.finish_date).toLowerCase().includes(query);
+
         return nameMatch || initDateMatch || finishDateMatch;
+    });
+
+    return [...filtered].sort((a, b) => {
+        let comparison = 0;
+
+        if (sortField.value === 'name') {
+            comparison = a.name.localeCompare(b.name);
+        } else if (sortField.value === 'init_date') {
+            comparison = new Date(a.init_date) - new Date(b.init_date);
+        } else if (sortField.value === 'finish_date') {
+            comparison = new Date(a.finish_date) - new Date(b.finish_date);
+        } else if (sortField.value === 'results_count') {
+            comparison = (a.results_count || 0) - (b.results_count || 0);
+        }
+
+        return sortDirection.value === 'asc' ? comparison : -comparison;
     });
 });
 
@@ -197,6 +269,7 @@ const handleImportProcess = async (formData) => {
     isProcessing.value = true;
 
     const result = await importSurveyFromExcel(formData);
+
     if (!result.errorFlag && result.data) {
         await pollBatchStatus(result.data.batch_id);
         notify("Encuesta importada exitosamente");

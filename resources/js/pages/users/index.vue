@@ -113,14 +113,14 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
 import { Icon } from "@iconify/vue";
+import { Head } from '@inertiajs/vue3';
 import { onMounted, ref, computed } from 'vue';
-import MainLayout from '@/layouts/main-layout.vue';
-import Modal from '@/components/modal.vue';
 import UserForm from '@/components/forms/user-form.vue';
+import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
 import { useUsers } from '@/composables/api/users';
+import MainLayout from '@/layouts/main-layout.vue';
 
 const { staffData, isLoading, errorMessage, getStaff, deleteUser: deleteUserApi, getRoleName } = useUsers();
 
@@ -131,10 +131,14 @@ const userToDelete = ref(null);
 
 const filteredStaff = computed(() => {
     const query = searchQuery.value.toLowerCase();
-    if (!query) return staffData.value.data;
+
+    if (!query) {
+return staffData.value.data;
+}
     
     return staffData.value.data.filter(user => {
         const roleName = getRoleName(user.rol_id).toLowerCase();
+
         return (
             user.name.toLowerCase().includes(query) ||
             user.email.toLowerCase().includes(query) ||
@@ -149,8 +153,12 @@ const confirmDelete = (id) => {
 };
 
 const handleDeleteUser = async () => {
-    if (!userToDelete.value) return;
+    if (!userToDelete.value) {
+return;
+}
+
     const success = await deleteUserApi(userToDelete.value);
+
     if (success) {
         isDeleteModalOpen.value = false;
         userToDelete.value = null;

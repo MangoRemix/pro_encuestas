@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
-import Modal from '@/components/modal.vue'
 import axios from 'axios'
+import { ref } from 'vue'
+import Modal from '@/components/modal.vue'
 
 defineProps({
     show: Boolean
@@ -23,10 +23,13 @@ const handleFileChange = (e) => {
 const submitUpload = async () => {
     if (!file.value) {
         errorMessage.value = 'Por favor selecciona un archivo Excel.'
+
         return
     }
+
     if (!init_date.value || !finish_date.value) {
         errorMessage.value = 'Por favor selecciona fecha de inicio y fin.'
+
         return
     }
 

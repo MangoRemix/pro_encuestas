@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import {
   Chart as ChartJS,
   Title,
@@ -9,6 +8,7 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js'
+import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 
 // Registrar componentes de Chart.js
@@ -92,6 +92,7 @@ const mergedOptions = computed(() => {
       }
     }
   }
+
   return options
 })
 </script>

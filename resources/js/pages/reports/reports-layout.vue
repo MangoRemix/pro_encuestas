@@ -76,17 +76,17 @@
 
 <script setup>
 
-import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
-import { getReportStructure } from '@/composables/api/reports';
 import { Head, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, watch, computed } from 'vue';
-import MainLayout from '@/layouts/main-layout.vue';
-import Graphics from './sublayouts/graphics.vue';
-import Table from './sublayouts/table.vue';
-import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
-import SexChart from './sublayouts/SexChart.vue';
-import ParishChart from './sublayouts/ParishChart.vue';
 import CategoryFilter from '@/components/CategoryFilter.vue';
+import { getReportStructure } from '@/composables/api/reports';
+import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
+import MainLayout from '@/layouts/main-layout.vue';
+import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
+import Graphics from './sublayouts/graphics.vue';
+import ParishChart from './sublayouts/ParishChart.vue';
+import SexChart from './sublayouts/SexChart.vue';
+import Table from './sublayouts/table.vue';
 
 const selectedSurvey = ref(null)
 const surveys = ref([])
@@ -105,7 +105,10 @@ const reportTypes = [
 ];
 
 const filteredCategories = computed(() => {
-    if (!category_selected.value) return reportData.value.categories || [];
+    if (!category_selected.value) {
+return reportData.value.categories || [];
+}
+
     return (reportData.value.categories || []).filter(
         c => c.name === category_selected.value
     );
@@ -125,6 +128,7 @@ const selected_graphic = ref('all')
 onMounted(async () => {
     try {
         const { data } = await getSurveys({ all: true });
+
         if (data?.length) {
             surveys.value = data;
             //selectedSurvey.value = data[0].id;
@@ -135,15 +139,24 @@ onMounted(async () => {
 });
 
 const loadReport = async () => {
-    if (!selectedSurvey.value) return;
+    if (!selectedSurvey.value) {
+return;
+}
 
     survey_selected.value = surveys.value.find((s) => s.id == selectedSurvey.value)
+
     if (survey_selected.value) {
         const { data } = await getCategoriesBySurvey(selectedSurvey.value)
-        if (data) categories.value = data;
+
+        if (data) {
+categories.value = data;
+}
 
         const report = await getReportStructure(selectedSurvey.value);
-        if (report.data) reportData.value = report.data;
+
+        if (report.data) {
+reportData.value = report.data;
+}
     }
 };
 

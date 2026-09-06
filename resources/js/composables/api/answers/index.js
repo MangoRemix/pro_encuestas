@@ -9,8 +9,10 @@ const response = {
 export async function getAnswer(){
     try {
         const {data,error,status} = await axios.get(`${apiHost}answer/show-all`)
+
         if(status==200){
             response.data = data
+
             return response
         }
             
@@ -67,6 +69,7 @@ export async function updateAnswer(id,dataForm) {
     try {
         
         const {data,error,status} = await axios.put(`${apiHost}answer/update/${id}`,dataForm[0])
+
         if(status == 200){
             
             message.value = data.message

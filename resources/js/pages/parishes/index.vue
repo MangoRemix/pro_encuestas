@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
 import { Icon } from "@iconify/vue";
+import { Head } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
+import Modal from '@/components/modal.vue';
 import { useParishes } from '@/composables/api/parishes';
 import MainLayout from '@/layouts/main-layout.vue';
-import Modal from '@/components/modal.vue';
 
 const { parishes, fetchParishes, storeParish, updateParish, deleteParish } = useParishes();
 
@@ -29,10 +29,13 @@ const save = async () => {
         } else {
             await storeParish(form.value);
         }
+
         isModalOpen.value = false;
         fetchParishes();
     } catch (e) {
-        if (e.response?.data?.errors) errors.value = e.response.data.errors;
+        if (e.response?.data?.errors) {
+errors.value = e.response.data.errors;
+}
     }
 };
 

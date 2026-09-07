@@ -48,8 +48,13 @@ const props = defineProps({
 const mergedOptions = computed(() => {
   const options = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false, // Force false globally to allow flexible containers
     ...props.chartOptions,
+    animation: {
+      duration: 750,
+      easing: 'easeInOutQuart'
+    },
+    resizeDelay: 100, // Debounce resize for smoother transitions
     plugins: {
       ...props.chartOptions?.plugins,
       legend: {

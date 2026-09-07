@@ -57,6 +57,12 @@ const chartData = computed(() => ({
 
 const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+        duration: 750,
+        easing: 'easeInOutQuart'
+    },
+    resizeDelay: 100,
     scales: {
         y: { beginAtZero: true, max: 100 }
     }

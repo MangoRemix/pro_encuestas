@@ -18,6 +18,11 @@
                         indexAxis: 'y',
                         maintainAspectRatio: false,
                         responsive: true,
+                        animation: {
+                            duration: 750,
+                            easing: 'easeInOutQuart'
+                        },
+                        resizeDelay: 100,
                         scales: {
                             x: {
                                 beginAtZero: true,

@@ -64,7 +64,7 @@ const remove = async (id) => {
             </div>
         </div>
 
-        <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+        <div class="bg-gray-500/30 border border-slate-700 rounded-lg overflow-hidden">
             <div class="max-h-110 overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead>

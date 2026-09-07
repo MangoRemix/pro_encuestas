@@ -99,7 +99,7 @@
         </div>
 
         <!-- Vista Escritorio: Tabla -->
-        <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden">
+        <div class="hidden md:block bg-gray-500/30 border border-slate-700 rounded-lg overflow-hidden">
             <div class="max-h-150 overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 bg-slate-900 z-10">

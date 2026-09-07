@@ -2,7 +2,7 @@
     <div id="main" 
          :class="['w-full min-h-screen relative flex bg-[#0B1E36]', isMenuOpen && !isLargeScreen ? 'overflow-hidden h-screen' : '']">
         <!-- Botón siempre visible para alternar el menú -->
-        <div v-if="user" class="fixed top-5 left-5 z-50">
+        <div v-if="user" class="fixed top-5 left-2 z-50">
             <button 
                 @click="isMenuOpen = !isMenuOpen" 
                 class="bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 hover:scale-110 active:scale-95 transition-all cursor-pointer"

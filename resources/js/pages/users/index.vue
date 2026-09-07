@@ -47,7 +47,7 @@
             </div>
 
             <!-- Tabla con estilo Dashboard (Vista Escritorio) -->
-            <div class="hidden md:block bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden max-h-150 overflow-y-auto custom-scrollbar">
+            <div class="hidden md:block bg-gray-500/30 border border-slate-700 rounded-lg overflow-hidden max-h-150 overflow-y-auto custom-scrollbar">
                     <table class="w-full text-left border-collapse">
                     <thead class="sticky top-0 z-10 bg-slate-900">
                         <tr class="border-b border-slate-700 text-white text-xs uppercase tracking-wider">

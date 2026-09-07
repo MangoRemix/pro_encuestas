@@ -7,84 +7,113 @@
             <h1 class="text-white underline text-2xl font-bold mx-auto mb-2">{{ survey.name }}</h1>
         </div>
         
-        
+
         <div class="flex items-center justify-between w-full mb-3">
             <div class="space-x-2 text-xl">
                 <span class="text-white font-bold">Total encuestados:</span>
             <span class="text-white">{{ survey.results_count }}</span>
             </div>
         </div>
-        <div class="flex space-x-2">
-            <div class="bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-blue-700/50 
-            w-full sm:w-[75%] md:w-[55%] lg:w-[35%]
-            h-125 overflow-y-auto custom-scrollbar">
-                
-                <div class="w-full flex items-center justify-between mb-3">
-                    <h3 class="text-lg xl:text-xl text-center text-white font-extrabold ">Categorías</h3>
-                    <div class="">
-                    <button @click="isModalOpen_categories = true" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
-                    >
-                        <Icon class="text-2xl" icon="ic:outline-plus" />
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- CATEGORIAS -->
+            <div class="lg:col-span-3 bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-4 border border-blue-700/50 h-150 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg text-white font-extrabold">Categorías</h3>
+                    <button @click="isModalOpen_categories = true" class="btn-circle btn-circle-yellow w-8 h-8 cursor-pointer">
+                        <Icon class="text-xl text-white" icon="ic:outline-plus" />
                     </button>
                 </div>
+                <div class="overflow-y-auto custom-scrollbar flex-1">
+                    <ul class="text-blue-100 space-y-1">
+                        <li @click="categorySelected = category.id" v-for="category in categories" :key="category.id"
+                            :class="`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 
+                            ${categorySelected==category.id ? 'bg-blue-600/50 text-white font-bold' : 'hover:bg-slate-700/50'}`">
+                            {{ category.name }}
+                        </li>
+                    </ul>
                 </div>
-                
-                <ul class="text-blue-100 mt-2 text-md">
-                    <li @click="categorySelected = category.id" v-for="category in categories" 
-                    :class="`cursor-pointer hover:underline hover:text-yellow-400 hover:font-bold transition-all duration-75 py-1
-                    ${categorySelected==category.id?'text-yellow-400':''}
-                    `">
-                        {{ category.name }}
-                    </li>
-                </ul>
             </div>
-                
-            <div class="bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-3 border border-blue-700/50 
-            w-full
-            h-125 flex flex-col">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-xl text-center text-white font-extrabold">Preguntas</h3>
-                <div class="">
-                    <button @click="newQuestions()" class="btn-circle btn-circle-yellow text-white w-10 h-10 cursor-pointer"
-                    :disabled="!categorySelected"
-                    >
-                        <Icon class="text-2xl" icon="ic:outline-plus" />                        
-                        
+
+            <!-- PREGUNTAS -->
+            <div class="lg:col-span-5 bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-4 border border-blue-700/50 h-150 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg text-white font-extrabold">Preguntas</h3>
+                    <button @click="newQuestions()" class="btn-circle btn-circle-yellow w-8 h-8 cursor-pointer disabled:opacity-50"
+                        :disabled="!categorySelected">
+                        <Icon class="text-xl text-white" icon="ic:outline-plus" />
                     </button>
                 </div>
-            </div>
                 
-                
-                <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
-                    <table class="w-full text-left border-collapse shrink-0 table-fixed">
-                        <thead class="sticky top-0 z-10 bg-slate-900">
-                            <tr class="border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider">
-                                <th class="p-4 w-30">Orden</th>
-                                <th class="p-4">Nombre</th>
-                                <th class="p-4 w-55 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                    </table>
+                <div class="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
                     <div class="overflow-y-auto custom-scrollbar flex-1 w-full">
                         <table class="w-full text-left border-collapse table-fixed">
+                            <thead class="sticky top-0 bg-slate-900 z-10">
+                                <tr class="text-white text-xs uppercase tracking-wider">
+                                    <th class="p-3 w-16">Ord</th>
+                                    <th class="p-3">Nombre</th>
+                                    <th class="p-3 w-24 text-center">Acc</th>
+                                </tr>
+                            </thead>
                             <tbody class="divide-y divide-slate-700/50">
-                                <tr :id="`question-${index}`" v-for="(question,index) in questions" :key="question.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
-                                    <td class="p-4 w-30 font-medium">{{ question.order }}</td>
-                                    <td class="p-4 truncate">
-                                        <span @click="questionSelected=question.id"
-                                        :class="`cursor-pointer ${questionSelected==question.id?'text-yellow-400 font-bold':''}`"
-                                        >
-                                            {{ question.name }}
-                                        </span>
-                                    </td>
-                                    <td class="p-4 w-55">
-                                        <div class="flex items-center justify-center gap-x-3 w-full">
-                                            <Link :href="`/questions/details/${question.id}`">
-                                                <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
+                                <tr v-if="questions.length === 0" class="text-slate-400 italic text-sm">
+                                    <td colspan="3" class="p-4 text-center">Selecciona una categoría</td>
+                                </tr>
+                                <tr v-for="(question,index) in questions" :key="question.id" 
+                                    @click="questionSelected=question.id"
+                                    :class="`cursor-pointer transition-colors ${questionSelected==question.id ? 'bg-blue-600/30' : 'hover:bg-slate-600/30'}`">
+                                    <td class="p-3 font-medium text-slate-200">{{ question.order }}</td>
+                                    <td class="p-3 text-slate-200 whitespace-normal wrap-break-words" :title="question.name">{{ question.name }}</td>
+                                    <td class="p-3 w-24">
+                                        <div class="flex items-center justify-center gap-x-2">
+                                            <Link :href="`/questions/details/${question.id}`" class="text-blue-400 hover:text-blue-300">
+                                                <Icon class="text-lg" icon="ic:baseline-remove-red-eye"/>
                                             </Link>
                                             
-                                            <Icon @click="getQuestionToEdit(question.id)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
-                                            <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                            <Icon @click="getQuestionToEdit(question.id)" class="text-lg text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                            <Icon @click.stop="deleteQuestion(question.id)" class="text-lg text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESPUESTAS -->
+            <div class="lg:col-span-4 bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-4 border border-blue-700/50 h-150 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg text-white font-extrabold">Respuestas</h3>
+                    <button @click="newAnswers()" class="btn-circle btn-circle-yellow w-8 h-8 cursor-pointer disabled:opacity-50"
+                        :disabled="!questionSelected">
+                        <Icon class="text-xl text-white" icon="ic:outline-plus" />
+                    </button>
+                </div>
+                
+                <div class="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+                    <div class="overflow-y-auto custom-scrollbar flex-1 w-full">
+                        <table class="w-full text-left border-collapse table-fixed">
+                            <thead class="sticky top-0 bg-slate-900 z-10">
+                                <tr class="text-white text-xs uppercase tracking-wider">
+                                    <th class="p-3 w-16">Ord</th>
+                                    <th class="p-3">Nombre</th>
+                                    <th class="p-3 w-24 text-center">Acc</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/50 text-slate-200">
+                                <tr v-if="!questionSelected" class="text-slate-400 italic text-sm">
+                                    <td colspan="3" class="p-4 text-center">Selecciona una pregunta para ver sus respuestas</td>
+                                </tr>
+                                <tr v-else-if="answersByQuestion.length === 0" class="text-slate-400 italic text-sm">
+                                    <td colspan="3" class="p-4 text-center">Sin respuestas</td>
+                                </tr>
+                                <tr v-for="(answer,index) in answersByQuestion" :key="answer.id" class="hover:bg-slate-600/30 transition-colors">
+                                    <td class="p-3 font-medium">{{ answer.order }}</td>
+                                    <td class="p-3 text-slate-200 whitespace-normal wrap-break-words" :title="answer.name">{{ answer.name }}</td>
+                                    <td class="p-3 w-24">
+                                        <div class="flex items-center justify-center gap-x-2">
+                                            <Icon @click="getAnswerToEdit(answer.id)" class="text-lg text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
+                                            <Icon @click="deleteAnswer(answer.id,index)" class="text-lg text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
                                         </div>
                                     </td>
                                 </tr>
@@ -95,133 +124,78 @@
             </div>
         </div>
 
-        <!-- aquí irán las respuestas -->
-
-        <div class="bg-slate-600/50 backdrop-blur-md shadow-lg rounded-xl p-3 border border-blue-700/50 w-full mt-10 flex flex-col h-100">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-xl text-center text-white font-extrabold">Respuestas</h3>
-                <div class="">
-                    <button @click="newAnswers()" class="cursor-pointer btn-circle btn-circle-yellow h-10 w-10"
-                    :disabled="!questionSelected">
-                        <Icon class="text-2xl" icon="ic:outline-plus" />
-                    </button>
-                </div>
-                
-            </div>
-                
-                <div class="bg-gray-500/50 border border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
-                    <table class="w-full text-left border-collapse shrink-0 table-fixed">
-                        <thead>
-                            <tr class="border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider">
-                                <th class="p-4 w-30">Orden</th>
-                                <th class="p-4">Nombre</th>
-                                <th class="p-4 w-55 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                    </table>
-                    <div class="overflow-y-auto custom-scrollbar flex-1 w-full">
-                        <table class="w-full text-left border-collapse table-fixed">
-                            <tbody class="divide-y divide-slate-700/50 text-slate-200">
-                                <tr class="hover:bg-slate-600/30 transition-colors" v-for="(answer,index) in answersByQuestion" :key="answer.id">
-                                    <td class="p-4 w-30 font-medium">{{ answer.order }}</td>
-                                    <td class="p-4 truncate">{{ answer.name }}</td>
-                                    <td class="p-4 w-55">
-                                        <div class="flex items-center justify-center gap-x-3 w-full">
-                                            <Icon @click="getAnswerToEdit(answer.id)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
-                                            <Icon @click="deleteAnswer(answer.id,index)" class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        <!-- aqui iran los modales -->
+        <!-- MODALES -->
         <Modal :show="isModalOpen" @close="isModalOpen = false">
-            <!-- FORMULARIO QUESTIONS -->
-            
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-                {{ operation_name }} preguntas
-            </h2>
-            
-            
-            <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" action="" class=" w-150 h-70">
-                <div class="flex item-center justify-end space-x-3">
-                    <button @click.prevent="incrementFormRow" class="" v-if="operation_name!='Editar'">
-                        <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
-                    </button>
-                    
-                    <button type="submit" class="cursor-pointer">
-                        <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
-                    </button>
-                    
-                </div>
-                <div class="w-full h-full max-h-full overflow-y-scroll">
-                    <div v-for="(formRow,index) in formQuestion" class="mb-3 ">
-                        <div class="text-center font-bold mb-3">
-                            <span>Pregunta {{ index+1 }}</span>
-                        </div>
-                        <div class="flex items-center justify-between space-x-2">
-                            <div class="w-35 flex items-center space-x-2">
-                                <label for="" class="text-sm font-bold">Orden: </label>
-                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
-                            </div>
-
-                            <div class="w-full flex items-center space-x-2">
-                                <label for="" class="text-sm font-bold">Nombre: </label>
-                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
-                            </div>
-                        </div>
-                        
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">
+                    {{ operation_name }} pregunta
+                </h2>
+                <form @submit.prevent="operation_name =='Crear'?createManyQuestions():updateQuestion(questionSelected)" class="w-full max-w-lg mx-auto">
+                    <div class="flex items-center justify-end space-x-3 mb-4">
+                        <button type="button" @click.prevent="incrementFormRow" class="btn-circle btn-circle-yellow w-10 h-10" v-if="operation_name!='Editar'">
+                            <Icon class="text-2xl text-white" icon="ic:outline-plus" />
+                        </button>
+                        <button type="submit" class="btn-circle btn-circle-blue w-10 h-10">
+                            <Icon class="text-2xl text-white" icon="ic:round-save" />
+                        </button>
                     </div>
-                </div>
-                
-            </form>
+                    <div class="max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                        <div v-for="(formRow,index) in formQuestion" :key="index" class="mb-4 p-4 border border-slate-200 rounded-lg bg-slate-50 relative">
+                            <button type="button" v-if="index > 0" @click="formQuestion.splice(index, 1)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                <Icon icon="ic:baseline-close" class="text-xl" />
+                            </button>
+                            <div class="font-bold mb-2 text-sm text-slate-700">Pregunta {{ index+1 }}</div>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="col-span-1">
+                                    <label class="text-xs font-bold text-slate-600 block mb-1">Orden</label>
+                                    <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="text-xs font-bold text-slate-600 block mb-1">Nombre</label>
+                                    <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </Modal>
         
-        <!-- MODAL PARA RESPUESTAS -->
-         <Modal :show="isModalOpen_answers" @close="isModalOpen_answers = false">
-                <!-- FORMULARIO RESPUESTAS -->
-                
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-                    {{ operation_name }} respuestas
+        <Modal :show="isModalOpen_answers" @close="isModalOpen_answers = false">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">
+                    {{ operation_name }} respuesta
                 </h2>
-                
-                
-                <form @submit.prevent="operation_name =='Crear'?createManyAnswers():updateAnswer(answerSelectedId)" action="" class=" w-150 min-h-50 max-h-70 overflow-y-scroll">
-                    <div class="flex item-center justify-end space-x-3">
-                    <button @click.prevent="incrementFormRow_answer" class="" v-if="operation_name!='Editar'">
-                        <Icon class="h-8 w-8 p-1 rounded-full bg-yellow-400 cursor-pointer hover:bg-yellow-300 text-white " icon="ic:outline-plus" />
-                    </button>
-                    
-                    <button type="submit" class="cursor-pointer">
-                        <Icon class="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-xs text-white p-1 rounded-full" icon="ic:round-save" />
-                    </button>
-                    
-                </div>
-                    <div v-for="(formRow,index) in formAnswer" class="mb-3">
-                        <div class="text-center font-bold mb-3">
-                            
-                            <span>Respuesta {{ index+1 }}</span>
-                        </div>
-                        <div class="flex items-center justify-between space-x-2">
-                            <div class="w-35 flex items-center space-x-2">
-                                <label for="" class="text-sm font-bold">Orden: </label>
-                                <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
-                            </div>
-
-                            <div class="w-full flex items-center space-x-2">
-                                <label for="" class="text-sm font-bold">Nombre: </label>
-                                <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
-                            </div>
-                        </div>
-                        
+                <form @submit.prevent="operation_name =='Crear'?createManyAnswers():updateAnswer(answerSelectedId)" class="w-full max-w-lg mx-auto">
+                    <div class="flex items-center justify-end space-x-3 mb-4">
+                        <button type="button" @click.prevent="incrementFormRow_answer" class="btn-circle btn-circle-yellow w-10 h-10" v-if="operation_name!='Editar'">
+                            <Icon class="text-2xl text-white" icon="ic:outline-plus" />
+                        </button>
+                        <button type="submit" class="btn-circle btn-circle-blue w-10 h-10">
+                            <Icon class="text-2xl text-white" icon="ic:round-save" />
+                        </button>
                     </div>
-                    
+                    <div class="max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                        <div v-for="(formRow,index) in formAnswer" :key="index" class="mb-4 p-4 border border-slate-200 rounded-lg bg-slate-50 relative">
+                            <button type="button" v-if="index > 0" @click="formAnswer.splice(index, 1)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                <Icon icon="ic:baseline-close" class="text-xl" />
+                            </button>
+                            <div class="font-bold mb-2 text-sm text-slate-700">Respuesta {{ index+1 }}</div>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="col-span-1">
+                                    <label class="text-xs font-bold text-slate-600 block mb-1">Orden</label>
+                                    <input required v-model="formRow.order" min="1" type="number" class="inputs-form">
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="text-xs font-bold text-slate-600 block mb-1">Nombre</label>
+                                    <input required minlength="5" v-model="formRow.name" type="text" class="inputs-form">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </form>
-            </Modal>
+            </div>
+        </Modal>
 
             <!-- MODAL PARA CREAR CATEGORIES -->
              <Modal :show="isModalOpen_categories" @close="isModalOpen_categories = false">
@@ -233,7 +207,6 @@
     </MainLayout>
 </template>
 <script setup>
-
 
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
@@ -289,6 +262,22 @@ const formAnswer = ref([
         question_id:0
     }
 ])
+
+// Function to delete a question
+const deleteQuestion = async (id) => {
+    // Placeholder: You'll need to implement the actual API call here.
+    // Example: You might have a deleteQuestionApi function in your composables.
+    console.log(`Deleting question with id: ${id}`);
+    // const success = await deleteQuestionApi(id); // Uncomment and adapt this line
+    // if (success) {
+    //     // Refresh questions list after deletion
+    //     const { data: questions_ } = await getQuestionsByCategory(categorySelected.value);
+    //     questions.value = questions_;
+    //     notify("Pregunta eliminada correctamente");
+    // } else {
+    //     notify("Error al eliminar la pregunta", true);
+    // }
+};
 
 onMounted(async()=>{
 
@@ -357,7 +346,7 @@ const getQuestionToEdit = async (id) => {
             operation_name.value = 'Editar'
             questionSelected.value = id
     } else if(errorFlag) {
-notify(responseMessage, true);
+    notify(responseMessage, true);
 }
         }
 
@@ -378,7 +367,7 @@ const createManyQuestions = async () => {
             ]
 
     } else if(errorFlag) {
-notify(responseMessage, true);
+    notify(responseMessage, true);
 }
         }
 const newQuestions = ()=>{
@@ -431,7 +420,7 @@ const createManyAnswers = async () => {
         notify("Respuestas creadas correctamente");
         isModalOpen_answers.value = false;
     } else {
-notify("Error al crear respuestas", true);
+    notify("Error al crear respuestas", true);
 }
         }
             
@@ -442,7 +431,7 @@ const deleteAnswer = async (id,index) => {
             answersByQuestion.value.splice(index,1)
         notify("Respuesta eliminada");
     } else {
-notify("Error al eliminar", true);
+    notify("Error al eliminar", true);
 }
         }
         
@@ -472,7 +461,7 @@ const updateAnswer = async (id) => {
         answersByQuestion.value = await getAnswersByQuestionApi(questionSelected.value)
         isModalOpen_answers.value = false;
     } else {
-notify("Error al actualizar", true);
+    notify("Error al actualizar", true);
 }
 }
 const incrementFormRow_answer = () =>{
@@ -519,4 +508,3 @@ const updateCategories = async () => {
     background: #94a3b8;
 }
 </style>
-

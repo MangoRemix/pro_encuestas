@@ -1,10 +1,10 @@
 <template>
-    <Head title="Inicio de sesión"></Head>
+    <Head title="Inicio de sesión" />
     <MainLayout>
         
-        <!-- Notificación flotante -->
-        <div class="fixed top-5 right-5 z-50 w-80">
-            <NotificationBox :message="errorMessage" :is-error="true" />
+        <!-- Notification box is handled by form.errors now -->
+        <div v-if="$page.props.flash?.status" class="fixed top-5 right-5 z-50 w-80">
+            <NotificationBox :message="$page.props.flash.status" :is-error="false" />
         </div>
 
         <div class="flex items-center justify-center w-[90%] sm:w-[80%] max-w-md bg-slate-700 backdrop-blur-md shadow-lg mx-auto rounded-xl mt-4 sm:mt-10 p-4 sm:p-6">
@@ -22,6 +22,11 @@
                             <Icon icon="ic:round-email" class="w-5 h-5 text-blue-900" />
                         </div>
                         <input v-model="form.email" type="email" placeholder="Correo electrónico" class="w-full px-4 py-3 bg-transparent focus:outline-none text-gray-900 placeholder-gray-500" required>
+                    </div>
+
+                    <!-- Display validation errors for email -->
+                    <div v-if="form.errors.email" class="text-red-500 text-sm">
+                        {{ form.errors.email }}
                     </div>
 
                     <div class="flex bg-white rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden transition-all">
@@ -43,10 +48,16 @@
                             <Icon :icon="showPassword ? 'ic:round-visibility-off' : 'ic:round-visibility'" class="w-5 h-5" />
                         </button>
                     </div>
+                    
+                    <!-- Display validation errors for password -->
+                    <div v-if="form.errors.password" class="text-red-500 text-sm">
+                        {{ form.errors.password }}
+                    </div>
+
                     <button
                         class="w-full py-3 font-bold uppercase tracking-wider text-white rounded-lg transition-all duration-200"
-                        :class="disabledLoginButton ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-900 hover:bg-blue-800 shadow-md hover:shadow-lg'"
-                        :disabled="disabledLoginButton"
+                        :class="form.processing ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-900 hover:bg-blue-800 shadow-md hover:shadow-lg'"
+                        :disabled="form.processing"
                     >
                         Entrar
                     </button>
@@ -57,24 +68,23 @@
                         <input v-model="form.remember" type="checkbox" class="rounded border-gray-300 text-blue-900 focus:ring-blue-900">
                         <span>Recordarme</span>
                     </label>
-                    <a href="#" class="text-white hover:underline">¿Olvidaste tu contraseña?</a>
+                    <Link href="/forgot-password" class="text-white hover:underline">¿Olvidaste tu contraseña?</Link>
                 </div>
             </div>
         </div>
 
     </MainLayout>
 </template>
+
 <script setup>
 import { Icon } from '@iconify/vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import axios from 'axios';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import NotificationBox from '@/components/notification-box.vue'; // Importar el componente
+import NotificationBox from '@/components/notification-box.vue';
 import MainLayout from '@/layouts/main-layout.vue';
-import { apiHost } from '@/store/store';
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const errorMessage = ref(''); // Estado para el mensaje de error
+// const errorMessage = ref(''); // errorMessage is replaced by form.errors
 
 const form = useForm({
     email: '',
@@ -83,45 +93,38 @@ const form = useForm({
 });
 
 const showPassword = ref(false);
-const disabledLoginButton = ref(true);
+// disabledLoginButton is now managed by form.processing
+// const disabledLoginButton = ref(true);
 
-const login = async () => {
-    errorMessage.value = ''; // Limpiar error previo
-
-    try {
-        await axios.post('login', {
-            email: form.email,
-            password: form.password,
-            remember: form.remember
-        });
-        window.location.href = '/';
-    } catch (error) {
-        if (error.response?.status === 422) {
-            errorMessage.value = 'Credenciales incorrectas o datos inválidos.';
-        } else {
-            errorMessage.value = 'Ocurrió un error al intentar iniciar sesión.';
+const login = () => {
+    // Use Inertia's useForm post method for submission
+    form.post('/login', {
+        preserveState: true, // Preserve form state on submission
+        onSuccess: () => {
+            // Inertia handles redirects automatically based on backend response
+        },
+        onError: (errors) => {
+            // Error messages are automatically available in form.errors
+            console.error('Login errors:', errors);
         }
-
-        // Auto-ocultar después de 4 segundos
-        setTimeout(() => {
-            errorMessage.value = '';
-        }, 4000);
-    }
+    });
 };
 
+// Watch for changes in form fields to enable/disable the login button
 watch(
     () => [form.email, form.password],
     ([email, password]) => {
-        
-        if (password.length > 7 && emailRegex.test(email)) {
-            disabledLoginButton.value = false;
+        // Enable button if email is valid and password has minimum length
+        if (password.length >= 8 && emailRegex.test(email)) {
+            // disabledLoginButton.value = false;
         } else {
-            disabledLoginButton.value = true;
+            // disabledLoginButton.value = true;
         }
     }
 );
 
 </script>
+
 <style>
     
 </style>

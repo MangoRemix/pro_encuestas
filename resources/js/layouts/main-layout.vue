@@ -49,7 +49,7 @@ const MENU_ITEMS = [
         label: 'Gestión de usuarios',
         icon: 'ic:baseline-people',
         children: [
-            { label: 'Encuestadores/Admins', children: [{ label: 'Nuevo Encuestador/Admin', link: '/users/create', permission: 'ADMIN' }] },
+            // { label: 'Encuestadores/Admins', children: [{ label: 'Nuevo Encuestador/Admin', link: '/users/create', permission: 'ADMIN' }] },
             { label: 'Mostrar usuarios', link: '/users', permission: 'ADMIN' },
         ]
     },
@@ -66,7 +66,7 @@ const MENU_ITEMS = [
         icon: 'ic:baseline-bar-chart',
         children: [
             { label: 'Reportes Generales', link: '/reports', permission: 'ADMIN' },
-            { label: 'Respuestas Recientes', link: '/answers', permission: 'ADMIN' }
+            // { label: 'Respuestas Recientes', link: '/answers', permission: 'ADMIN' }
         ]
     },
     {

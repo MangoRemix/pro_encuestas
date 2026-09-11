@@ -154,8 +154,8 @@ const confirmDelete = (id) => {
 
 const handleDeleteUser = async () => {
     if (!userToDelete.value) {
-return;
-}
+        return;
+    }
 
     const success = await deleteUserApi(userToDelete.value);
 
@@ -170,12 +170,14 @@ const editUser = (user) => {
     console.log('Editar usuario:', user);
 };
 
-const handleUserCreated = () => {
+const handleUserCreated = async () => {
     isModalOpen.value = false;
-    getStaff();
+    await getStaff();
 };
 
-onMounted(getStaff);
+onMounted(async ()=>{
+    await getStaff()
+});
 </script>
 
 <style scoped>

@@ -62,3 +62,6 @@ El sistema incluye usuarios precargados mediante los *seeders* definidos en `dat
 - `app/Http/Controllers/`: Lógica de control.
 - `resources/js/Pages/`: Componentes de vistas (Inertia).
 - `resources/js/Components/`: Componentes reutilizables.
+
+## Definir la ruta al api en la variable del archivo env
+VITE_APP_API_HOST

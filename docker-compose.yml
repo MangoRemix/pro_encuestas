@@ -11,6 +11,7 @@ services:
       DB_DATABASE: encuestas
       DB_USERNAME: postgres
       DB_PASSWORD: secret
+      VITE_APP_API_HOST: ${VITE_APP_API_HOST:-http://localhost:8000/api/}
     ports:
       - "80"
     volumes:

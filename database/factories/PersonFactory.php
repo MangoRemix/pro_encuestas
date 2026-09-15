@@ -2,7 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Parish;
 use App\Models\Person;
+use App\Models\Rol;
+use App\Models\Sex;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -30,6 +33,16 @@ class PersonFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // Rol/Sex/Parish son catálogos acotados: se reutiliza la fila existente
+            // en vez de crear una nueva por cada Person (evita agotar valores únicos
+            // y violar los unique() de la tabla roles cuando el test crea varias personas).
+            'sex_id' => fn () => Sex::query()->firstOrCreate(
+                ['abbreviation' => 'M'],
+                ['description' => 'Masculino']
+            )->id,
+            'age' => fake()->numberBetween(18, 80),
+            'parish_id' => fn () => Parish::query()->firstOrCreate(['name' => 'ALTAGRACIA'])->id,
+            'rol_id' => fn () => Rol::query()->firstOrCreate(['name' => Rol::POLLSTER])->id,
         ];
     }
 
@@ -40,6 +53,13 @@ class PersonFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn () => [
+            'rol_id' => fn () => Rol::query()->firstOrCreate(['name' => Rol::ADMIN])->id,
         ]);
     }
 }

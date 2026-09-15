@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sexs', function (Blueprint $table) {
             $table->id();
-            $table->string('abbreviation',150); //example M F 
-            $table->string('description',150); //example masculino/male femenino/female
+            $table->string('abbreviation', 150); // example M F
+            $table->string('description', 150); // example masculino/male femenino/female
             $table->timestamps();
             $table->softDeletes();
         });

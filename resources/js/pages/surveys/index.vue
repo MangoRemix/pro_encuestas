@@ -1,29 +1,40 @@
 <template>
     <Head title="Encuestas: detalles" />
     <MainLayout>
-        <div class=" text-center">
-            <h2 class="text-3xl text-white font-bold mt-8 underline">Encuestas</h2>
+        <div class="text-center">
+            <h2 class="mt-8 text-3xl font-bold text-white underline">
+                Encuestas
+            </h2>
         </div>
-        <div class="w-full flex flex-col-reverse md:flex-row justify-between items-center mb-6 gap-4">
+        <div
+            class="mb-6 flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row"
+        >
             <div class="w-full md:w-80">
                 <input
                     v-model="searchQuery"
                     type="text"
                     placeholder="Buscar encuesta..."
-                    class="w-full px-4 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 transition-all"
+                    class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none"
                 />
             </div>
-            <div class="flex w-full md:w-auto gap-2 ">
+            <div class="flex w-full gap-2 md:w-auto">
                 <div class="w-40">
                     <button
-                    @click="importSurvey"
-                    :disabled="isProcessing"
-                    class="yellow-button-app flex items-center gap-x-2 justify-center cursor-pointer"
-                >
-                    <span v-if="isProcessing" class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-                    <Icon v-else class="text-2xl" icon="ic:outline-file-upload" />
-                    {{ isProcessing ? 'Importando...' : 'Importar' }}
-                </button>
+                        @click="importSurvey"
+                        :disabled="isProcessing"
+                        class="yellow-button-app flex cursor-pointer items-center justify-center gap-x-2"
+                    >
+                        <span
+                            v-if="isProcessing"
+                            class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+                        ></span>
+                        <Icon
+                            v-else
+                            class="text-2xl"
+                            icon="ic:outline-file-upload"
+                        />
+                        {{ isProcessing ? 'Importando...' : 'Importar' }}
+                    </button>
                 </div>
                 <!-- <button
                     @click="importSurvey"
@@ -34,16 +45,19 @@
                     <Icon v-else class="text-xl mr-2" icon="ic:outline-file-upload" />
                     {{ isProcessing ? 'Importando...' : 'Importar' }}
                 </button> -->
-                <div class="w-50 flex items-center" >
-                    <Link href="/surveys/create-survey/step-1" class="green-button-app flex items-center gap-x-2 justify-center">  
-                        <Icon class="text-2xl " icon="ic:outline-plus" /> Crear manual 
+                <div class="flex w-50 items-center">
+                    <Link
+                        href="/surveys/create-survey/step-1"
+                        class="green-button-app flex items-center justify-center gap-x-2"
+                    >
+                        <Icon class="text-2xl" icon="ic:outline-plus" /> Crear
+                        manual
                     </Link>
                     <!-- <button class="green-button-app flex items-center justify-center cursor-pointer gap-x-2"
                     @click="idSurveyToEdit=0; isModalOpen=true;"> 
                         <Icon class="text-2xl " icon="ic:outline-plus" />
                         Crear manual
                     </button> -->
-                    
                 </div>
                 <!-- <button
                     @click="idSurveyToEdit=0; isModalOpen=true;"
@@ -56,15 +70,17 @@
         </div>
 
         <!-- Vista Móvil: Tarjetas -->
-        <div class="md:hidden flex flex-wrap gap-2 mb-4">
+        <div class="mb-4 flex flex-wrap gap-2 md:hidden">
             <button
                 v-for="field in sortableFields"
                 :key="field.key"
                 @click="toggleSort(field.key)"
-                class="px-3 py-1 rounded-full text-xs font-medium border transition-colors"
-                :class="sortField === field.key
-                    ? 'bg-blue-600 border-blue-500 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-400'"
+                class="rounded-full border px-3 py-1 text-xs font-medium transition-colors"
+                :class="
+                    sortField === field.key
+                        ? 'border-blue-500 bg-blue-600 text-white'
+                        : 'border-slate-700 bg-slate-800 text-slate-400'
+                "
             >
                 {{ field.label }}
                 <span v-if="sortField === field.key">
@@ -72,78 +88,164 @@
                 </span>
             </button>
         </div>
-        <div class="md:hidden space-y-4">
-            <div v-for="survey in filteredSurveys" :key="survey.id" class="bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-sm">
-                <div class="flex justify-between items-start mb-3">
-                    <h3 class="font-bold text-white text-lg">{{ survey.name }}</h3>
-                    <span class="text-xs font-semibold bg-slate-700 text-slate-300 px-2 py-1 rounded-full text-nowrap">
+        <div class="space-y-4 md:hidden">
+            <div
+                v-for="survey in filteredSurveys"
+                :key="survey.id"
+                class="rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-sm"
+            >
+                <div class="mb-3 flex items-start justify-between">
+                    <h3 class="text-lg font-bold text-white">
+                        {{ survey.name }}
+                    </h3>
+                    <span
+                        class="rounded-full bg-slate-700 px-2 py-1 text-xs font-semibold text-nowrap text-slate-300"
+                    >
                         {{ survey.results_count }} respuestas
                     </span>
                 </div>
-                <div class="text-sm text-slate-400 space-y-1 mb-4">
+                <div class="mb-4 space-y-1 text-sm text-slate-400">
                     <p>Inicio: {{ formatedDate(survey.init_date) }}</p>
                     <p>Fin: {{ formatedDate(survey.finish_date) }}</p>
                 </div>
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
-                    <Link :href="`/surveys/details/${survey.id}`" class="p-3 text-blue-400 hover:bg-slate-700 rounded-lg">
-                        <Icon class="text-2xl" icon="ic:baseline-remove-red-eye"/>
+                <div
+                    class="flex justify-end gap-2 border-t border-slate-700 pt-3"
+                >
+                    <Link
+                        :href="`/surveys/details/${survey.id}`"
+                        class="rounded-lg p-3 text-blue-400 hover:bg-slate-700"
+                    >
+                        <Icon
+                            class="text-2xl"
+                            icon="ic:baseline-remove-red-eye"
+                        />
                     </Link>
-                    <button @click="idSurveyToEdit=survey.id; isModalOpen=true;" class="p-3 text-yellow-500 hover:bg-slate-700 rounded-lg">
-                        <Icon class="text-2xl" icon="ic:baseline-edit"/>
+                    <button
+                        @click="
+                            idSurveyToEdit = survey.id;
+                            isModalOpen = true;
+                        "
+                        class="rounded-lg p-3 text-yellow-500 hover:bg-slate-700"
+                    >
+                        <Icon class="text-2xl" icon="ic:baseline-edit" />
                     </button>
-                    <button class="p-3 text-red-500 hover:bg-slate-700 rounded-lg">
-                        <Icon class="text-2xl" icon="ic:baseline-restore-from-trash"/>
+                    <button
+                        class="rounded-lg p-3 text-red-500 hover:bg-slate-700"
+                    >
+                        <Icon
+                            class="text-2xl"
+                            icon="ic:baseline-restore-from-trash"
+                        />
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Vista Escritorio: Tabla -->
-        <div class="hidden md:block bg-gray-500/30 border border-slate-700 rounded-lg overflow-hidden">
-            <div class="max-h-150 overflow-y-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse">
-                    <thead class="sticky top-0 bg-slate-900 z-10">
-                        <tr class="border-b border-slate-700 text-white text-xs uppercase tracking-wider">
-                            <th class="p-4 cursor-pointer select-none" @click="toggleSort('name')">
+        <div
+            class="hidden overflow-hidden rounded-lg border border-slate-700 bg-gray-500/30 md:block"
+        >
+            <div class="custom-scrollbar max-h-150 overflow-y-auto">
+                <table class="w-full border-collapse text-left">
+                    <thead class="sticky top-0 z-10 bg-slate-900">
+                        <tr
+                            class="border-b border-slate-700 text-xs tracking-wider text-white uppercase"
+                        >
+                            <th
+                                class="cursor-pointer p-4 select-none"
+                                @click="toggleSort('name')"
+                            >
                                 <div class="flex items-center gap-2">
                                     Nombre
-                                    <SortIcon field="name" :current-field="sortField" :direction="sortDirection" />
+                                    <SortIcon
+                                        field="name"
+                                        :current-field="sortField"
+                                        :direction="sortDirection"
+                                    />
                                 </div>
                             </th>
-                            <th class="p-4 cursor-pointer select-none" @click="toggleSort('init_date')">
+                            <th
+                                class="cursor-pointer p-4 select-none"
+                                @click="toggleSort('init_date')"
+                            >
                                 <div class="flex items-center gap-2">
                                     Fecha de inicio
-                                    <SortIcon field="init_date" :current-field="sortField" :direction="sortDirection" />
+                                    <SortIcon
+                                        field="init_date"
+                                        :current-field="sortField"
+                                        :direction="sortDirection"
+                                    />
                                 </div>
                             </th>
-                            <th class="p-4 cursor-pointer select-none" @click="toggleSort('finish_date')">
+                            <th
+                                class="cursor-pointer p-4 select-none"
+                                @click="toggleSort('finish_date')"
+                            >
                                 <div class="flex items-center gap-2">
                                     Fecha de finalización
-                                    <SortIcon field="finish_date" :current-field="sortField" :direction="sortDirection" />
+                                    <SortIcon
+                                        field="finish_date"
+                                        :current-field="sortField"
+                                        :direction="sortDirection"
+                                    />
                                 </div>
                             </th>
-                            <th class="p-4 text-center cursor-pointer select-none" @click="toggleSort('results_count')">
-                                <div class="flex items-center justify-center gap-2">
+                            <th
+                                class="cursor-pointer p-4 text-center select-none"
+                                @click="toggleSort('results_count')"
+                            >
+                                <div
+                                    class="flex items-center justify-center gap-2"
+                                >
                                     Encuestados
-                                    <SortIcon field="results_count" :current-field="sortField" :direction="sortDirection" />
+                                    <SortIcon
+                                        field="results_count"
+                                        :current-field="sortField"
+                                        :direction="sortDirection"
+                                    />
                                 </div>
                             </th>
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
-                        <tr v-for="survey in filteredSurveys" :key="survey.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
+                        <tr
+                            v-for="survey in filteredSurveys"
+                            :key="survey.id"
+                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                        >
                             <td class="p-4 font-medium">{{ survey.name }}</td>
-                            <td class="p-4">{{ formatedDate(survey.init_date) }}</td>
-                            <td class="p-4">{{ formatedDate(survey.finish_date) }}</td>
-                            <td class="p-4 text-center">{{ survey.results_count }}</td>
                             <td class="p-4">
-                                <div class="flex gap-3 justify-center">
-                                    <Link :href="`/surveys/details/${survey.id}`">
-                                        <Icon class="text-xl text-blue-400 hover:text-blue-300 cursor-pointer" icon="ic:baseline-remove-red-eye"/>
+                                {{ formatedDate(survey.init_date) }}
+                            </td>
+                            <td class="p-4">
+                                {{ formatedDate(survey.finish_date) }}
+                            </td>
+                            <td class="p-4 text-center">
+                                {{ survey.results_count }}
+                            </td>
+                            <td class="p-4">
+                                <div class="flex justify-center gap-3">
+                                    <Link
+                                        :href="`/surveys/details/${survey.id}`"
+                                    >
+                                        <Icon
+                                            class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
+                                            icon="ic:baseline-remove-red-eye"
+                                        />
                                     </Link>
-                                    <Icon @click="idSurveyToEdit=survey.id; isModalOpen=true;" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit"/>
-                                    <Icon class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash"/>
+                                    <Icon
+                                        @click="
+                                            idSurveyToEdit = survey.id;
+                                            isModalOpen = true;
+                                        "
+                                        class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                        icon="ic:baseline-edit"
+                                    />
+                                    <Icon
+                                        class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                        icon="ic:baseline-restore-from-trash"
+                                    />
                                 </div>
                             </td>
                         </tr>
@@ -158,7 +260,7 @@
             @close="isImportModalOpen = false"
             @import-started="handleImportProcess"
         />
-        <Modal :show="isModalOpen" @close="isModalOpen = false;">
+        <Modal :show="isModalOpen" @close="isModalOpen = false">
             <SurveyForm :surveyId="idSurveyToEdit" />
         </Modal>
         <Pagination
@@ -169,7 +271,7 @@
     </MainLayout>
 </template>
 <script setup>
-import { Icon } from "@iconify/vue";
+import { Icon } from '@iconify/vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
@@ -178,7 +280,10 @@ import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
 import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
 import SortIcon from '@/components/sort-icon.vue';
-import { getSurveysPaginated, importSurveyFromExcel } from '@/composables/api/surveys';
+import {
+    getSurveysPaginated,
+    importSurveyFromExcel,
+} from '@/composables/api/surveys';
 import { formatedDate } from '@/composables/shared';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 import { useNotification } from '@/composables/useNotification';
@@ -212,16 +317,20 @@ const toggleSort = (field) => {
 };
 
 onMounted(async () => {
-        const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search);
     await getSurveys(parseInt(params.get('page')) || 1);
 });
 
 const filteredSurveys = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
-    const filtered = surveys.value.filter(survey => {
+    const filtered = surveys.value.filter((survey) => {
         const nameMatch = survey.name.toLowerCase().includes(query);
-        const initDateMatch = formatedDate(survey.init_date).toLowerCase().includes(query);
-        const finishDateMatch = formatedDate(survey.finish_date).toLowerCase().includes(query);
+        const initDateMatch = formatedDate(survey.init_date)
+            .toLowerCase()
+            .includes(query);
+        const finishDateMatch = formatedDate(survey.finish_date)
+            .toLowerCase()
+            .includes(query);
 
         return nameMatch || initDateMatch || finishDateMatch;
     });
@@ -244,19 +353,26 @@ const filteredSurveys = computed(() => {
 });
 
 const getSurveys = async (page = 1) => {
-    router.get(window.location.pathname, { page }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-    });
+    router.get(
+        window.location.pathname,
+        { page },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
 
     const result = await getSurveysPaginated(page);
-    
+
     if (!result.errorFlag && result.data) {
         surveys.value = result.data.data;
         pagination.value = result.data;
     } else {
-        notify(result.responseMessage || 'Error al cargar las encuestas', 'error');
+        notify(
+            result.responseMessage || 'Error al cargar las encuestas',
+            'error',
+        );
     }
 };
 
@@ -272,11 +388,14 @@ const handleImportProcess = async (formData) => {
 
     if (!result.errorFlag && result.data) {
         await pollBatchStatus(result.data.batch_id);
-        notify("Encuesta importada exitosamente");
+        notify('Encuesta importada exitosamente');
         await getSurveys();
     } else {
         isProcessing.value = false;
-        notify(result.responseMessage || "Error al importar la encuesta", 'error');
+        notify(
+            result.responseMessage || 'Error al importar la encuesta',
+            'error',
+        );
     }
 };
 </script>

@@ -7,6 +7,12 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      APP_KEY: ${APP_KEY:?Debes definir APP_KEY en tu .env (bash setup.sh lo genera automáticamente)}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
       - "${APP_PORT:-8080}:80"
     volumes:

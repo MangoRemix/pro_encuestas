@@ -7,31 +7,51 @@ export function useBatchProcessor() {
     const processBatch = async (url, payload) => {
         isProcessing.value = true;
         const { data } = await axios.post(url, payload);
-        console.log(payload)
+        console.log(payload);
 
         return await pollBatchStatus(data.batch_id);
     };
 
-    const pollBatchStatus = (batchId) => {
-            return new Promise((resolve, reject) => {
-                const interval = setInterval(async () => {
-                    try {
-                        const { data: statusData } = await axios.get(`/api/result/batch-status/${batchId}`);
+    const pollBatchStatus = (
+        batchId,
+        { intervalMs = 2000, maxAttempts = 150 } = {},
+    ) => {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
 
-                        if (statusData.finished) {
-                            clearInterval(interval);
-                            isProcessing.value = false;
-                            resolve(statusData.report);
-                        }
-                    } catch (err) {
+            const interval = setInterval(async () => {
+                attempts++;
+
+                try {
+                    const { data: statusData } = await axios.get(
+                        `/api/result/batch-status/${batchId}`,
+                    );
+
+                    if (statusData.finished) {
                         clearInterval(interval);
                         isProcessing.value = false;
-                        reject(err);
+                        resolve(statusData.report);
+
+                        return;
                     }
-                }, 2000);
-            });
+
+                    if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        isProcessing.value = false;
+                        reject(
+                            new Error(
+                                'Tiempo de espera agotado esperando el resultado del lote.',
+                            ),
+                        );
+                    }
+                } catch (err) {
+                    clearInterval(interval);
+                    isProcessing.value = false;
+                    reject(err);
+                }
+            }, intervalMs);
+        });
     };
 
     return { isProcessing, processBatch, pollBatchStatus };
 }
-

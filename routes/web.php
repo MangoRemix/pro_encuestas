@@ -1,27 +1,26 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\SurveyImportController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware(['auth'])->group(function () {
     Route::inertia('/', 'index')->name('home');
 
     Route::middleware(['admin'])->group(function () {
         Route::prefix('surveys')->name('surveys.')->group(function () {
-            Route::get('/import-excel', [SurveyImportController::class, 'importFromExcel'])->name('import');
-            
             Route::get('/', function (Request $request) {
                 $validated = $request->validate(['page' => ['nullable', 'integer']]);
+
                 return Inertia::render('surveys/index', ['page' => $validated['page'] ?? null]);
             })->name('index');
 
             Route::get('/details/{id}', function (Request $request, int $id) {
                 $validated = $request->validate(['categoryId' => ['nullable', 'integer']]);
+
                 return Inertia::render('surveys/details', [
                     'id' => $id,
                     'categoryId' => $validated['categoryId'] ?? null,
@@ -32,10 +31,12 @@ Route::middleware(['auth'])->group(function () {
                 Route::inertia('/step-1', 'create-survey/step-1')->name('step-1');
                 Route::get('/step-2', function (Request $request) {
                     $validated = $request->validate(['surveyId' => ['required', 'integer']]);
+
                     return Inertia::render('create-survey/step-2', ['surveyId' => $validated['surveyId']]);
                 })->name('step-2');
                 Route::get('/step-3', function (Request $request) {
                     $validated = $request->validate(['surveyId' => ['required', 'integer'], 'categoryId' => ['nullable', 'integer']]);
+
                     return Inertia::render('create-survey/step-3', [
                         'surveyId' => $validated['surveyId'],
                         'categoryId' => $validated['categoryId'] ?? null,
@@ -43,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
                 })->name('step-3');
                 Route::get('/step-4', function (Request $request) {
                     $validated = $request->validate(['surveyId' => ['required', 'integer']]);
+
                     return Inertia::render('create-survey/step-4', ['surveyId' => $validated['surveyId']]);
                 })->name('step-4');
             });
@@ -51,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('categories')->name('categories.')->group(function () {
             Route::get('/', function (Request $request) {
                 $validated = $request->validate(['surveyId' => ['nullable', 'integer'], 'categoryId' => ['nullable', 'integer']]);
+
                 return Inertia::render('categories/index', [
                     'surveyId' => $validated['surveyId'] ?? null,
                     'categoryId' => $validated['categoryId'] ?? null,
@@ -58,18 +61,20 @@ Route::middleware(['auth'])->group(function () {
             })->name('index');
             Route::get('/create', function (Request $request) {
                 $validated = $request->validate(['surveyId' => ['required', 'integer']]);
+
                 return Inertia::render('categories/create', ['surveyId' => $validated['surveyId']]);
             })->name('create');
-            Route::get('/details/{id}', fn(int $id) => Inertia::render('categories/details', ['id' => $id]))->whereNumber('id')->name('show');
+            Route::get('/details/{id}', fn (int $id) => Inertia::render('categories/details', ['id' => $id]))->whereNumber('id')->name('show');
         });
 
         Route::prefix('questions')->name('questions.')->group(function () {
-            Route::get('/details/{id}', fn(int $id) => Inertia::render('questions/details', ['id' => $id]))->whereNumber('id')->name('show');
+            Route::get('/details/{id}', fn (int $id) => Inertia::render('questions/details', ['id' => $id]))->whereNumber('id')->name('show');
         });
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', function (Request $request) {
                 $validated = $request->validate(['surveyId' => ['nullable', 'integer'], 'categoryId' => ['nullable', 'integer']]);
+
                 return Inertia::render('reports/reports-layout', [
                     'surveyId' => $validated['surveyId'] ?? null,
                     'categoryId' => $validated['categoryId'] ?? null,
@@ -82,7 +87,7 @@ Route::middleware(['auth'])->group(function () {
             Route::inertia('/', 'users/index')->name('index');
         });
 
-        Route::get('/parishes', fn() => Inertia::render('parishes/index'))->name('parishes.index');
+        Route::get('/parishes', fn () => Inertia::render('parishes/index'))->name('parishes.index');
     });
 
     Route::prefix('poll-users')->name('poll-users.')->group(function () {
@@ -91,18 +96,20 @@ Route::middleware(['auth'])->group(function () {
         Route::inertia('/finished-list', 'poll-users/finished-list')->name('finished-list');
         Route::get('/step-2', function (Request $request) {
             $validated = $request->validate(['id' => ['required', 'integer'], 'surveyId' => ['required', 'integer']]);
+
             return Inertia::render('poll-users/new-user-respondent', [
                 'id' => $validated['id'],
-                'surveyId' => $validated['surveyId']
+                'surveyId' => $validated['surveyId'],
             ]);
         })->name('step-2');
         Route::get('/step-3/{userId}/survey/{id}', function ($userId, $id, Request $request) {
             $validated = $request->validate(['category' => ['nullable', 'string'], 'question' => ['nullable', 'string']]);
+
             return Inertia::render('poll-users/step-3', [
                 'id' => $id,
                 'userId' => $userId,
                 'category' => $validated['category'] ?? null,
-                'question' => $validated['question'] ?? null
+                'question' => $validated['question'] ?? null,
             ]);
         })->name('step-3');
     });

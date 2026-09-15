@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sex;
-use Illuminate\Http\Request;
 
 class SexController extends Controller
 {
     //
-    public function index(){
+    public function index()
+    {
         try {
-            //code...
+            // code...
             $sex = Sex::all();
 
-            return response()->json($sex,200);
+            return response()->json($sex, 200);
         } catch (\Throwable $th) {
-            //throw $th;
+            // throw $th;
             return response()->json([
                 'message' => $th->getMessage(),
-                "code" => $th->getCode()    
+                'code' => $th->getCode(),
             ]);
         }
     }

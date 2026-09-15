@@ -3,19 +3,17 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use LDAP\Result;
 
-#[Fillable(['name', 'email', 'password','sex_id','age','parish_id','rol_id'])]
+#[Fillable(['name', 'email', 'password', 'sex_id', 'age', 'parish_id', 'rol_id'])]
 
 #[Hidden(['password', 'remember_token'])]
 class Person extends Authenticatable
@@ -38,7 +36,6 @@ class Person extends Authenticatable
      *
      * @return array<string, string>
      */
-
     protected function casts(): array
     {
         return [
@@ -47,28 +44,31 @@ class Person extends Authenticatable
         ];
     }
 
-    public function rol(): BelongsTo {
+    public function rol(): BelongsTo
+    {
 
         return $this->belongsTo(Rol::class);
 
     }
 
-    public function sex(): BelongsTo {
+    public function sex(): BelongsTo
+    {
 
         return $this->belongsTo(Sex::class);
 
     }
 
-    public function parish(): BelongsTo {
+    public function parish(): BelongsTo
+    {
 
         return $this->belongsTo(Parish::class);
 
     }
 
-    public function results(): HasMany {
+    public function results(): HasMany
+    {
 
         return $this->hasMany(Result::class);
-        
+
     }
 }
-

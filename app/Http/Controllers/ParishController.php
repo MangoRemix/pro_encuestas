@@ -15,12 +15,12 @@ class ParishController extends Controller
 
     public function store(Request $request)
     {
-        $request['name'] = strtoupper($request->name); 
-        
+        $request['name'] = strtoupper($request->name);
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:300|unique:parishes,name',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
@@ -32,10 +32,10 @@ class ParishController extends Controller
 
     public function update(Request $request, Parish $parish)
     {
-        $request['name'] = strtoupper($request->name); 
-        
+        $request['name'] = strtoupper($request->name);
+
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:300|unique:parishes,name,' . $parish->id,
+            'name' => 'required|string|max:300|unique:parishes,name,'.$parish->id,
         ]);
 
         if ($validator->fails()) {
@@ -43,13 +43,14 @@ class ParishController extends Controller
         }
 
         $parish->update($validator->validated());
+
         return response()->json($parish, 200);
     }
 
     public function destroy($id)
     {
-        Parish::query()->where('id',$id)->delete();
-        return response()->json('Registro eliminado', 204);
+        Parish::query()->where('id', $id)->delete();
+
+        return response()->json(['message' => 'Registro eliminado'], 200);
     }
 }
-

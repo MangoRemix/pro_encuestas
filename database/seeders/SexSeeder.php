@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +20,7 @@ class SexSeeder extends Seeder
             'description' => 'FEMALE',
         ],
     ];
+
     public function run(): void
     {
         //

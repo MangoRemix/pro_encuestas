@@ -2,33 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ApiResponds;
 use App\Models\Answer;
 use App\Models\Question;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class AnswerController extends Controller
 {
-    public static function rules($id = null){
+    use ApiResponds;
+
+    public static function rules($id = null)
+    {
         return [
-            "name"=> "required|string|max:350",
-            "order" => "required|integer|min:1",
-            "question_id" => "required|integer|min:1|exists:questions,id",
+            'name' => 'required|string|max:350',
+            'order' => 'required|integer|min:1',
+            'question_id' => 'required|integer|min:1|exists:questions,id',
         ];
 
     }
 
-    public static function updateRules($id = null){
+    public static function updateRules($id = null)
+    {
         return [
-            "name"=> "required|string|max:350|min:5",
-            "order" => "required|integer|min:1",
-            "question_id" => "integer|min:1|exists:questions,id",
+            'name' => 'required|string|max:350|min:5',
+            'order' => 'required|integer|min:1',
+            'question_id' => 'integer|min:1|exists:questions,id',
         ];
-        
-    }
 
+    }
 
     /**
      * Display a listing of the resource.
@@ -37,7 +42,8 @@ class AnswerController extends Controller
     {
         //
         $answer = Answer::all();
-        return response()->json($answer,200);
+
+        return response()->json($answer, 200);
     }
 
     /**
@@ -47,41 +53,43 @@ class AnswerController extends Controller
     {
         //
         try {
-            //code...
+            // code...
             $request['name'] = strtoupper($request->name);
-            
-            $validator = Validator::make($request->all(),$this->rules());
 
-            if($validator->fails()){
+            $validator = Validator::make($request->all(), $this->rules());
+
+            if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
 
-            // $question = Question::query()->where('id',$request['question_id'])->first();
-            
-            // if(!$question)
-            //     throw new Exception("Not found question register", 404);
+            $question = Question::query()->where('id', $request['question_id'])->first();
 
-            $exist_answer_order = Answer::query()->where('order',$request['order'])->join('questions','answers.question_id','=','questions.id')->first();
-            if($exist_answer_order)
-                 throw new Exception("orden de respuesta ya existe", 404);
+            if (! $question) {
+                throw new Exception('Not found question register', 404);
+            }
 
-            $name_answer_question_exist = Answer::query()->where('name',$request->name)->where('question_id',$request->question_id)->first();
-            
-            if($name_answer_question_exist)
-                throw new Exception("Error nombre de pregunta en encuesta ya existe", 400);
+            $exist_answer_order = Answer::query()
+                ->where('order', $request['order'])
+                ->where('question_id', $request['question_id'])
+                ->first();
+            if ($exist_answer_order) {
+                throw new Exception('orden de respuesta ya existe', 409);
+            }
 
-            Answer::create($validator->validate());
+            $name_answer_question_exist = Answer::query()->where('name', $request->name)->where('question_id', $request->question_id)->first();
+
+            if ($name_answer_question_exist) {
+                throw new Exception('Error nombre de pregunta en encuesta ya existe', 400);
+            }
+
+            Answer::create($validator->validated());
 
             return response()->json([
-                "message:" => "Creación de respuesta exitosa",
-            ],201);
+                'message' => 'Creación de respuesta exitosa',
+            ], 201);
 
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                "error" => $th->getMessage(),
-                "code" => $th->getCode()
-            ],$th->getCode());
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
         }
 
     }
@@ -101,44 +109,30 @@ class AnswerController extends Controller
     {
         //
         try {
-            //code...
-            $answer = Answer::query()->where('id',$id)->first();
+            // code...
+            $answer = Answer::query()->where('id', $id)->first();
 
-            if(!$answer)
-                throw new Exception("Not found answer register", 404);
-            
-            return response()->json(["answer"=>$answer],200);
+            if (! $answer) {
+                throw new Exception('Not found answer register', 404);
+            }
 
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                "error" => $th->getMessage(),
-                "code" => $th->getCode()
-            ],$th->getCode());
+            return response()->json(['answer' => $answer], 200);
+
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
         }
     }
 
-    public function showByQuestion(int $id){
-        try {
-            //code...
-            $answers = Answer::query()->where('question_id',$id)->get();
-            
-            return response()->json(["answers"=>$answers?$answers:[]],200);
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                "error" => $th->getMessage(),
-                "code" => $th->getCode()
-            ],$th->getCode());
-        }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Answer $answer)
+    public function showByQuestion(int $id)
     {
-        //
+        try {
+            // code...
+            $answers = Answer::query()->where('question_id', $id)->get();
+
+            return response()->json(['answers' => $answers ? $answers : []], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
 
     /**
@@ -148,40 +142,52 @@ class AnswerController extends Controller
     {
         //
         try {
-            //code...
+            // code...
             $request['name'] = strtoupper($request['name']);
-            
-            $validator = Validator::make($request->all(),$this->updateRules());
 
-            if($validator->fails()){
+            $validator = Validator::make($request->all(), $this->updateRules());
+
+            if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
 
-            $answer = Answer::query()->where('id',$id)->first();
+            $answer = Answer::query()->where('id', $id)->first();
 
-            if(!$answer)
-                throw new Exception("Not found answer register", 404);
+            if (! $answer) {
+                throw new Exception('Not found answer register', 404);
+            }
 
-            $exist_answer_order = Answer::query()->where('order',$request['order'])->join('questions','answers.question_id','=','questions.id')->first();
-            if($exist_answer_order)
-                 throw new Exception("orden de respuesta ya existe", 404);
+            $questionId = $request->filled('question_id') ? $request->question_id : $answer->question_id;
 
-            $name_answer_question_exist = Answer::query()->where('name',$request->name)->where('question_id',$request->question_id)->first();
-            
-            if($name_answer_question_exist)
-                throw new Exception("Error nombre de categoria en encuesta ya existe", 400);
+            if ($answer->order != $request->order) {
+                $exist_answer_order = Answer::query()
+                    ->where('order', $request['order'])
+                    ->where('question_id', $questionId)
+                    ->where('id', '!=', $id)
+                    ->first();
+                if ($exist_answer_order) {
+                    throw new Exception('orden de respuesta ya existe', 409);
+                }
+            }
 
-            Answer::query()->where('id',$id)->update($validator->validated());
+            $name_answer_question_exist = Answer::query()
+                ->where('name', $request->name)
+                ->where('question_id', $questionId)
+                ->where('id', '!=', $id)
+                ->first();
+
+            if ($name_answer_question_exist) {
+                throw new Exception('Error nombre de categoria en encuesta ya existe', 400);
+            }
+
+            $answer->update($validator->validated());
+
             return response()->json([
-                "message" => "Actualización exitosa"
-            ],200);
+                'message' => 'Actualización exitosa',
+            ], 200);
 
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                "error" => $th->getMessage(),
-                "code" => $th->getCode()
-            ],$th->getCode());
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
         }
     }
 
@@ -192,90 +198,84 @@ class AnswerController extends Controller
     {
         //
         try {
-            //code...
+            // code...
 
-            $answer = Answer::select('id','name')->find($id,'id');
-            if(!$answer)
-                throw new Exception("Not found answer register", 404);
+            $answer = Answer::select('id', 'name')->find($id);
+            if (! $answer) {
+                throw new Exception('Not found answer register', 404);
+            }
 
-            $new_name = $answer->name . '-delete-' . date('Y-m-d_H-i-s');
-            
+            $new_name = $answer->name.'-delete-'.date('Y-m-d_H-i-s');
+
             $answer->update([
-                'name' => $new_name
+                'name' => $new_name,
             ]);
 
             $answer->delete();
 
             return response()->json([
-                "message" => "Eliminación exitosa"
-            ],200);
+                'message' => 'Eliminación exitosa',
+            ], 200);
 
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                "error" => $th->getMessage(),
-                "code" => $th->getCode()
-            ],$th->getCode());
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
         }
     }
 
     /** FINAL METODOS CRUD */
-
-    public function createMany(Request $request){
+    public function createMany(Request $request)
+    {
         try {
-            //code...
+            // code...
             $question_id = $request[0]['question_id'];
 
-            // $question = Question::query()->where('id',$question_id)->first();
-            
-            // if(!$question)
-            //     throw new Exception("Error not found question register", 404);
+            $question = Question::query()->where('id', $question_id)->first();
+
+            if (! $question) {
+                throw new Exception('Error not found question register', 404);
+            }
 
             $data = [];
 
             foreach ($request->all() as $categories => $value) {
-                # code...
+                // code...
                 $value['name'] = strtoupper($value['name']);
                 $value['created_at'] = now();
                 $value['updated_at'] = now();
-                //return response()->json($value);
-                array_push($data,$value);
+                // return response()->json($value);
+                array_push($data, $value);
             }
-            //return response()->json($data);
+            // return response()->json($data);
 
             $validator = Validator::make($data, [
-                '*.name'      => ['required','string','distinct',Rule::unique('answers','name')->where(function ($query) use ($question_id){
-                    $query->where('question_id',$question_id);
+                '*.name' => ['required', 'string', 'distinct', Rule::unique('answers', 'name')->where(function ($query) use ($question_id) {
+                    $query->where('question_id', $question_id)->whereNull('deleted_at');
                 })],
                 '*.question_id' => 'required|integer|exists:questions,id|in:'.$question_id,
-                '*.order'     => ['required','integer','distinct',Rule::unique('answers','order')->where(function ($query) use ($question_id){
-                    $query->where('question_id',$question_id)->where('deleted_at',null);
+                '*.order' => ['required', 'integer', 'distinct', Rule::unique('answers', 'order')->where(function ($query) use ($question_id) {
+                    $query->where('question_id', $question_id)->where('deleted_at', null);
                 })], // <--- "distinct" hace la magia
-                "*.created_at" => 'date',
-                "*.updated_at" => 'date',
-            ],[
-                "*.name.in" => "los name deben ser diferentes",
-                "*.question_id.in" => "los question_id's son diferentes"
+                '*.created_at' => 'date',
+                '*.updated_at' => 'date',
+            ], [
+                '*.name.in' => 'los name deben ser diferentes',
+                '*.question_id.in' => "los question_id's son diferentes",
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'status' => 'error',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
-            
+
             Answer::insert($validator->validated());
 
             return response()->json([
-                "message" => "se han creado exitosamente los ".count($validator->validated())
-            ],201);
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                'error' => $th->getMessage(),
-                'code' => $th->getCode(),
-            ],$th->getCode());
+                'message' => 'se han creado exitosamente los '.count($validator->validated()),
+            ], 201);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
         }
 
     }

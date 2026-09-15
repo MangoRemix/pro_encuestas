@@ -13,14 +13,14 @@ return new class extends Migration
     {
         // Renombrar tabla si aún existe como 'sexs'
         if (Schema::hasTable('sexs')) {
-        Schema::rename('sexs', 'sexes');
+            Schema::rename('sexs', 'sexes');
         }
 
         // Añadir sex_id a persons si no existe
         Schema::table('persons', function (Blueprint $table) {
-            if (!Schema::hasColumn('persons', 'sex_id')) {
-            $table->foreignId('sex_id')->nullable()->constrained('sexes')->onDelete('set null');
-    }
+            if (! Schema::hasColumn('persons', 'sex_id')) {
+                $table->foreignId('sex_id')->nullable()->constrained('sexes')->onDelete('set null');
+            }
         });
     }
 
@@ -36,4 +36,3 @@ return new class extends Migration
         Schema::rename('sexes', 'sexs');
     }
 };
-

@@ -35,13 +35,13 @@ return new class extends Migration
         Schema::table('persons', function (Blueprint $table) {
             //
             // 1. Eliminamos las llaves foráneas primero
-        $table->dropForeign(['rol_id']);
-        $table->dropForeign(['parish_id']);
-        $table->dropForeign(['sex_id']);
-        $table->dropForeign(['age_range_id']);
+            $table->dropForeign(['rol_id']);
+            $table->dropForeign(['parish_id']);
+            $table->dropForeign(['sex_id']);
+            $table->dropForeign(['age_range_id']);
 
-        // 2. Ahora sí podemos borrar las columnas
-        $table->dropColumn(['rol_id', 'parish_id', 'sex_id','age_range_id']);
+            // 2. Ahora sí podemos borrar las columnas
+            $table->dropColumn(['rol_id', 'parish_id', 'sex_id', 'age_range_id']);
         });
     }
 };

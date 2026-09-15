@@ -1,51 +1,72 @@
 <template>
     <div class="p-6">
-        <div v-if="categories && categories.length > 0"
-          class="flex flex-wrap items-center justify-center gap-2"
-          >           
-          <div v-for="category in categories" :key="category.id" class="mb-10 w-full">
-                <h3 class="text-center text-blue-400 text-lg font-semibold mb-2 underline-offset-4 underline">{{ category.name }}</h3>
-                
-                <div v-for="question in category.questions" :key="question.id" class="bg-neutral-800 p-6 rounded-xl border border-blue-700/30 mt-5 min-h-120 overflow-y-scroll">
-                    
-                  <BarChart
-                    title-color="#ffffff"
-                    legend-color="#ffffff"
-                    x-scale-color="#ffffff"
-                    y-scale-color="#ffffff"
-                    :chart-data="getChartData(question)"
-                    :chart-options="{
-                        indexAxis: 'y',
-                        maintainAspectRatio: false,
-                        responsive: true,
-                        animation: {
-                            duration: 750,
-                            easing: 'easeInOutQuart'
-                        },
-                        resizeDelay: 100,
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                max: 100,
-                                ticks: { font: { size: 14, weight: 'bold' } }
+        <div
+            v-if="categories && categories.length > 0"
+            class="flex flex-wrap items-center justify-center gap-2"
+        >
+            <div
+                v-for="category in categories"
+                :key="category.id"
+                class="mb-10 w-full"
+            >
+                <h3
+                    class="mb-2 text-center text-lg font-semibold text-blue-400 underline underline-offset-4"
+                >
+                    {{ category.name }}
+                </h3>
+
+                <div
+                    v-for="question in category.questions"
+                    :key="question.id"
+                    class="mt-5 min-h-120 overflow-y-scroll rounded-xl border border-blue-700/30 bg-neutral-800 p-6"
+                >
+                    <BarChart
+                        title-color="#ffffff"
+                        legend-color="#ffffff"
+                        x-scale-color="#ffffff"
+                        y-scale-color="#ffffff"
+                        :chart-data="getChartData(question)"
+                        :chart-options="{
+                            indexAxis: 'y',
+                            maintainAspectRatio: false,
+                            responsive: true,
+                            animation: {
+                                duration: 750,
+                                easing: 'easeInOutQuart',
                             },
-                            y: { ticks: { font: { size: 14, weight: 'bold' } } }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    font: {
-                                        size: 14,
-                                    }
-                                }
-                            }
-                        },
-                    }"
-                  />
+                            resizeDelay: 100,
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        font: { size: 14, weight: 'bold' },
+                                    },
+                                },
+                                y: {
+                                    ticks: {
+                                        font: { size: 14, weight: 'bold' },
+                                    },
+                                },
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        font: {
+                                            size: 14,
+                                        },
+                                    },
+                                },
+                            },
+                        }"
+                    />
                 </div>
             </div>
         </div>
-        <p v-else class="text-white/70 italic text-center py-4 bg-white/10 backdrop-blur-sm rounded-xl border border-blue-700/30">
+        <p
+            v-else
+            class="rounded-xl border border-blue-700/30 bg-white/10 py-4 text-center text-white/70 italic backdrop-blur-sm"
+        >
             Cargando datos o sin resultados...
         </p>
     </div>
@@ -58,34 +79,41 @@ import BarChart from '@/components/Charts/BarChart.vue';
 const props = defineProps({
     categories: {
         type: Array,
-        default: () => []
+        default: () => [],
     },
     totalRespondent: {
         type: Number,
-        default: 0
-    }
+        default: 0,
+    },
 });
 
-watch(() => props.categories, (newVal) => {
-    console.log("GraphicsCopy recibió categorías:", newVal);
-}, { immediate: true });
+watch(
+    () => props.categories,
+    (newVal) => {
+        console.log('GraphicsCopy recibió categorías:', newVal);
+    },
+    { immediate: true },
+);
 
 const getChartData = (question) => {
     return {
-        labels: question.answers.map(a => a.name?.toUpperCase()),
-        datasets: [{
-            label: '% del Total',
-            data: question.answers.map(a =>
-                props.totalRespondent > 0
-                    ? ((a.total_votes / props.totalRespondent) * 100).toFixed(2)
-                    : 0
-            ),
-            backgroundColor: ['#3b82f6', '#3b15f6', '#3b8218', '#E582f6'],
-            borderRadius: 4,
-        }]
+        labels: question.answers.map((a) => a.name?.toUpperCase()),
+        datasets: [
+            {
+                label: '% del Total',
+                data: question.answers.map((a) =>
+                    props.totalRespondent > 0
+                        ? (
+                              (a.total_votes / props.totalRespondent) *
+                              100
+                          ).toFixed(2)
+                        : 0,
+                ),
+                backgroundColor: ['#3b82f6', '#3b15f6', '#3b8218', '#E582f6'],
+                borderRadius: 4,
+            },
+        ],
     };
 };
 </script>
-<style scoped>
-    
-</style>
+<style scoped></style>

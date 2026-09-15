@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('parishes', function (Blueprint $table) {
             $table->id();
-            $table->string('name',300);
+            $table->string('name', 300);
             $table->timestamps();
             $table->softDeletes();
         });

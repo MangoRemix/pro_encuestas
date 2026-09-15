@@ -39,6 +39,10 @@ export default defineConfigWithVueTs(
         },
         rules: {
             'vue/multi-word-component-names': 'off',
+            // El proyecto usa <script setup> en JS puro en todo el frontend (TS
+            // configurado pero no adoptado); exigir lang="ts" archivo por archivo
+            // no aporta tipado real y hoy fallaba en el 100% de los componentes.
+            'vue/block-lang': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/consistent-type-imports': [
                 'error',

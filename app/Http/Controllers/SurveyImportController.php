@@ -10,7 +10,6 @@ use App\Models\Survey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -56,7 +55,9 @@ class SurveyImportController extends Controller
 
             foreach ($categoryNames as $colIndex => $categoryName) {
                 $categoryName = trim((string) $categoryName);
-                if ($categoryName === '') continue;
+                if ($categoryName === '') {
+                    continue;
+                }
                 $category = Category::create([
                     'name' => $categoryName,
                     'survey_id' => $survey->id,
@@ -78,7 +79,9 @@ class SurveyImportController extends Controller
 
         for ($i = 3; $i < count($rows); $i++) {
             $cell = trim((string) ($rows[$i][$colIndex] ?? ''));
-            if ($cell === '') continue;
+            if ($cell === '') {
+                continue;
+            }
 
             if (preg_match('/^\d+[\.\s\-]+/', $cell)) {
                 $questionText = preg_replace('/^\d+[\.\s\-]+/', '', $cell);

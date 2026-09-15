@@ -1,12 +1,13 @@
 <script setup>
-import { Icon } from "@iconify/vue";
+import { Icon } from '@iconify/vue';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import Modal from '@/components/modal.vue';
 import { useParishes } from '@/composables/api/parishes';
 import MainLayout from '@/layouts/main-layout.vue';
 
-const { parishes, fetchParishes, storeParish, updateParish, deleteParish } = useParishes();
+const { parishes, fetchParishes, storeParish, updateParish, deleteParish } =
+    useParishes();
 
 const isModalOpen = ref(false);
 const editingParish = ref(null);
@@ -34,8 +35,8 @@ const save = async () => {
         fetchParishes();
     } catch (e) {
         if (e.response?.data?.errors) {
-errors.value = e.response.data.errors;
-}
+            errors.value = e.response.data.errors;
+        }
     }
 };
 
@@ -51,35 +52,55 @@ const remove = async (id) => {
     <Head title="Gestión de Parroquias" />
     <MainLayout>
         <div class="text-center">
-            <h2 class="text-3xl text-white font-bold mt-8 underline">Gestión de Parroquias</h2>
+            <h2 class="mt-8 text-3xl font-bold text-white underline">
+                Gestión de Parroquias
+            </h2>
         </div>
 
-        <div class="flex items-center justify-end mb-6">
+        <div class="mb-6 flex items-center justify-end">
             <div class="w-full sm:w-fit">
-
-                <button @click="openModal()" class="green-button-app flex items-center gap-x-2 justify-center cursor-pointer">
+                <button
+                    @click="openModal()"
+                    class="green-button-app flex cursor-pointer items-center justify-center gap-x-2"
+                >
                     <Icon class="text-2xl" icon="ic:outline-plus" />
                     Nueva Parroquia
                 </button>
             </div>
         </div>
 
-        <div class="bg-gray-500/30 border border-slate-700 rounded-lg overflow-hidden">
-            <div class="max-h-110 overflow-y-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse">
+        <div
+            class="overflow-hidden rounded-lg border border-slate-700 bg-gray-500/30"
+        >
+            <div class="custom-scrollbar max-h-110 overflow-y-auto">
+                <table class="w-full border-collapse text-left">
                     <thead>
-                        <tr class="sticky top-0 z-10 border-b border-slate-700 bg-slate-900 text-white text-xs uppercase tracking-wider">
+                        <tr
+                            class="sticky top-0 z-10 border-b border-slate-700 bg-slate-900 text-xs tracking-wider text-white uppercase"
+                        >
                             <th class="p-4">Nombre</th>
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
-                        <tr v-for="p in parishes" :key="p.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
+                        <tr
+                            v-for="p in parishes"
+                            :key="p.id"
+                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                        >
                             <td class="p-4 font-medium">{{ p.name }}</td>
                             <td class="p-4">
-                                <div class="flex gap-3 justify-center">
-                                    <Icon @click="openModal(p)" class="text-xl text-yellow-500 hover:text-yellow-400 cursor-pointer" icon="ic:baseline-edit" />
-                                    <Icon @click="remove(p.id)" class="text-xl text-red-500 hover:text-red-400 cursor-pointer" icon="ic:baseline-restore-from-trash" />
+                                <div class="flex justify-center gap-3">
+                                    <Icon
+                                        @click="openModal(p)"
+                                        class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                        icon="ic:baseline-edit"
+                                    />
+                                    <Icon
+                                        @click="remove(p.id)"
+                                        class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                        icon="ic:baseline-restore-from-trash"
+                                    />
                                 </div>
                             </td>
                         </tr>
@@ -90,13 +111,28 @@ const remove = async (id) => {
 
         <Modal :show="isModalOpen" @close="isModalOpen = false">
             <div class="p-6">
-                <h2 class="text-xl font-bold mb-4 text-slate-800">{{ editingParish ? 'Editar' : 'Crear' }} Parroquia</h2>
-                <input v-model="form.name" class="inputs-form w-full mb-2" placeholder="Nombre de la parroquia" />
-                <p v-if="errors.name" class="text-red-500 text-sm">{{ errors.name[0] }}</p>
+                <h2 class="mb-4 text-xl font-bold text-slate-800">
+                    {{ editingParish ? 'Editar' : 'Crear' }} Parroquia
+                </h2>
+                <input
+                    v-model="form.name"
+                    class="inputs-form mb-2 w-full"
+                    placeholder="Nombre de la parroquia"
+                />
+                <p v-if="errors.name" class="text-sm text-red-500">
+                    {{ errors.name[0] }}
+                </p>
 
                 <div class="mt-6 flex justify-end gap-3">
-                    <button @click="isModalOpen = false" class="px-4 py-2 text-slate-600 hover:text-slate-800">Cancelar</button>
-                    <button @click="save" class="primary-button-app">Guardar</button>
+                    <button
+                        @click="isModalOpen = false"
+                        class="px-4 py-2 text-slate-600 hover:text-slate-800"
+                    >
+                        Cancelar
+                    </button>
+                    <button @click="save" class="primary-button-app">
+                        Guardar
+                    </button>
                 </div>
             </div>
         </Modal>
@@ -123,4 +159,3 @@ const remove = async (id) => {
     background: #94a3b8;
 }
 </style>
-

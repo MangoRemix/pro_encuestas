@@ -9,12 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name','order','category_id'])]
+#[Fillable(['name', 'order', 'category_id'])]
 
 class Question extends Model
 {
     //
-    use  HasFactory,SoftDeletes;
+    use HasFactory,SoftDeletes;
 
     protected static function booted()
     {
@@ -28,23 +28,25 @@ class Question extends Model
             $question->results()->restore();
         });
     }
-    
-    public function categories(): BelongsTo {
-    
+
+    public function categories(): BelongsTo
+    {
+
         return $this->belongsTo(Category::class);
 
     }
 
-    public function answers(): HasMany {
-    
+    public function answers(): HasMany
+    {
+
         return $this->hasMany(Answer::class);
 
     }
 
-    public function results(): HasMany {
-        
-        return $this->hasMany(Result::class);
-        
-    }
+    public function results(): HasMany
+    {
 
+        return $this->hasMany(Result::class);
+
+    }
 }

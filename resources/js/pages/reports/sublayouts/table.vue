@@ -1,27 +1,58 @@
 <template>
     <div class="px-10 py-1">
-        <div v-if="categories && categories.length" class="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden w-full">
-            <div id="table-body" class="w-full overflow-x-auto max-h-150">
-                <table class="w-full text-left border-collapse text-slate-200">
-                    <thead class="sticky top-0 bg-slate-900/90 backdrop-blur-sm z-10">
-                        <tr class="border-b border-slate-700 text-xs uppercase tracking-wider text-white">
-                            <th class="p-4 w-1/4">Categoría</th>
-                            <th class="p-4 w-1/4">Pregunta</th>
-                            <th class="p-4 w-1/2" colspan="2">Respuesta / Votos</th>
+        <div
+            v-if="categories && categories.length"
+            class="w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-900/50"
+        >
+            <div id="table-body" class="max-h-150 w-full overflow-x-auto">
+                <table class="w-full border-collapse text-left text-slate-200">
+                    <thead
+                        class="sticky top-0 z-10 bg-slate-900/90 backdrop-blur-sm"
+                    >
+                        <tr
+                            class="border-b border-slate-700 text-xs tracking-wider text-white uppercase"
+                        >
+                            <th class="w-1/4 p-4">Categoría</th>
+                            <th class="w-1/4 p-4">Pregunta</th>
+                            <th class="w-1/2 p-4" colspan="2">
+                                Respuesta / Votos
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
                         <template v-for="cat in categories" :key="cat.id">
-                            <tr v-for="(q, qIndex) in cat.questions" :key="q.id" class="hover:bg-slate-600/30 transition-colors">
-                                <td v-if="qIndex === 0" :rowspan="cat.questions.length" class="p-4 font-bold border-r border-slate-700/50 align-top">
+                            <tr
+                                v-for="(q, qIndex) in cat.questions"
+                                :key="q.id"
+                                class="transition-colors hover:bg-slate-600/30"
+                            >
+                                <td
+                                    v-if="qIndex === 0"
+                                    :rowspan="cat.questions.length"
+                                    class="border-r border-slate-700/50 p-4 align-top font-bold"
+                                >
                                     {{ cat.name }}
                                 </td>
-                                <td class="p-4 align-top border-r border-slate-700/50">{{ q.name }}</td>
+                                <td
+                                    class="border-r border-slate-700/50 p-4 align-top"
+                                >
+                                    {{ q.name }}
+                                </td>
                                 <td class="p-0" colspan="2">
                                     <table class="w-full border-collapse">
-                                        <tr v-for="ans in q.answers" :key="ans.id" class="border-b border-slate-700/30 last:border-0">
-                                            <td class="p-4 w-3/4">{{ ans.name }}</td>
-                                            <td class="p-4 w-1/4 text-center font-bold text-blue-400">{{ ans.total_votes ?? 0 }}</td>
+                                        <tr
+                                            v-for="ans in q.answers"
+                                            :key="ans.id"
+                                            class="border-b border-slate-700/30 last:border-0"
+                                        >
+                                            <td class="w-3/4 p-4">
+                                                {{ ans.name }}
+                                            </td>
+                                            <td
+                                                class="w-1/4 p-4 text-center font-bold text-blue-400"
+                                            >
+                                                {{ ans.total_votes ?? 0 }}
+                                            </td>
                                         </tr>
                                     </table>
                                 </td>
@@ -31,14 +62,17 @@
                 </table>
             </div>
         </div>
-        <p v-else class="text-slate-400 italic text-center py-8 bg-slate-900/30 rounded-xl border border-slate-700">
+        <p
+            v-else
+            class="rounded-xl border border-slate-700 bg-slate-900/30 py-8 text-center text-slate-400 italic"
+        >
             No hay datos para mostrar...
         </p>
     </div>
 </template>
 
 <script setup>
-defineProps(['categories'])
+defineProps(['categories']);
 </script>
 
 <style scoped>
@@ -61,4 +95,3 @@ defineProps(['categories'])
     background: #94a3b8;
 }
 </style>
-

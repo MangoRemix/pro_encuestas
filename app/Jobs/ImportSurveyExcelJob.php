@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ImportSurveyExcelJob implements ShouldQueue
@@ -32,10 +33,13 @@ class ImportSurveyExcelJob implements ShouldQueue
             );
             Cache::put("batch_status_{$this->batchId}", ['finished' => true, 'status' => 'success'], 3600);
         } catch (\Throwable $e) {
+            Log::error('Fallo al importar encuesta desde Excel', [
+                'batch_id' => $this->batchId,
+                'exception' => $e,
+            ]);
             Cache::put("batch_status_{$this->batchId}", ['finished' => true, 'status' => 'error', 'message' => $e->getMessage()], 3600);
         } finally {
             Storage::delete($this->filePath);
         }
     }
 }
-

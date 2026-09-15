@@ -13,30 +13,23 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # ── 2. Verificar APP_KEY ─────────────────────────────
 if [ -z "$APP_KEY" ]; then
-    echo "⚠️  APP_KEY no encontrada."
-    if [ -f "/var/www/html/.env" ]; then
-        echo "🔑 Generando APP_KEY automáticamente..."
-        php artisan key:generate --force
-    else
-        echo "❌ ERROR: APP_KEY es requerida. Configúrala como variable de entorno."
-        exit 1
-    fi
+    echo "❌ ERROR: APP_KEY es requerida. Configúrala como variable de entorno (php artisan key:generate --show)."
+    exit 1
 else
     echo "🔑 APP_KEY configurada ✓"
 fi
 
 # ── 3. Esperar que la DB esté lista ─────────────────
-# Usar valores por defecto seguros si las variables están vacías
 TARGET_DB_HOST="${DB_HOST:-db}"
 TARGET_DB_PORT="${DB_PORT:-5432}"
 TARGET_DB_NAME="${DB_DATABASE:-encuestas}"
 TARGET_DB_USER="${DB_USERNAME:-postgres}"
-TARGET_DB_PASS="${DB_PASSWORD:-secret}"
+TARGET_DB_PASS="${DB_PASSWORD}"
 
-# Si las variables venían como cadenas vacías, forzar defaults
-[ -z "$TARGET_DB_NAME" ] && TARGET_DB_NAME="encuestas"
-[ -z "$TARGET_DB_USER" ] && TARGET_DB_USER="postgres"
-[ -z "$TARGET_DB_PASS" ] && TARGET_DB_PASS="secret"
+if [ -z "$TARGET_DB_PASS" ]; then
+    echo "❌ ERROR: DB_PASSWORD es requerida. Configúrala como variable de entorno."
+    exit 1
+fi
 
 echo "⏳ Esperando conexión a la base de datos (${TARGET_DB_HOST}:${TARGET_DB_PORT}/${TARGET_DB_NAME} como ${TARGET_DB_USER})..."
 

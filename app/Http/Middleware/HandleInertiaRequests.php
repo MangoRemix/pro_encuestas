@@ -2,9 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Parish;
-use App\Models\Rol;
-use App\Models\Sex;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,34 +34,26 @@ class HandleInertiaRequests extends Middleware
      * @return array<string, mixed>
      */
     public function share(Request $request): array
-    {   
+    {
         $user = null;
-        if(
-            $request->user() &&
-            $request->user()?->sex_id &&
-            $request->user()?->rol_id
-        ){
-            $sex = Sex::query()->where('id',$request->user()->sex_id)->first();
+        $authUser = $request->user();
 
-            $role = Rol::query()->where('id',$request->user()->rol_id)->first();
-            
-            // $parish = Parish::query()->where('id',$request->user()->parish_id)->first();
+        if ($authUser) {
             $user = [
-                "id" => $request->user()->id,
-                "name" => $request->user()->name,
-                "email" => $request->user()->email,
-                "sex" => $sex->abbreviation,
-                "role" => $role->name,
-                //"parish" => $parish->name
+                'id' => $authUser->id,
+                'name' => $authUser->name,
+                'email' => $authUser->email,
+                'sex' => $authUser->sex?->abbreviation,
+                'role' => $authUser->rol?->name,
             ];
         }
-        
+
         return [
             ...parent::share($request),
-            'name' => "Gestión de encuestas.",//config('app.name'),
+            'name' => 'Gestión de encuestas.', // config('app.name'),
             'auth' => [
-                //'user' => $request->user(),
-                'user' => $user
+                // 'user' => $request->user(),
+                'user' => $user,
             ],
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),

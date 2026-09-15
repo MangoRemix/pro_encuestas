@@ -1,81 +1,94 @@
 <template>
-  <div class="max-w-2xl mx-auto my-8 px-6 py-8 bg-white border border-gray-200 rounded-2xl shadow-sm">
-    <h2 class="text-xl font-bold text-gray-900 mb-8">
-      Crear Nueva Encuesta
-    </h2>
+    <div
+        class="mx-auto my-8 max-w-2xl rounded-2xl border border-gray-200 bg-white px-6 py-8 shadow-sm"
+    >
+        <h2 class="mb-8 text-xl font-bold text-gray-900">
+            Crear Nueva Encuesta
+        </h2>
 
-    <form @submit.prevent="handleSubmit" class="space-y-6">
-      <div class="flex flex-col gap-2">
-        <label for="name" class="text-sm font-medium text-gray-700">
-          Nombre de la Encuesta
-        </label>
-        <input 
-          type="text" 
-          id="name" 
-          v-model="form.name" 
-          placeholder="Ej. Satisfacción al Cliente"
-          class="inputs-form w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-transparent transition-all outline-none"
-          required
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+            <div class="flex flex-col gap-2">
+                <label for="name" class="text-sm font-medium text-gray-700">
+                    Nombre de la Encuesta
+                </label>
+                <input
+                    type="text"
+                    id="name"
+                    v-model="form.name"
+                    placeholder="Ej. Satisfacción al Cliente"
+                    class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
+                    required
+                />
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div class="flex flex-col gap-2">
+                    <label
+                        for="init_date"
+                        class="text-sm font-medium text-gray-700"
+                    >
+                        Fecha de Inicio
+                    </label>
+                    <input
+                        type="date"
+                        id="init_date"
+                        v-model="form.init_date"
+                        class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
+                        required
+                    />
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label
+                        for="finish_date"
+                        class="text-sm font-medium text-gray-700"
+                    >
+                        Fecha de Finalización
+                    </label>
+                    <input
+                        type="date"
+                        id="finish_date"
+                        v-model="form.finish_date"
+                        :min="form.init_date"
+                        class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
+                        required
+                    />
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                :disabled="loading"
+                class="primary-button-app cursor-pointer"
+            >
+                {{ loading ? 'Guardando...' : 'Crear Encuesta' }}
+            </button>
+        </form>
+
+        <NotificationBox
+            v-if="message || isError"
+            :message="message"
+            :isError="isError"
+            class="absolute top-0 right-0 z-10 w-100"
         />
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="flex flex-col gap-2">
-          <label for="init_date" class="text-sm font-medium text-gray-700">
-            Fecha de Inicio
-          </label>
-          <input
-          type="date" 
-          id="init_date" 
-          v-model="form.init_date" 
-            class="inputs-form w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-transparent transition-all outline-none"
-          required
-        />
-      </div>
-
-        <div class="flex flex-col gap-2">
-          <label for="finish_date" class="text-sm font-medium text-gray-700">
-            Fecha de Finalización
-        </label>
-        <input 
-          type="date" 
-          id="finish_date" 
-          v-model="form.finish_date" 
-          :min="form.init_date"
-            class="inputs-form w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-700 focus:border-transparent transition-all outline-none"
-          required
-        />
-      </div>
-  </div>
-
-      <button
-        type="submit"
-        :disabled="loading"
-        class="primary-button-app cursor-pointer"
-      >
-        {{ loading ? 'Guardando...' : 'Crear Encuesta' }}
-      </button>
-    </form>
-
-    <NotificationBox v-if="message || isError" :message="message" :isError="isError" class="absolute z-10 right-0 top-0 w-100" />
-  </div>
+    </div>
 </template>
 
 <script setup>
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { formatedDate } from '@/composables/shared.js';
 import { apiHost } from '@/store/store.js';
 import NotificationBox from '../notification-box.vue';
 
-const {surveyId} = defineProps(['surveyId'])
+const { surveyId } = defineProps(['surveyId']);
 
 // Estado del formulario
 const form = reactive({
-  name: '',
-  init_date: '',
-  finish_date: ''
+    name: '',
+    init_date: '',
+    finish_date: '',
 });
 
 // Estados de la petición
@@ -83,95 +96,95 @@ const loading = ref(false);
 const message = ref('');
 const isError = ref(false);
 
-  onMounted(async ()=>{
-    if(surveyId > 0){
-      const survey = await getSurvey(surveyId)
-      form.name = survey.name
-      form.init_date = formatedDate(survey.init_date); 
-      form.finish_date = formatedDate(survey.finish_date); 
+onMounted(async () => {
+    if (surveyId > 0) {
+        const survey = await getSurvey(surveyId);
+        form.name = survey.name;
+        form.init_date = formatedDate(survey.init_date);
+        form.finish_date = formatedDate(survey.finish_date);
     }
-    
+});
 
-  })
-
-
-  const getSurvey = async (id) => {
+const getSurvey = async (id) => {
     try {
-        const response = await axios.get(`${apiHost}survey/show-one/${id}`)
-        
-        if(response.data.length > 0) {
-return response.data[0]
-} else {
-return 'No hay encuestas registradas.'
-}
+        const response = await axios.get(`${apiHost}survey/show-one/${id}`);
+
+        if (response.data.length > 0) {
+            return response.data[0];
+        } else {
+            return 'No hay encuestas registradas.';
+        }
     } catch (error) {
-        console.log(error)   
+        console.log(error);
     }
-  }
+};
 
 // Manejador del envío
 const handleSubmit = async () => {
-  loading.value = true;
-  message.value = '';
-  isError.value = false;
+    loading.value = true;
+    message.value = '';
+    isError.value = false;
 
-  try {
-    // Ajusta la URL según la configuración de tu entorno
-    let response = null
+    try {
+        // Ajusta la URL según la configuración de tu entorno
+        let response = null;
 
-    if(!surveyId) {
-response = await axios.post(`${apiHost}survey/create`, form);
-} else {
-response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
-}
-    
-    message.value = '¡Encuesta creada con éxito!';
-    setTimeout(() => {
-      message.value = '';
-    }, 3000);
+        if (!surveyId) {
+            response = await axios.post(`${apiHost}survey/create`, form);
+        } else {
+            response = await axios.put(
+                `${apiHost}survey/update/${surveyId}`,
+                form,
+            );
+        }
 
-    if(response.status == 200){
-      getSurvey(surveyId)
-      
-    }else{
-      if(response.status == 201){
-        //console.log(response)
+        message.value = surveyId
+            ? '¡Encuesta actualizada con éxito!'
+            : '¡Encuesta creada con éxito!';
         setTimeout(() => {
-          if(response.data.data.id) {
-router.get('/surveys/create-survey/step-2',{
-            surveyId:response.data.data.id
-          })
-}
-        }, 250);
-        //setTimeout(() => {
-        //  if(response.data.data.id)
-        //  router.get('/categories/create',{
-        //    surveyId:response.data.data.id
-        //  })
-        //}, 750);
-      }
+            message.value = '';
+        }, 3000);
+
+        if (response.status == 200) {
+            getSurvey(surveyId);
+        } else {
+            if (response.status == 201) {
+                //console.log(response)
+                setTimeout(() => {
+                    if (response.data.data.id) {
+                        router.get('/surveys/create-survey/step-2', {
+                            surveyId: response.data.data.id,
+                        });
+                    }
+                }, 250);
+                //setTimeout(() => {
+                //  if(response.data.data.id)
+                //  router.get('/categories/create',{
+                //    surveyId:response.data.data.id
+                //  })
+                //}, 750);
+            }
+        }
+
+        // Limpiar el formulario
+        form.name = '';
+        form.init_date = '';
+        form.finish_date = '';
+    } catch (error) {
+        isError.value = true;
+
+        if (error.response?.data?.message) {
+            message.value = `Error: ${error.response.data.message}`;
+        } else {
+            message.value = 'Ocurrió un error al procesar la solicitud.';
+        }
+
+        setTimeout(() => {
+            message.value = '';
+            isError.value = false;
+        }, 3000);
+    } finally {
+        loading.value = false;
     }
-
-    // Limpiar el formulario
-    form.name = '';
-    form.init_date = '';
-    form.finish_date = '';
-  } catch (error) {
-    isError.value = true;
-
-    if (error.response?.data?.message) {
-      message.value = `Error: ${error.response.data.message}`;
-    } else {
-      message.value = 'Ocurrió un error al procesar la solicitud.';
-    }
-
-    setTimeout(() => {
-      message.value = '';
-      isError.value = false;
-    }, 3000);
-  } finally {
-  loading.value = false;
-  }
 };
 </script>
-

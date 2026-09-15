@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Person;
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -18,8 +15,8 @@ class DatabaseSeeder extends Seeder
             RolSeeder::class,
             ParishSeeder::class,
             SexSeeder::class,
-            //AgeRangeSeeder::class,
-            PersonSeeder::class
+            // AgeRangeSeeder::class,
+            PersonSeeder::class,
         ]);
     }
 }

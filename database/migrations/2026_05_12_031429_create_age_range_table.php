@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('age_ranges', function (Blueprint $table) {
             $table->id();
-            $table->string('range'); //example 18-55
+            $table->string('range'); // example 18-55
             $table->timestamps();
             $table->softDeletes();
         });

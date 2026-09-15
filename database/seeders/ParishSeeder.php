@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -23,16 +22,16 @@ class ParishSeeder extends Seeder
         ],
         [
             'name' => 'SANTA INES',
-        ]
+        ],
     ];
 
     public function run(): void
     {
-        //
         foreach ($this->values as $parish) {
-            # code...
-            DB::table('parishes')->insert($parish);
+            DB::table('parishes')->updateOrInsert(
+                ['name' => $parish['name']],
+                $parish
+            );
         }
-        
     }
 }

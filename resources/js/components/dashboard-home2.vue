@@ -1,56 +1,109 @@
 <template>
     <div class="lg:pl-6">
-        <h1 class="text-3xl lg:text-4xl text-blue-100 font-extrabold">
+        <h1 class="text-3xl font-extrabold text-blue-100 lg:text-4xl">
             Dashboard
         </h1>
     </div>
 
-    <div id="cards" class="flex items-center justify-between 2xl:justify-start flex-wrap gap-2 mb-6 md:px-6 mt-3">
-        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestados" value="1,234" />
-        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Encuestadores" value="48" />
-        <DashboardCard class="w-full sm:w-42 md:w-1/4 lg:w-66" title="Respuestas" value="12,890" />
+    <div
+        id="cards"
+        class="mt-3 mb-6 flex flex-wrap items-center justify-between gap-2 md:px-6 2xl:justify-start"
+    >
+        <DashboardCard
+            class="w-full sm:w-42 md:w-1/4 lg:w-66"
+            title="Encuestados"
+            value="1,234"
+        />
+        <DashboardCard
+            class="w-full sm:w-42 md:w-1/4 lg:w-66"
+            title="Encuestadores"
+            value="48"
+        />
+        <DashboardCard
+            class="w-full sm:w-42 md:w-1/4 lg:w-66"
+            title="Respuestas"
+            value="12,890"
+        />
     </div>
-    
+
     <div class="flex flex-wrap gap-6 md:px-6">
-        <div class="flex-1 min-w-[320px] bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-            <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-white">Encuestas recientes</h2>
-                <Link href="/surveys" class="text-sm text-blue-400 hover:text-blue-300">Ver todas</Link>
+        <div
+            class="min-w-[320px] flex-1 overflow-hidden rounded-lg border border-slate-700 bg-slate-800"
+        >
+            <div
+                class="flex items-center justify-between border-b border-slate-700 p-4"
+            >
+                <h2 class="text-lg font-bold text-white">
+                    Encuestas recientes
+                </h2>
+                <Link
+                    href="/surveys"
+                    class="text-sm text-blue-400 hover:text-blue-300"
+                    >Ver todas</Link
+                >
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead class="bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                    <thead
+                        class="bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                    >
                         <tr>
                             <th class="p-4">Nombre</th>
                             <th class="p-4 text-nowrap">Fecha de inicio</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
-                        <tr v-for="survey in recentSurveys" :key="survey.id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
-                            <td class="p-4 font-medium text-xs md:text-[13px]">{{ survey.name }}</td>
-                            <td class="p-4 text-xs md:text-[13px]">{{ formatedDate(survey.init_date) }}</td>
+                        <tr
+                            v-for="survey in recentSurveys"
+                            :key="survey.id"
+                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                        >
+                            <td class="p-4 text-xs font-medium md:text-[13px]">
+                                {{ survey.name }}
+                            </td>
+                            <td class="p-4 text-xs md:text-[13px]">
+                                {{ formatedDate(survey.init_date) }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="flex-1 min-w-fit lg:max-w-105 bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-            <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-white">Top 5 Encuestadores</h2>
+        <div
+            class="min-w-fit flex-1 overflow-hidden rounded-lg border border-slate-700 bg-slate-800 lg:max-w-105"
+        >
+            <div
+                class="flex items-center justify-between border-b border-slate-700 p-4"
+            >
+                <h2 class="text-lg font-bold text-white">
+                    Top 5 Encuestadores
+                </h2>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead class="bg-slate-900/50 text-white text-xs uppercase tracking-wider">
+                    <thead
+                        class="bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                    >
                         <tr>
                             <th class="p-4">Encuestador</th>
-                            <th class="p-4 text-center">Encuestas realizadas</th>
+                            <th class="p-4 text-center">
+                                Encuestas realizadas
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
-                        <tr v-for="pollster in topPollsters" :key="pollster.pollster_id" class="text-slate-200 hover:bg-slate-600/30 transition-colors">
-                            <td class="p-4 font-medium text-xs md:text-[13px]">{{ pollster.pollster_name }}</td>
-                            <td class="p-4 text-xs md:text-[13px] text-center">{{ pollster.total_surveys_conducted }}</td>
+                        <tr
+                            v-for="pollster in topPollsters"
+                            :key="pollster.pollster_id"
+                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                        >
+                            <td class="p-4 text-xs font-medium md:text-[13px]">
+                                {{ pollster.pollster_name }}
+                            </td>
+                            <td class="p-4 text-center text-xs md:text-[13px]">
+                                {{ pollster.total_surveys_conducted }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -74,18 +127,16 @@ onMounted(async () => {
     try {
         const [surveysRes, pollstersRes] = await Promise.all([
             axios.get(`${apiHost}survey/show-recent`),
-            axios.get(`${apiHost}result/reports/top-pollsters`)
+            axios.get(`${apiHost}result/reports/top-pollsters`),
         ]);
 
-        recentSurveys.value = surveysRes.data.length>0?surveysRes.data:[];
+        recentSurveys.value = surveysRes.data.length > 0 ? surveysRes.data : [];
 
-        topPollsters.value = pollstersRes.data.length>0?pollstersRes.data:[];
-
+        topPollsters.value =
+            pollstersRes.data.length > 0 ? pollstersRes.data : [];
     } catch (error) {
-        console.error("Error al cargar datos del dashboard:", error);
+        console.error('Error al cargar datos del dashboard:', error);
     }
 });
 </script>
-<style scoped>
-    
-</style>
+<style scoped></style>

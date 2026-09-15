@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name','order','question_id'])]
+#[Fillable(['name', 'order', 'question_id'])]
 
 class Answer extends Model
 {
@@ -29,17 +29,17 @@ class Answer extends Model
         });
     }
 
+    public function questions(): BelongsTo
+    {
 
-    public function questions(): BelongsTo {
-        
         return $this->belongsTo(Question::class);
 
     }
 
-    public function results(): HasMany {
-        
+    public function results(): HasMany
+    {
+
         return $this->hasMany(Result::class);
 
     }
-
 }

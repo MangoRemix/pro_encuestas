@@ -7,13 +7,15 @@ export function useAnswers() {
     const error = ref(null);
     const message = ref(null);
 
-        const getAnswersByQuestion = async (questionId) => {
+    const getAnswersByQuestion = async (questionId) => {
         try {
             loading.value = true;
-            const { data } = await axios.get(`${apiHost}answer/show-by-question/${questionId}`);
-            
+            const { data } = await axios.get(
+                `${apiHost}answer/show-by-question/${questionId}`,
+            );
+
             return {
-                data:data.answers || []
+                data: data.answers || [],
             };
         } catch (e) {
             error.value = e;
@@ -27,7 +29,9 @@ export function useAnswers() {
     const deleteAnswer = async (id) => {
         try {
             loading.value = true;
-            const { data } = await axios.delete(`${apiHost}answer/delete/${id}`);
+            const { data } = await axios.delete(
+                `${apiHost}answer/delete/${id}`,
+            );
             message.value = data.message;
 
             return true;
@@ -43,7 +47,10 @@ export function useAnswers() {
     const createManyAnswers = async (payload) => {
         try {
             loading.value = true;
-            const { data } = await axios.post(`${apiHost}answer/create-many`, payload);
+            const { data } = await axios.post(
+                `${apiHost}answer/create-many`,
+                payload,
+            );
             message.value = data.message;
 
             return { success: true, data };
@@ -59,7 +66,10 @@ export function useAnswers() {
     const updateAnswer = async (id, payload) => {
         try {
             loading.value = true;
-            const { data } = await axios.put(`${apiHost}answer/update/${id}`, payload);
+            const { data } = await axios.put(
+                `${apiHost}answer/update/${id}`,
+                payload,
+            );
             message.value = data.message;
 
             return { success: true, data };
@@ -72,7 +82,15 @@ export function useAnswers() {
         }
     };
 
-    return { loading, error, message, getAnswersByQuestion, deleteAnswer, createManyAnswers, updateAnswer };
+    return {
+        loading,
+        error,
+        message,
+        getAnswersByQuestion,
+        deleteAnswer,
+        createManyAnswers,
+        updateAnswer,
+    };
 }
 
 // ── Standalone named exports ─────────────────────────────────────────────────
@@ -80,7 +98,9 @@ export function useAnswers() {
 // They mirror the functions inside useAnswers() without reactive state.
 
 export async function getAnswersByQuestion(questionId) {
-    const { data } = await axios.get(`${apiHost}answer/show-by-question/${questionId}`);
+    const { data } = await axios.get(
+        `${apiHost}answer/show-by-question/${questionId}`,
+    );
 
     return { data: data.answers || [] };
 }
@@ -92,7 +112,10 @@ export async function updateAnswer(id, payload) {
 }
 
 export async function createManyAnswers(payload) {
-    const { data,status } = await axios.post(`${apiHost}answer/create-many`, payload);
-    
-    return { success: status == 201?true:false, data };
+    const { data, status } = await axios.post(
+        `${apiHost}answer/create-many`,
+        payload,
+    );
+
+    return { success: status == 201 ? true : false, data };
 }

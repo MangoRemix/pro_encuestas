@@ -31,4 +31,3 @@ export const getRespondentCountByParish = async (surveyId, parishId = null) => {
         return { data: null };
     }
 };
-

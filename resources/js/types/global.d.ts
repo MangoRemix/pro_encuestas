@@ -1,4 +1,11 @@
+import type axios from 'axios';
 import type { Auth } from '@/types/auth';
+
+declare global {
+    interface Window {
+        axios: typeof axios;
+    }
+}
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {

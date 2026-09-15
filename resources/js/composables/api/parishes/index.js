@@ -1,5 +1,5 @@
-import axios from "axios";
-import { ref } from "vue";
+import axios from 'axios';
+import { ref } from 'vue';
 
 export function useParishes() {
     const parishes = ref([]);
@@ -20,5 +20,12 @@ export function useParishes() {
     const updateParish = (id, data) => axios.put(`/api/parish/${id}`, data);
     const deleteParish = (id) => axios.delete(`/api/parish/${id}`);
 
-    return { parishes, loading, fetchParishes, storeParish, updateParish, deleteParish };
+    return {
+        parishes,
+        loading,
+        fetchParishes,
+        storeParish,
+        updateParish,
+        deleteParish,
+    };
 }

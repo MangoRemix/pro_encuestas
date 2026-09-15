@@ -30,18 +30,34 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer:v2
-          coverage: xdebug
+          coverage: none
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ matrix.php-version }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ matrix.php-version }}-
 
       - name: Install Node Dependencies
-        run: npm i
+        run: npm ci
 
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Audit PHP dependencies
+        run: composer audit --no-interaction
+        continue-on-error: true
+
+      - name: Audit JS dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
       - name: Copy Environment File
         run: cp .env.example .env
@@ -53,4 +69,4 @@ jobs:
         run: npm run build
 
       - name: Tests
-        run: ./vendor/bin/phpunit
+        run: composer test

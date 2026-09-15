@@ -1,5 +1,5 @@
 <template>
-    <Head title="Encuestado: Datos de encuestado"/>
+    <Head title="Encuestado: Datos de encuestado" />
     <MainLayout>
         <RespondentForm />
     </MainLayout>
@@ -8,8 +8,5 @@
 import { Head } from '@inertiajs/vue3';
 import RespondentForm from '@/components/forms/respondent-form.vue';
 import MainLayout from '@/layouts/main-layout.vue';
-
 </script>
-<style scoped>
-    
-</style>
+<style scoped></style>

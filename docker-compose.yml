@@ -4,13 +4,16 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+    env_file:
+      - .env
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
-      DB_DATABASE: encuestas
-      DB_USERNAME: postgres
-      DB_PASSWORD: secret
+      DB_DATABASE: ${DB_DATABASE:-encuestas}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?Debes definir DB_PASSWORD en tu archivo .env}
+      APP_KEY: ${APP_KEY:?Debes definir APP_KEY en tu archivo .env (php artisan key:generate --show)}
       VITE_APP_API_HOST: ${VITE_APP_API_HOST:-http://localhost:8000/api/}
     ports:
       - "80"
@@ -25,13 +28,13 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: encuestas
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ${DB_DATABASE:-encuestas}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Debes definir DB_PASSWORD en tu archivo .env}
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d encuestas"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-encuestas}"]
       interval: 5s
       timeout: 5s
       retries: 10

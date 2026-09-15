@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Models\Person;
+use App\Models\Rol;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Services\PersonService;
+use Illuminate\Support\Facades\Validator;
 
 class PersonController extends Controller
 {
-
     public function preCreate(Request $request)
     {
 
@@ -31,20 +30,26 @@ class PersonController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        Person::where('id',$id)->update($validator->validated());
+        $person = Person::find($id);
+        if (! $person) {
+            return response()->json(['message' => 'Persona no encontrada'], 404);
+        }
+
+        $person->update($validator->validated());
+
         return response()->json([
-            "message" => 'Actualización exitosa'
+            'message' => 'Actualización exitosa',
         ], 200);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:persons,email',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:persons,email',
             'password' => 'required|string|min:8',
-            'sex_id'   => 'required|integer',
-            'rol_id'   => 'required|integer|in:1,3',
+            'sex_id' => 'required|integer',
+            'rol_id' => 'required|integer|in:1,3',
         ]);
 
         if ($validator->fails()) {
@@ -52,25 +57,26 @@ class PersonController extends Controller
         }
 
         $person = Person::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'sex_id'   => $request->sex_id,
-            'rol_id'   => $request->rol_id,
+            'sex_id' => $request->sex_id,
+            'rol_id' => $request->rol_id,
         ]);
 
         return response()->json([
             'message' => 'Usuario creado con éxito',
-            'person'  => $person
+            'person' => $person,
         ], 201);
     }
 
     public function show($id)
     {
         $person = Person::find($id);
-        if (!$person) {
+        if (! $person) {
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
+
         return response()->json($person);
     }
 
@@ -78,15 +84,30 @@ class PersonController extends Controller
     {
         $perPage = $request->query('per_page', 15);
         $staff = Person::whereIn('rol_id', [1, 3])->paginate($perPage);
+
         return response()->json($staff, 200);
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
         $person = Person::findOrFail($id);
+
+        if ($request->user()?->id === $person->id) {
+            return response()->json(['message' => 'No puedes eliminar tu propia cuenta'], 422);
+        }
+
+        if ($person->rol?->name === Rol::ADMIN) {
+            $remainingAdmins = Person::whereHas('rol', fn ($q) => $q->where('name', Rol::ADMIN))
+                ->where('id', '!=', $person->id)
+                ->count();
+
+            if ($remainingAdmins === 0) {
+                return response()->json(['message' => 'No puedes eliminar al último administrador'], 422);
+            }
+        }
+
         $person->delete();
 
         return response()->json(['message' => 'Usuario marcado como eliminado']);
     }
 }
-

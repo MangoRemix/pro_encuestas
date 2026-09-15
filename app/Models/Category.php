@@ -7,14 +7,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name','order','survey_id'])]
+#[Fillable(['name', 'order', 'survey_id'])]
 
 class Category extends Model
 {
     //
-    use  HasFactory,SoftDeletes;
+    use HasFactory,SoftDeletes;
 
     protected static function booted()
     {
@@ -28,17 +29,25 @@ class Category extends Model
             $category->results()->restore();
         });
     }
-    
-    public function surveys(): BelongsTo {
+
+    public function surveys(): BelongsTo
+    {
 
         return $this->belongsTo(Survey::class);
 
     }
 
-    public function questions(): HasMany {
-        
+    public function questions(): HasMany
+    {
+
         return $this->hasMany(Question::class);
-        
+
     }
 
+    public function results(): HasManyThrough
+    {
+
+        return $this->hasManyThrough(Result::class, Question::class);
+
+    }
 }

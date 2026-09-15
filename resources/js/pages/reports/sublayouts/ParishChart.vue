@@ -1,6 +1,10 @@
 <template>
-    <div class="bg-neutral-800 p-6 rounded-xl border border-blue-700/30 mt-5 max-h-120">
-        <h3 class="text-center text-blue-400 text-lg font-semibold mb-4">Encuestados por Parroquia</h3>
+    <div
+        class="mt-5 max-h-120 rounded-xl border border-blue-700/30 bg-neutral-800 p-6"
+    >
+        <h3 class="mb-4 text-center text-lg font-semibold text-blue-400">
+            Encuestados por Parroquia
+        </h3>
         <BarChart
             v-if="chartData"
             title-color="#ffffff"
@@ -13,15 +17,15 @@
                 responsive: true,
                 animation: {
                     duration: 750,
-                    easing: 'easeInOutQuart'
+                    easing: 'easeInOutQuart',
                 },
                 resizeDelay: 100,
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 100
-                    }
-                }
+                        max: 100,
+                    },
+                },
             }"
         />
     </div>
@@ -34,32 +38,49 @@ import { getRespondentCountByParish } from '@/composables/api/reports';
 
 const props = defineProps({
     surveyId: Number,
-    totalRespondent: Number
+    totalRespondent: Number,
 });
 const chartData = ref(null);
 
 const loadData = async () => {
     if (!props.surveyId || !props.totalRespondent) {
-return;
-}
+        return;
+    }
 
     const { data } = await getRespondentCountByParish(props.surveyId);
 
     if (data) {
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
-        
+        const colors = [
+            '#3b82f6',
+            '#10b981',
+            '#f59e0b',
+            '#ec4899',
+            '#8b5cf6',
+            '#06b6d4',
+        ];
+
         chartData.value = {
-            labels: data.map(item => `Parroquia ${item.parish_id}`),
-            datasets: [{
-                label: '% del Total',
-                data: data.map(item => ((item.total_respondents / props.totalRespondent) * 100).toFixed(2)),
-                backgroundColor: data.map((_, index) => colors[index % colors.length]),
-                borderRadius: 4,
-            }]
+            labels: data.map((item) => `Parroquia ${item.parish_id}`),
+            datasets: [
+                {
+                    label: '% del Total',
+                    data: data.map((item) =>
+                        (
+                            (item.total_respondents / props.totalRespondent) *
+                            100
+                        ).toFixed(2),
+                    ),
+                    backgroundColor: data.map(
+                        (_, index) => colors[index % colors.length],
+                    ),
+                    borderRadius: 4,
+                },
+            ],
         };
     }
 };
 
-watch(() => [props.surveyId, props.totalRespondent], loadData, { immediate: true });
+watch(() => [props.surveyId, props.totalRespondent], loadData, {
+    immediate: true,
+});
 </script>
-

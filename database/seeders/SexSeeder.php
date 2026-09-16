@@ -25,7 +25,10 @@ class SexSeeder extends Seeder
     {
         //
         foreach ($this->values as $sex) {
-            DB::table('sexes')->insert($sex);
+            DB::table('sexes')->updateOrInsert(
+                ['abbreviation' => $sex['abbreviation']],
+                $sex
+            );
         }
     }
 }

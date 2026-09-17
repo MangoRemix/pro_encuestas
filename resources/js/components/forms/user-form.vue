@@ -143,8 +143,17 @@
                         class="inputs-form w-full rounded-lg border-slate-300 text-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500"
                     >
                         <option value="" disabled>Seleccione...</option>
-                        <option :value="1">Encuestador</option>
-                        <option :value="3">Administrador</option>
+                        <option
+                            v-for="role in roles"
+                            :key="role.id"
+                            :value="role.id"
+                        >
+                            {{
+                                role.name === 'ADMIN'
+                                    ? 'Administrador'
+                                    : 'Encuestador'
+                            }}
+                        </option>
                     </select>
                 </div>
             </div>
@@ -218,6 +227,7 @@ const form = reactive({
     rol_id: props.user?.rol_id ?? '',
 });
 const sexes = ref([]);
+const roles = ref([]);
 const loading = ref(false);
 const showPassword = ref(false);
 const message = ref('');
@@ -225,10 +235,14 @@ const isError = ref(false);
 
 onMounted(async () => {
     try {
-        const { data } = await axios.get(`${apiHost}sex/show-all`);
-        sexes.value = data;
+        const [sexesRes, rolesRes] = await Promise.all([
+            axios.get(`${apiHost}sex/show-all`),
+            axios.get(`${apiHost}person/roles`),
+        ]);
+        sexes.value = sexesRes.data;
+        roles.value = rolesRes.data;
     } catch (error) {
-        console.error('Error cargando sexos:', error);
+        console.error('Error cargando catálogos:', error);
     }
 });
 

@@ -2,8 +2,14 @@
 # Stage 1: Build frontend assets
 # Needs both Node.js AND PHP because @laravel/vite-plugin-wayfinder
 # runs "php artisan wayfinder:generate" during the Vite build.
+#
+# Base Debian ("bookworm"), no Alpine: install-php-extensions (más abajo)
+# solo tiene binarios PHP precompilados reales para glibc/Debian — en Alpine
+# (musl) siempre termina compilando ICU/GD desde código fuente, que es el
+# mayor cuello de botella del build (varios minutos). Con Debian, la
+# instalación de extensiones baja de minutos a segundos.
 # ============================================================
-FROM php:8.3-fpm-alpine AS node-builder
+FROM php:8.3-fpm-bookworm AS node-builder
 
 # Host de la API que el frontend compilado usará para todas sus llamadas axios.
 # El default "/api/" (ruta relativa) funciona en cualquier dominio porque
@@ -13,14 +19,22 @@ FROM php:8.3-fpm-alpine AS node-builder
 # origen distinto al que sirve el frontend.
 ARG VITE_APP_API_HOST=/api/
 
-# Install Node.js 20 + npm on top of PHP alpine
-RUN apk add --no-cache nodejs npm
+# Node.js 22 vía NodeSource: el paquete "nodejs" de Debian bookworm trae una
+# versión demasiado vieja (18.x) para Vite 8 / este proyecto.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install PHP extensions needed for artisan to bootstrap
-RUN apk add --no-cache libpq-dev libzip-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_pgsql zip
+# Install PHP extensions needed for artisan to bootstrap (binario precompilado).
+ADD --chmod=755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN install-php-extensions pdo_pgsql zip
 
 # Install Composer
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
@@ -76,28 +90,23 @@ RUN composer install \
 # ============================================================
 # Stage 3: Production image
 # ============================================================
-FROM php:8.3-fpm-alpine AS production
+FROM php:8.3-fpm-bookworm AS production
 
-# Install system dependencies and dev libraries required for PHP extensions
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    libpq-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    icu-dev \
-    oniguruma-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    bash
+# Install system runtime dependencies (no dev/compiler packages needed:
+# install-php-extensions instala y limpia sus propias dependencias de build).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        nginx \
+        supervisor \
+        unzip \
+        git \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions using standard docker-php-ext-install
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+# Install PHP extensions. En Debian install-php-extensions usa binarios
+# precompilados reales para casi todas estas — segundos en vez de minutos.
+ADD --chmod=755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN install-php-extensions \
         pdo_pgsql \
         opcache \
         pcntl \
@@ -113,7 +122,7 @@ RUN echo '[www]' > /usr/local/etc/php-fpm.d/www.conf \
     && echo 'group = www-data' >> /usr/local/etc/php-fpm.d/www.conf \
     && echo 'listen = /run/php/php8.3-fpm.sock' >> /usr/local/etc/php-fpm.d/www.conf \
     && echo 'listen.owner = www-data' >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo 'listen.group = nginx' >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo 'listen.group = www-data' >> /usr/local/etc/php-fpm.d/www.conf \
     && echo 'listen.mode = 0660' >> /usr/local/etc/php-fpm.d/www.conf \
     && echo 'pm = dynamic' >> /usr/local/etc/php-fpm.d/www.conf \
     && echo 'pm.max_children = 20' >> /usr/local/etc/php-fpm.d/www.conf \
@@ -153,8 +162,10 @@ COPY --from=node-builder --chown=www-data:www-data /app/public/build ./public/bu
 # Run composer scripts (post-autoload-dump)
 RUN php artisan package:discover --ansi 2>/dev/null || true
 
-# Copy docker configs
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+# Copy docker configs (Debian's nginx package includes conf.d/*.conf; su
+# sitio "default" en sites-enabled se quita para que no choque con el nuestro)
+RUN rm -f /etc/nginx/sites-enabled/default
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

@@ -6,8 +6,10 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ParishController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\RolController;
 use App\Http\Controllers\SexController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyImportController;
@@ -30,6 +32,9 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     /** DASHBOARD */
     Route::get('dashboard/summary', [DashboardController::class, 'summary']);
 
+    /** PROFILE (cada usuario edita su propia cuenta) */
+    Route::put('profile', [ProfileController::class, 'update']);
+
     /** PERSON RESOURCES  **/
     Route::prefix('person')->group(function () {
         // Usadas por el flujo de encuestador (poll-users) para registrar respondents
@@ -47,6 +52,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
                 Route::put('update/{id}', [PersonController::class, 'updateStaff']);
             });
             Route::delete('delete/{id}', [PersonController::class, 'destroy']);
+            Route::get('roles', [RolController::class, 'staffRoles']);
         });
     });
 

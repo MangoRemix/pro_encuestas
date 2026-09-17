@@ -9,6 +9,7 @@ use Inertia\Inertia;
 
 Route::middleware(['auth'])->group(function () {
     Route::inertia('/', 'index')->name('home');
+    Route::inertia('/settings', 'settings/index')->name('settings');
 
     Route::middleware(['admin'])->group(function () {
         Route::prefix('surveys')->name('surveys.')->group(function () {

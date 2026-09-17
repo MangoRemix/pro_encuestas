@@ -12,17 +12,17 @@
         <DashboardCard
             class="w-full sm:w-42 md:w-1/4 lg:w-66"
             title="Encuestados"
-            value="1,234"
+            :value="summary.respondents"
         />
         <DashboardCard
             class="w-full sm:w-42 md:w-1/4 lg:w-66"
             title="Encuestadores"
-            value="48"
+            :value="summary.pollsters"
         />
         <DashboardCard
             class="w-full sm:w-42 md:w-1/4 lg:w-66"
             title="Respuestas"
-            value="12,890"
+            :value="summary.results"
         />
     </div>
 
@@ -122,18 +122,24 @@ import { apiHost } from '@/store/store';
 
 const recentSurveys = ref([]);
 const topPollsters = ref([]);
+const summary = ref({ respondents: 0, pollsters: 0, results: 0 });
 
 onMounted(async () => {
     try {
-        const [surveysRes, pollstersRes] = await Promise.all([
+        const [surveysRes, pollstersRes, summaryRes] = await Promise.all([
             axios.get(`${apiHost}survey/show-recent`),
-            axios.get(`${apiHost}result/reports/top-pollsters`),
+            axios
+                .get(`${apiHost}result/reports/top-pollsters`)
+                .catch(() => ({ data: [] })),
+            axios.get(`${apiHost}dashboard/summary`),
         ]);
 
         recentSurveys.value = surveysRes.data.length > 0 ? surveysRes.data : [];
 
         topPollsters.value =
             pollstersRes.data.length > 0 ? pollstersRes.data : [];
+
+        summary.value = summaryRes.data;
     } catch (error) {
         console.error('Error al cargar datos del dashboard:', error);
     }

@@ -4,10 +4,14 @@
     >
         <div class="mb-6 text-center">
             <h2 class="text-2xl font-bold tracking-tight text-slate-800">
-                Registrar Usuario
+                {{ isEditing ? 'Editar Usuario' : 'Registrar Usuario' }}
             </h2>
             <p class="mt-1 text-sm text-slate-500">
-                Completa los datos para crear un nuevo usuario en el sistema
+                {{
+                    isEditing
+                        ? 'Actualiza los datos del usuario'
+                        : 'Completa los datos para crear un nuevo usuario en el sistema'
+                }}
             </p>
         </div>
 
@@ -44,7 +48,9 @@
 
             <div class="flex flex-col gap-1.5">
                 <label for="password" class="text-sm font-medium text-slate-700"
-                    >Contraseña</label
+                    >Contraseña{{
+                        isEditing ? ' (dejar en blanco para no cambiarla)' : ''
+                    }}</label
                 >
                 <div class="relative">
                     <input
@@ -53,7 +59,7 @@
                         :type="showPassword ? 'text' : 'password'"
                         autocomplete="new-password"
                         placeholder="••••••••"
-                        required
+                        :required="!isEditing"
                         class="inputs-form w-full rounded-lg border-slate-300 pr-10 text-sm transition-colors focus:border-indigo-500 focus:ring-indigo-500"
                     />
                     <button
@@ -171,7 +177,11 @@
                         ></path>
                     </svg>
                     <span>{{
-                        loading ? 'Guardando...' : 'Crear Usuario'
+                        loading
+                            ? 'Guardando...'
+                            : isEditing
+                              ? 'Guardar Cambios'
+                              : 'Crear Usuario'
                     }}</span>
                 </button>
             </div>
@@ -189,17 +199,23 @@
 
 <script setup>
 import axios from 'axios';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import NotificationBox from '@/components/notification-box.vue';
 import { apiHost } from '@/store/store.js';
 
-const emit = defineEmits(['created']);
+const props = defineProps({
+    user: { type: Object, default: null },
+});
+const emit = defineEmits(['created', 'updated']);
+
+const isEditing = computed(() => !!props.user);
+
 const form = reactive({
-    name: '',
-    email: '',
+    name: props.user?.name ?? '',
+    email: props.user?.email ?? '',
     password: '',
-    sex_id: '',
-    rol_id: '',
+    sex_id: props.user?.sex_id ?? '',
+    rol_id: props.user?.rol_id ?? '',
 });
 const sexes = ref([]);
 const loading = ref(false);
@@ -221,12 +237,27 @@ const handleSubmit = async () => {
     message.value = '';
 
     try {
-        await axios.post(`${apiHost}person/pollster-admin/create`, form);
-        emit('created');
+        if (isEditing.value) {
+            const payload = { ...form };
+
+            if (!payload.password) {
+                delete payload.password;
+            }
+
+            await axios.put(
+                `${apiHost}person/pollster-admin/update/${props.user.id}`,
+                payload,
+            );
+            emit('updated');
+        } else {
+            await axios.post(`${apiHost}person/pollster-admin/create`, form);
+            emit('created');
+        }
     } catch (error) {
         isError.value = true;
         message.value =
-            error.response?.data?.message || 'Error al crear el usuario.';
+            error.response?.data?.message ||
+            `Error al ${isEditing.value ? 'actualizar' : 'crear'} el usuario.`;
     } finally {
         loading.value = false;
     }

@@ -56,7 +56,8 @@ export function useUsers() {
         }
     };
 
-    const getRoleName = (rolId) => (rolId === 3 ? 'Admin' : 'Encuestador');
+    const getRoleName = (user) =>
+        user?.rol?.name === 'ADMIN' ? 'Admin' : 'Encuestador';
 
     return {
         staffData,

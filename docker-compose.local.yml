@@ -7,6 +7,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+      args:
+        # Se hornea en el JS compilado en build time (Vite); cambiarlo requiere
+        # reconstruir la imagen (--build), no solo reiniciar el contenedor.
+        VITE_APP_API_HOST: ${VITE_APP_API_HOST:-/api/}
     env_file:
       - .env
     environment:

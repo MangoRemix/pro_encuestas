@@ -27,7 +27,7 @@ Route::middleware(['auth'])->group(function () {
                 ]);
             })->whereNumber('id')->name('show');
 
-            Route::prefix('create')->name('create.')->group(function () {
+            Route::prefix('create-survey')->name('create.')->group(function () {
                 Route::inertia('/step-1', 'create-survey/step-1')->name('step-1');
                 Route::get('/step-2', function (Request $request) {
                     $validated = $request->validate(['surveyId' => ['required', 'integer']]);

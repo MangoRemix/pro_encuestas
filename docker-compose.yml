@@ -4,6 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+      args:
+        # Se hornea en el JS compilado en build time (Vite). Un valor por
+        # entorno en "environment:" de más abajo NO tiene ningún efecto aquí.
+        # "/api/" (relativo) funciona en cualquier dominio; solo cámbialo si
+        # la API vive en un origen distinto al que sirve el frontend.
+        VITE_APP_API_HOST: ${VITE_APP_API_HOST:-/api/}
     environment:
       # Variables de Laravel: usan lo que provea la plataforma de despliegue
       # (p. ej. Coolify) si está definido, y si no caen en un default sensato.
@@ -30,7 +36,6 @@ services:
       # DB_PASSWORD en tu plataforma de despliegue en cuanto puedas.
       DB_PASSWORD: ${DB_PASSWORD:-changeme-in-production}
       APP_KEY: ${APP_KEY:?Debes definir APP_KEY (php artisan key:generate --show)}
-      VITE_APP_API_HOST: ${VITE_APP_API_HOST:-http://localhost:8000/api/}
     ports:
       - "80"
     volumes:

@@ -7,9 +7,19 @@ use App\Models\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class PersonController extends Controller
 {
+    /**
+     * IDs de los roles considerados "personal" (encuestador/admin), sin asumir
+     * que el orden de inserción de la tabla roles sea siempre el mismo.
+     */
+    private function staffRoleIds(): array
+    {
+        return Rol::whereIn('name', [Rol::POLLSTER, Rol::ADMIN])->pluck('id')->all();
+    }
+
     public function preCreate(Request $request)
     {
 
@@ -49,7 +59,7 @@ class PersonController extends Controller
             'email' => 'required|email|unique:persons,email',
             'password' => 'required|string|min:8',
             'sex_id' => 'required|integer',
-            'rol_id' => 'required|integer|in:1,3',
+            'rol_id' => ['required', 'integer', Rule::in($this->staffRoleIds())],
         ]);
 
         if ($validator->fails()) {
@@ -70,6 +80,54 @@ class PersonController extends Controller
         ], 201);
     }
 
+    public function updateStaff(Request $request, int $id)
+    {
+        $person = Person::whereIn('rol_id', $this->staffRoleIds())->find($id);
+
+        if (! $person) {
+            return response()->json(['message' => 'Persona no encontrada'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('persons', 'email')->ignore($person->id)],
+            'password' => 'nullable|string|min:8',
+            'sex_id' => 'required|integer',
+            'rol_id' => ['required', 'integer', Rule::in($this->staffRoleIds())],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
+        }
+
+        $data = $validator->validated();
+
+        $adminRoleId = Rol::where('name', Rol::ADMIN)->value('id');
+
+        if ($person->rol?->name === Rol::ADMIN && (int) $data['rol_id'] !== $adminRoleId) {
+            $remainingAdmins = Person::whereHas('rol', fn ($q) => $q->where('name', Rol::ADMIN))
+                ->where('id', '!=', $person->id)
+                ->count();
+
+            if ($remainingAdmins === 0) {
+                return response()->json(['message' => 'No puedes quitarle el rol de administrador al último administrador'], 422);
+            }
+        }
+
+        if (! empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        $person->update($data);
+
+        return response()->json([
+            'message' => 'Usuario actualizado con éxito',
+            'person' => $person,
+        ], 200);
+    }
+
     public function show($id)
     {
         $person = Person::find($id);
@@ -83,7 +141,7 @@ class PersonController extends Controller
     public function getStaff(Request $request)
     {
         $perPage = $request->query('per_page', 15);
-        $staff = Person::whereIn('rol_id', [1, 3])->paginate($perPage);
+        $staff = Person::with('rol')->whereIn('rol_id', $this->staffRoleIds())->paginate($perPage);
 
         return response()->json($staff, 200);
     }

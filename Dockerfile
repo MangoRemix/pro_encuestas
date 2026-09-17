@@ -5,6 +5,14 @@
 # ============================================================
 FROM php:8.3-fpm-alpine AS node-builder
 
+# Host de la API que el frontend compilado usará para todas sus llamadas axios.
+# El default "/api/" (ruta relativa) funciona en cualquier dominio porque
+# frontend y API se sirven desde el mismo origen (nginx en este mismo
+# contenedor) — evita que un dominio mal configurado rompa todas las llamadas.
+# Solo pasa un valor absoluto por --build-arg si de verdad la API vive en otro
+# origen distinto al que sirve el frontend.
+ARG VITE_APP_API_HOST=/api/
+
 # Install Node.js 20 + npm on top of PHP alpine
 RUN apk add --no-cache nodejs npm
 
@@ -38,7 +46,7 @@ COPY . .
 # Write a clean minimal .env — use openssl for APP_KEY (avoids artisan bootstrap issues)
 # SQLite in-memory: no real DB needed just for wayfinder type generation
 RUN APP_KEY="base64:$(openssl rand -base64 32)" \
-    && printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=false\nDB_CONNECTION=sqlite\nDB_DATABASE=/tmp/temp.sqlite\nSESSION_DRIVER=array\nCACHE_STORE=array\nQUEUE_CONNECTION=sync\nFILESYSTEM_DISK=local\nLOG_CHANNEL=stderr\n" "$APP_KEY" > .env \
+    && printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=%s\nAPP_DEBUG=false\nDB_CONNECTION=sqlite\nDB_DATABASE=/tmp/temp.sqlite\nSESSION_DRIVER=array\nCACHE_STORE=array\nQUEUE_CONNECTION=sync\nFILESYSTEM_DISK=local\nLOG_CHANNEL=stderr\nVITE_APP_API_HOST=%s\n" "$APP_KEY" "$VITE_APP_API_HOST" > .env \
     && touch /tmp/temp.sqlite
 
 # Pre-generate wayfinder route types so the Vite plugin finds them already done

@@ -63,7 +63,7 @@ if [ ! -f ".env" ]; then
     sed -i "s|APP_ENV=local|APP_ENV=production|g" .env
     sed -i "s|APP_DEBUG=true|APP_DEBUG=false|g" .env
     sed -i "s|APP_URL=http://localhost|APP_URL=http://localhost:8080|g" .env
-    sed -i "s|APP_NAME=Laravel|APP_NAME=Pro Encuestas|g" .env
+    sed -i 's|APP_NAME=Laravel|APP_NAME="Pro Encuestas"|g' .env
 
     # Logs a stderr (visibles en docker logs)
     sed -i "s|LOG_CHANNEL=stack|LOG_CHANNEL=stderr|g" .env

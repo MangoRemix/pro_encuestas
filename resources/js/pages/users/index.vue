@@ -18,7 +18,7 @@
                 />
                 <div class="w-50">
                     <button
-                        @click="isModalOpen = true"
+                        @click="openCreateModal"
                         class="green-button-app flex cursor-pointer items-center justify-center gap-x-2 rounded px-4 py-2 font-medium transition-colors"
                     >
                         <Icon class="text-2xl" icon="ic:outline-plus" />
@@ -50,7 +50,7 @@
                         <span
                             class="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-blue-100"
                         >
-                            {{ getRoleName(user.rol_id) }}
+                            {{ getRoleName(user) }}
                         </span>
                     </div>
                     <div class="mb-4 space-y-1 text-sm text-slate-400">
@@ -113,7 +113,7 @@
                                 <span
                                     class="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs"
                                 >
-                                    {{ getRoleName(user.rol_id) }}
+                                    {{ getRoleName(user) }}
                                 </span>
                             </td>
                             <td class="p-4">
@@ -136,7 +136,12 @@
             </div>
         </div>
         <Modal :show="isModalOpen" @close="isModalOpen = false">
-            <UserForm class="w-100" @created="handleUserCreated" />
+            <UserForm
+                class="w-100"
+                :user="userToEdit"
+                @created="handleUserCreated"
+                @updated="handleUserUpdated"
+            />
         </Modal>
 
         <Modal :show="isDeleteModalOpen" @close="isDeleteModalOpen = false">
@@ -200,6 +205,7 @@ const searchQuery = ref('');
 const isModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const userToDelete = ref(null);
+const userToEdit = ref(null);
 
 const filteredStaff = computed(() => {
     const query = searchQuery.value.toLowerCase();
@@ -209,7 +215,7 @@ const filteredStaff = computed(() => {
     }
 
     return staffData.value.data.filter((user) => {
-        const roleName = getRoleName(user.rol_id).toLowerCase();
+        const roleName = getRoleName(user).toLowerCase();
 
         return (
             user.name.toLowerCase().includes(query) ||
@@ -237,14 +243,25 @@ const handleDeleteUser = async () => {
     }
 };
 
+const openCreateModal = () => {
+    userToEdit.value = null;
+    isModalOpen.value = true;
+};
+
 const editUser = (user) => {
-    // TODO: Implementar edición de usuario
-    console.log('Editar usuario:', user);
+    userToEdit.value = user;
+    isModalOpen.value = true;
 };
 
 const handleUserCreated = async () => {
     isModalOpen.value = false;
     await getStaff();
+};
+
+const handleUserUpdated = async () => {
+    isModalOpen.value = false;
+    userToEdit.value = null;
+    await getStaff(staffData.value.current_page);
 };
 
 onMounted(async () => {

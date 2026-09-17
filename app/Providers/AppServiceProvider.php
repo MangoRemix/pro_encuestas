@@ -26,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
+        // Fuerza que toda URL absoluta generada (redirect(), url(), assets,
+        // rutas con nombre) use APP_URL como raíz, en vez del host/puerto que
+        // el request "percibe" internamente. Sin esto, detrás de mapeos de
+        // puerto (Docker) o proxies que no reenvían el host/puerto real, los
+        // redirects (p. ej. tras el login) terminan apuntando a un origen
+        // distinto al que el navegador realmente usa, rompiendo la sesión.
+        if ($appUrl = config('app.url')) {
+            URL::forceRootUrl($appUrl);
+        }
+
         if (config('app.env') === 'production' || str_starts_with(config('app.url', ''), 'https://')) {
             URL::forceScheme('https');
         }

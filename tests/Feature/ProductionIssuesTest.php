@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Person;
+use App\Providers\AppServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -65,6 +66,14 @@ class ProductionIssuesTest extends TestCase
         $names = collect($response->json())->pluck('name');
         $this->assertTrue($names->contains('ADMIN'));
         $this->assertTrue($names->contains('POLLSTER'));
+    }
+
+    public function test_generated_urls_use_app_url_as_root_regardless_of_request_host(): void
+    {
+        config(['app.url' => 'http://example.test:9999']);
+        (new AppServiceProvider(app()))->boot();
+
+        $this->assertStringStartsWith('http://example.test:9999', url('/foo'));
     }
 
     public function test_settings_page_is_reachable(): void

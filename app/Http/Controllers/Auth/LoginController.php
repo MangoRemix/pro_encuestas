@@ -17,10 +17,28 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+
+            if ($user->disabled_at !== null) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                $message = "Tu cuenta ha sido deshabilitada: {$user->disabled_reason}";
+
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message], 403);
+                }
+
+                throw ValidationException::withMessages([
+                    'email' => $message,
+                ]);
+            }
+
             $request->session()->regenerate();
 
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Login exitoso', 'user' => Auth::user()]);
+                return response()->json(['message' => 'Login exitoso', 'user' => $user]);
             }
 
             return redirect()->intended('/');

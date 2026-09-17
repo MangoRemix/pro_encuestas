@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ref } from 'vue';
+import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store';
 
 export function useAnswers() {
@@ -36,7 +37,7 @@ export function useAnswers() {
 
             return true;
         } catch (e) {
-            error.value = e.response?.data?.message || 'Error al eliminar';
+            error.value = extractErrorMessage(e);
 
             return false;
         } finally {
@@ -55,7 +56,7 @@ export function useAnswers() {
 
             return { success: true, data };
         } catch (e) {
-            error.value = e.response?.data || 'Error al crear';
+            error.value = extractErrorMessage(e);
 
             return { success: false };
         } finally {
@@ -74,7 +75,7 @@ export function useAnswers() {
 
             return { success: true, data };
         } catch (e) {
-            error.value = e.response?.data || 'Error al actualizar';
+            error.value = extractErrorMessage(e);
 
             return { success: false };
         } finally {
@@ -118,4 +119,32 @@ export async function createManyAnswers(payload) {
     );
 
     return { success: status == 201 ? true : false, data };
+}
+
+export async function hideAnswer(id) {
+    try {
+        const { data } = await axios.delete(`${apiHost}answer/delete/${id}`);
+
+        return { success: true, data };
+    } catch (error) {
+        return {
+            success: false,
+            message: extractErrorMessage(error),
+        };
+    }
+}
+
+export async function forceDeleteAnswer(id) {
+    try {
+        const { data } = await axios.delete(
+            `${apiHost}answer/force-delete/${id}`,
+        );
+
+        return { success: true, data };
+    } catch (error) {
+        return {
+            success: false,
+            message: extractErrorMessage(error),
+        };
+    }
 }

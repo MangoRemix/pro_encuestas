@@ -10,7 +10,7 @@ defineEmits(['close']);
     <!-- Teleport mueve el modal al final del <body> para evitar problemas de z-index -->
 
     <Transition name="fade-modal">
-        <div v-if="show" class="modal-overlay" @click.self="$emit('close')">
+        <div v-if="show" class="modal-overlay">
             <div class="modal-content">
                 <slot />
                 <button class="close-btn" @click="$emit('close')">

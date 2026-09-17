@@ -1,6 +1,6 @@
 <script setup>
 import { Icon } from '@iconify/vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -12,6 +12,20 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+const page = usePage();
+
+const currentPath = computed(() => page.url.split('?')[0]);
+
+const isActiveLink = (link) => {
+    if (!link) {
+        return false;
+    }
+
+    return link.split('?')[0] === currentPath.value;
+};
+
+const isActive = computed(() => isActiveLink(props.item.link));
 
 const isVisible = computed(() => {
     const hasPerm =
@@ -95,14 +109,25 @@ const visibleChildren = computed(() => {
         <Link
             v-else
             :href="item.link"
-            class="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 transition-all duration-200 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800/50 dark:hover:text-white"
-            :class="{ 'pl-8 text-sm': depth > 0, 'text-xs': depth > 1 }"
+            class="flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200"
+            :class="[
+                depth > 0 ? 'pl-8 text-sm' : '',
+                depth > 1 ? 'text-xs' : '',
+                isActive
+                    ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    : 'text-slate-700 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800/50 dark:hover:text-white',
+            ]"
             @click="emit('close')"
         >
             <Icon
                 v-if="item.icon && depth === 0"
                 :icon="item.icon"
-                class="text-xl text-slate-500"
+                class="text-xl"
+                :class="
+                    isActive
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-slate-500'
+                "
             />
             <span
                 class="font-medium"

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
+use App\Http\Controllers\Concerns\FiltersAndSorts;
+use App\Models\Rol;
 use App\Models\Survey;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -13,7 +15,7 @@ use Throwable;
 
 class SurveyController extends Controller
 {
-    use ApiResponds;
+    use ApiResponds, FiltersAndSorts;
 
     //
     /**
@@ -49,17 +51,25 @@ class SurveyController extends Controller
                 ->orderBy('created_at', 'DESC')
                 ->get();
         } else {
-            $surveys = Survey::query()
-                ->orderBy('created_at', 'DESC')
-                ->addSelect([
-                    'results_count' => DB::table('results')
-                        ->join('persons', 'persons.id', '=', 'results.person_id')
-                        ->join('questions', 'questions.id', '=', 'results.question_id')
-                        ->join('categories', 'categories.id', '=', 'questions.category_id')
-                        ->whereColumn('categories.survey_id', 'surveys.id')
-                        ->selectRaw('count(DISTINCT persons.id)'),
-                ])
-                ->paginate($perPage);
+            $query = Survey::query();
+
+            if ($request->boolean('with_trashed') && $request->user()?->rol?->name === Rol::ADMIN) {
+                $query->withTrashed();
+            }
+
+            $query->addSelect([
+                'results_count' => DB::table('results')
+                    ->join('persons', 'persons.id', '=', 'results.person_id')
+                    ->join('questions', 'questions.id', '=', 'results.question_id')
+                    ->join('categories', 'categories.id', '=', 'questions.category_id')
+                    ->whereColumn('categories.survey_id', 'surveys.id')
+                    ->selectRaw('count(DISTINCT persons.id)'),
+            ]);
+
+            $query = $this->applySearch($query, $request->query('search'), ['name']);
+            $query = $this->applySort($query, $request, ['name', 'created_at', 'init_date', 'finish_date'], 'created_at');
+
+            $surveys = $query->paginate($perPage);
         }
 
         return response()->json($surveys, 200);
@@ -194,6 +204,36 @@ class SurveyController extends Controller
             return $this->errorResponse($th);
         }
 
+    }
+
+    /**
+     * Des-ocultar (restaurar) una encuesta soft-deleted. Solo ADMIN.
+     */
+    public function restore(int $id): JsonResponse
+    {
+        try {
+            $survey = Survey::withTrashed()->findOrFail($id);
+            $survey->restore();
+
+            return response()->json(['message' => 'Encuesta restaurada'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th, 404);
+        }
+    }
+
+    /**
+     * Borrado permanente. Solo ADMIN.
+     */
+    public function forceDelete(int $id): JsonResponse
+    {
+        try {
+            $survey = Survey::withTrashed()->findOrFail($id);
+            $survey->forceDelete();
+
+            return response()->json(['message' => 'Encuesta eliminada permanentemente'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th, 404);
+        }
     }
 
     public function getRecent(Request $request): JsonResponse

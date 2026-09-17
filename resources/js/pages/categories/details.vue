@@ -69,6 +69,19 @@
                                             "
                                             class="cursor-pointer text-2xl text-red-600 hover:text-red-500"
                                             icon="ic:baseline-restore-from-trash"
+                                            title="Ocultar"
+                                        />
+                                        <Icon
+                                            v-if="isAdmin"
+                                            @click="
+                                                forceDeleteQuestionRow(
+                                                    question.id,
+                                                    index,
+                                                )
+                                            "
+                                            class="cursor-pointer text-2xl text-red-800 hover:text-red-600"
+                                            icon="ic:baseline-delete-forever"
+                                            title="Eliminar permanentemente"
                                         />
                                     </div>
                                 </td>
@@ -162,10 +175,13 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
+import { hideQuestion, forceDeleteQuestion } from '@/composables/api/questions';
+import { useAuth } from '@/composables/useAuth';
 import MainLayout from '@/layouts/main-layout.vue';
 import { apiHost } from '@/store/store';
 
 const page = usePage();
+const { isAdmin } = useAuth();
 
 const loading = ref(false);
 const message = ref('');
@@ -275,19 +291,39 @@ const createManyQuestions = async () => {
 };
 
 const deleteQuestion = async (id, index) => {
-    try {
-        const { status } = await axios.delete(
-            `${apiHost}question/delete/${id}`,
-        );
+    const { errorFlag, responseMessage } = await hideQuestion(id);
 
-        if (status == 200) {
-            questionsByCategory.value.splice(index, 1);
-        }
-
-        return null;
-    } catch (error) {
-        console.log(error);
+    if (!errorFlag) {
+        questionsByCategory.value.splice(index, 1);
+        message.value = 'Pregunta ocultada correctamente';
+    } else {
+        isError.value = true;
+        message.value = responseMessage;
     }
+
+    setTimeout(() => {
+        message.value = '';
+    }, 3500);
+};
+
+const forceDeleteQuestionRow = async (id, index) => {
+    if (!confirm('¿Eliminar esta pregunta de forma permanente?')) {
+        return;
+    }
+
+    const { errorFlag, responseMessage } = await forceDeleteQuestion(id);
+
+    if (!errorFlag) {
+        questionsByCategory.value.splice(index, 1);
+        message.value = 'Pregunta eliminada permanentemente';
+    } else {
+        isError.value = true;
+        message.value = responseMessage;
+    }
+
+    setTimeout(() => {
+        message.value = '';
+    }, 3500);
 };
 
 const getQuestionToEdit = async (id) => {

@@ -65,6 +65,119 @@ export async function getQuestionsByCategory(category_id) {
     return response;
 }
 
+export async function getQuestionsPaginated(
+    page = 1,
+    { search = '', sort = '', direction = '', withTrashed = false } = {},
+) {
+    const response = createResponse();
+
+    try {
+        const { data, status } = await axios.get(
+            `${apiHost}question/show-all`,
+            {
+                params: {
+                    page,
+                    search: search || undefined,
+                    sort: sort || undefined,
+                    direction: direction || undefined,
+                    with_trashed: withTrashed ? 1 : undefined,
+                },
+            },
+        );
+
+        if (status == 200) {
+            response.data = data;
+        }
+    } catch (error) {
+        response.errorFlag = true;
+        response.responseMessage =
+            error.response?.data?.message || 'Error al obtener preguntas';
+    }
+
+    return response;
+}
+
+export async function hideQuestion(id) {
+    const response = createResponse();
+
+    try {
+        const { data, status } = await axios.delete(
+            `${apiHost}question/delete/${id}`,
+        );
+
+        if (status == 200) {
+            response.data = data;
+        }
+    } catch (error) {
+        response.errorFlag = true;
+        response.responseMessage =
+            error.response?.data?.message || 'Error al ocultar la pregunta';
+    }
+
+    return response;
+}
+
+export async function restoreQuestion(id) {
+    const response = createResponse();
+
+    try {
+        const { data, status } = await axios.patch(
+            `${apiHost}question/restore/${id}`,
+        );
+
+        if (status == 200) {
+            response.data = data;
+        }
+    } catch (error) {
+        response.errorFlag = true;
+        response.responseMessage =
+            error.response?.data?.message || 'Error al restaurar la pregunta';
+    }
+
+    return response;
+}
+
+export async function forceDeleteQuestion(id) {
+    const response = createResponse();
+
+    try {
+        const { data, status } = await axios.delete(
+            `${apiHost}question/force-delete/${id}`,
+        );
+
+        if (status == 200) {
+            response.data = data;
+        }
+    } catch (error) {
+        response.errorFlag = true;
+        response.responseMessage =
+            error.response?.data?.message ||
+            'Error al eliminar permanentemente la pregunta';
+    }
+
+    return response;
+}
+
+export async function reorderQuestions(items) {
+    const response = createResponse();
+
+    try {
+        const { data, status } = await axios.put(`${apiHost}question/reorder`, {
+            items,
+        });
+
+        if (status == 200) {
+            response.data = data;
+        }
+    } catch (error) {
+        response.errorFlag = true;
+        response.responseMessage =
+            error.response?.data?.message || 'Error al reordenar las preguntas';
+    }
+
+    return response;
+}
+
 export async function createMany(questions = []) {
     const response = createResponse();
 

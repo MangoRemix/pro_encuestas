@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
+use App\Http\Controllers\Concerns\FiltersAndSorts;
 use App\Models\Category;
+use App\Models\Rol;
 use App\Models\Survey;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Throwable;
 
 class CategoryController extends Controller
 {
-    use ApiResponds;
+    use ApiResponds, FiltersAndSorts;
 
     /**
      * Display a listing of the resource.
@@ -41,10 +44,20 @@ class CategoryController extends Controller
 
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        //
-        $categories = Category::all();
+        $perPage = $request->query('per_page', 10);
+
+        $query = Category::query();
+
+        if ($request->boolean('with_trashed') && $request->user()?->rol?->name === Rol::ADMIN) {
+            $query->withTrashed();
+        }
+
+        $query = $this->applySearch($query, $request->query('search'), ['name']);
+        $query = $this->applySort($query, $request, ['name', 'order', 'created_at'], 'created_at');
+
+        $categories = $query->paginate($perPage);
 
         return response()->json($categories, 200);
     }
@@ -272,6 +285,75 @@ class CategoryController extends Controller
             return $this->errorResponse($th);
         }
 
+    }
+
+    /**
+     * Des-ocultar (restaurar) una categoría soft-deleted. Solo ADMIN.
+     */
+    public function restore(int $id): JsonResponse
+    {
+        try {
+            $category = Category::withTrashed()->findOrFail($id);
+            $category->restore();
+
+            return response()->json(['message' => 'Categoría restaurada'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th, 404);
+        }
+    }
+
+    /**
+     * Borrado permanente. Solo ADMIN.
+     */
+    public function forceDelete(int $id): JsonResponse
+    {
+        try {
+            $category = Category::withTrashed()->findOrFail($id);
+            $category->forceDelete();
+
+            return response()->json(['message' => 'Categoría eliminada permanentemente'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th, 404);
+        }
+    }
+
+    /**
+     * Reordenamiento masivo (drag-and-drop). Todas las categorías enviadas
+     * deben pertenecer a la misma encuesta, para no corromper el orden de
+     * otra encuesta con una petición equivocada.
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'items' => 'required|array|min:1',
+                'items.*.id' => 'required|integer|exists:categories,id',
+                'items.*.order' => 'required|integer|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            $items = $validator->validated()['items'];
+            $ids = array_column($items, 'id');
+
+            $surveyIdsCount = Category::query()->whereIn('id', $ids)->distinct('survey_id')->count('survey_id');
+
+            if ($surveyIdsCount > 1) {
+                throw new Exception('Todas las categorías a reordenar deben pertenecer a la misma encuesta', 422);
+            }
+
+            DB::transaction(function () use ($items) {
+                foreach ($items as $item) {
+                    Category::query()->where('id', $item['id'])->update(['order' => $item['order']]);
+                }
+            });
+
+            return response()->json(['message' => 'Orden actualizado con éxito'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
 
     public function showBySurvey(int $id)

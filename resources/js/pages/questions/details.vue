@@ -70,6 +70,19 @@
                                             "
                                             class="cursor-pointer text-2xl text-red-600 hover:text-red-500"
                                             icon="ic:baseline-restore-from-trash"
+                                            title="Ocultar"
+                                        />
+                                        <Icon
+                                            v-if="isAdmin"
+                                            @click="
+                                                forceDeleteAnswerRow(
+                                                    answer.id,
+                                                    index,
+                                                )
+                                            "
+                                            class="cursor-pointer text-2xl text-red-800 hover:text-red-600"
+                                            icon="ic:baseline-delete-forever"
+                                            title="Eliminar permanentemente"
                                         />
                                     </div>
                                 </td>
@@ -163,10 +176,13 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
+import { hideAnswer, forceDeleteAnswer } from '@/composables/api/answers';
+import { useAuth } from '@/composables/useAuth';
 import MainLayout from '@/layouts/main-layout.vue';
 import { apiHost } from '@/store/store';
 
 const page = usePage();
+const { isAdmin } = useAuth();
 
 const loading = ref(false);
 const message = ref('');
@@ -277,24 +293,43 @@ const createManyAnswers = async () => {
 const deleteAnswer = async (id, index) => {
     loading.value = true;
 
-    try {
-        const { data, status } = await axios.delete(
-            `${apiHost}answer/delete/${id}`,
-        );
+    const { success, message: apiMessage } = await hideAnswer(id);
 
-        if (status == 200) {
-            answersByQuestion.value.splice(index, 1);
-            message.value = data.message;
-        }
-    } catch (error) {
+    if (success) {
+        answersByQuestion.value.splice(index, 1);
+        message.value = 'Respuesta ocultada correctamente';
+    } else {
         isError.value = true;
-        message.value = error.response.message;
-    } finally {
-        setTimeout(() => {
-            loading.value = false;
-            message.value = '';
-        }, 3500);
+        message.value = apiMessage;
     }
+
+    setTimeout(() => {
+        loading.value = false;
+        message.value = '';
+    }, 3500);
+};
+
+const forceDeleteAnswerRow = async (id, index) => {
+    if (!confirm('¿Eliminar esta respuesta de forma permanente?')) {
+        return;
+    }
+
+    loading.value = true;
+
+    const { success, message: apiMessage } = await forceDeleteAnswer(id);
+
+    if (success) {
+        answersByQuestion.value.splice(index, 1);
+        message.value = 'Respuesta eliminada permanentemente';
+    } else {
+        isError.value = true;
+        message.value = apiMessage;
+    }
+
+    setTimeout(() => {
+        loading.value = false;
+        message.value = '';
+    }, 3500);
 };
 
 const getAnswerToEdit = async (id) => {

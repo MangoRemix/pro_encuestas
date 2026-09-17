@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Person;
+use App\Models\Rol;
 use App\Models\Sex;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,37 +33,45 @@ class PersonAuthorizationTest extends TestCase
     {
         $admin = Person::factory()->admin()->create();
         $sex = Sex::factory()->create();
+        // No asumir que el id de POLLSTER es 1: RefreshDatabase no reinicia la
+        // secuencia de autoincremento entre tests, así que el id real depende
+        // del orden de ejecución.
+        $pollsterRoleId = Rol::firstOrCreate(['name' => Rol::POLLSTER])->id;
 
         $response = $this->actingAs($admin)->postJson('/api/person/pollster-admin/create', [
             'name' => 'Nuevo Encuestador',
             'email' => 'nuevo-encuestador@example.com',
             'password' => 'password123',
             'sex_id' => $sex->id,
-            'rol_id' => 1,
+            'rol_id' => $pollsterRoleId,
         ]);
 
         $response->assertCreated();
         $this->assertDatabaseHas('persons', ['email' => 'nuevo-encuestador@example.com']);
     }
 
-    public function test_a_pollster_cannot_delete_another_person(): void
+    public function test_a_pollster_cannot_disable_another_person(): void
     {
         $pollster = Person::factory()->create();
         $victim = Person::factory()->create();
 
-        $response = $this->actingAs($pollster)->deleteJson("/api/person/delete/{$victim->id}");
+        $response = $this->actingAs($pollster)->putJson("/api/person/disable/{$victim->id}", [
+            'reason' => 'motivo de prueba',
+        ]);
 
         $response->assertForbidden();
-        $this->assertDatabaseHas('persons', ['id' => $victim->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('persons', ['id' => $victim->id, 'disabled_at' => null]);
     }
 
-    public function test_an_admin_cannot_delete_their_own_account(): void
+    public function test_an_admin_cannot_disable_their_own_account(): void
     {
         $admin = Person::factory()->admin()->create();
 
-        $response = $this->actingAs($admin)->deleteJson("/api/person/delete/{$admin->id}");
+        $response = $this->actingAs($admin)->putJson("/api/person/disable/{$admin->id}", [
+            'reason' => 'motivo de prueba',
+        ]);
 
         $response->assertUnprocessable();
-        $this->assertDatabaseHas('persons', ['id' => $admin->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('persons', ['id' => $admin->id, 'disabled_at' => null]);
     }
 }

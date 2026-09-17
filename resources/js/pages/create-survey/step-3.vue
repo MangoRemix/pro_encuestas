@@ -74,55 +74,68 @@
                                 <th class="p-2 text-center sm:p-4">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody
+                        <draggable
+                            v-model="questions"
+                            item-key="id"
+                            tag="tbody"
                             class="custom-scrollbar max-h-90 divide-y divide-slate-700/50 overflow-y-scroll"
+                            @end="onReorderQuestions"
                         >
-                            <tr
-                                :id="`question-${index}`"
-                                v-for="(question, index) in questions"
-                                :key="question.id"
-                                @click="questionSelected = question"
-                                :class="[
-                                    'w-full cursor-pointer text-slate-200 transition-colors',
-                                    questionSelected?.id === question.id
-                                        ? 'bg-yellow-500 font-semibold text-white'
-                                        : 'hover:bg-slate-600/30',
-                                ]"
-                            >
-                                <td class="w-12 p-2 sm:w-20 sm:p-4">
-                                    {{ question.order }}
-                                </td>
-                                <td class="w-full p-2 wrap-break-word sm:p-4">
-                                    {{ question.name }}
-                                </td>
-                                <td class="p-2 sm:p-4">
-                                    <div
-                                        class="flex items-center justify-center gap-x-2 sm:gap-x-3"
+                            <template #item="{ element: question, index }">
+                                <tr
+                                    :id="`question-${index}`"
+                                    @click="questionSelected = question"
+                                    :class="[
+                                        'w-full cursor-pointer text-slate-200 transition-colors',
+                                        questionSelected?.id === question.id
+                                            ? 'bg-yellow-500 font-semibold text-white'
+                                            : 'hover:bg-slate-600/30',
+                                    ]"
+                                >
+                                    <td class="w-12 p-2 sm:w-20 sm:p-4">
+                                        {{ question.order }}
+                                    </td>
+                                    <td
+                                        class="w-full p-2 wrap-break-word sm:p-4"
                                     >
-                                        <Link
-                                            :href="`/questions/details/${question.id}`"
+                                        {{ question.name }}
+                                    </td>
+                                    <td class="p-2 sm:p-4">
+                                        <div
+                                            class="flex items-center justify-center gap-x-2 sm:gap-x-3"
                                         >
-                                            <Icon
-                                                class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
-                                                icon="ic:baseline-remove-red-eye"
-                                            />
-                                        </Link>
+                                            <Link
+                                                :href="`/questions/details/${question.id}`"
+                                            >
+                                                <Icon
+                                                    class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
+                                                    icon="ic:baseline-remove-red-eye"
+                                                />
+                                            </Link>
 
-                                        <Icon
-                                            @click.stop="
-                                                getQuestionToEdit(question.id)
-                                            "
-                                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
-                                            icon="ic:baseline-edit"
-                                        />
-                                        <Icon
-                                            class="cursor-pointer text-xl text-red-500 hover:text-red-400"
-                                            icon="ic:baseline-restore-from-trash"
-                                        />
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                                            <Icon
+                                                @click.stop="
+                                                    getQuestionToEdit(
+                                                        question.id,
+                                                    )
+                                                "
+                                                class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                                icon="ic:baseline-edit"
+                                            />
+                                            <Icon
+                                                @click.stop="
+                                                    handleHideQuestion(
+                                                        question.id,
+                                                    )
+                                                "
+                                                class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                                icon="ic:baseline-restore-from-trash"
+                                            />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </draggable>
                     </table>
                 </div>
             </div>
@@ -178,6 +191,12 @@
                                             icon="ic:baseline-edit"
                                         />
                                         <Icon
+                                            @click="
+                                                handleHideAnswer(
+                                                    answer.id,
+                                                    index,
+                                                )
+                                            "
                                             class="cursor-pointer text-xl text-red-500 hover:text-red-400"
                                             icon="ic:baseline-restore-from-trash"
                                         />
@@ -378,6 +397,7 @@
 import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
+import draggable from 'vuedraggable';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
 import StepNavigation from '@/components/StepNavigation.vue';
@@ -386,11 +406,14 @@ import {
     getAnswersByQuestion,
     updateAnswer,
     createManyAnswers,
+    hideAnswer,
 } from '@/composables/api/answers';
 import {
     createMany,
     getQuestion,
     getQuestionsByCategory,
+    hideQuestion,
+    reorderQuestions,
 } from '@/composables/api/questions';
 import {
     getCategoriesBySurvey,
@@ -427,7 +450,7 @@ const formQuestion = ref([
     {
         name: '',
         order: 0,
-        category_id: parseInt(page.props.categoryId),
+        category_id: categorySelected.value,
     },
 ]);
 
@@ -512,7 +535,7 @@ const getQuestions = async (value) => {
             {
                 name: '',
                 order: 0,
-                category_id: parseInt(page.props.categoryId),
+                category_id: categorySelected.value,
             },
         ];
     } else {
@@ -531,7 +554,7 @@ function incrementFormRow(type) {
         formQuestion.value.push({
             name: '',
             order: 0,
-            category_id: parseInt(page.props.categoryId),
+            category_id: categorySelected.value,
         });
     } else {
         formAnswer.value.push({
@@ -591,9 +614,53 @@ const newQuestions = () => {
         {
             name: '',
             order: 0,
-            category_id: parseInt(page.props.categoryId),
+            category_id: categorySelected.value,
         },
     ];
+};
+
+const handleHideQuestion = async (id) => {
+    const { errorFlag, responseMessage } = await hideQuestion(id);
+
+    if (!errorFlag) {
+        if (questionSelected.value?.id === id) {
+            questionSelected.value = null;
+        }
+
+        message.value = 'Pregunta ocultada correctamente';
+        await getQuestions(categorySelected.value);
+    } else {
+        isError.value = true;
+        message.value = responseMessage;
+    }
+
+    setTimeout(() => {
+        message.value = '';
+    }, 3000);
+};
+
+const onReorderQuestions = async () => {
+    const snapshot = questions.value.map((question) => ({ ...question }));
+    const items = questions.value.map((question, index) => ({
+        id: question.id,
+        order: index + 1,
+    }));
+
+    questions.value = questions.value.map((question, index) => ({
+        ...question,
+        order: index + 1,
+    }));
+
+    const { errorFlag, responseMessage } = await reorderQuestions(items);
+
+    if (errorFlag) {
+        questions.value = snapshot;
+        isError.value = true;
+        message.value = responseMessage || 'Error al reordenar las preguntas';
+        setTimeout(() => {
+            message.value = '';
+        }, 3500);
+    }
 };
 
 const newAnswers = () => {
@@ -634,6 +701,22 @@ const handleSaveAnswers = async () => {
 const refreshAnswers = async () => {
     const { data } = await getAnswersByQuestion(questionSelected.value.id);
     answers.value = data;
+};
+
+const handleHideAnswer = async (id, index) => {
+    const { success, message: apiMessage } = await hideAnswer(id);
+
+    if (success) {
+        answers.value.splice(index, 1);
+        message.value = 'Respuesta ocultada correctamente';
+    } else {
+        isError.value = true;
+        message.value = apiMessage;
+    }
+
+    setTimeout(() => {
+        message.value = '';
+    }, 3000);
 };
 
 const createManyAnswers_ = async (formData) => {

@@ -51,7 +51,8 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
                 Route::get('list', [PersonController::class, 'getStaff']);
                 Route::put('update/{id}', [PersonController::class, 'updateStaff']);
             });
-            Route::delete('delete/{id}', [PersonController::class, 'destroy']);
+            Route::put('disable/{id}', [PersonController::class, 'disable']);
+            Route::put('enable/{id}', [PersonController::class, 'enable']);
             Route::get('roles', [RolController::class, 'staffRoles']);
         });
     });
@@ -64,12 +65,16 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('show-one/{id}', [SurveyController::class, 'show']);
         Route::get('show-full/{id}', [SurveyController::class, 'showFull']);
 
+        // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
+        Route::delete('delete/{id}', [SurveyController::class, 'destroy']);
+
         // Escritura: solo ADMIN (gestión de encuestas)
         Route::middleware('admin')->group(function () {
             Route::post('create', [SurveyController::class, 'store']);
             Route::post('import-excel', [SurveyImportController::class, 'importFromExcel']);
             Route::put('update/{id}', [SurveyController::class, 'update']);
-            Route::delete('delete/{id}', [SurveyController::class, 'destroy']);
+            Route::patch('restore/{id}', [SurveyController::class, 'restore']);
+            Route::delete('force-delete/{id}', [SurveyController::class, 'forceDelete']);
         });
     });
 
@@ -79,11 +84,16 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('show-one/{id}', [CategoryController::class, 'show']);
         Route::get('show-by-survey/{id}', [CategoryController::class, 'showBySurvey']);
 
+        // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
+        Route::delete('delete/{id}', [CategoryController::class, 'destroy']);
+
         Route::middleware('admin')->group(function () {
             Route::post('create', [CategoryController::class, 'store']);
             Route::post('create-many', [CategoryController::class, 'createMany']);
             Route::put('update/{id}', [CategoryController::class, 'update']);
-            Route::delete('delete/{id}', [CategoryController::class, 'destroy']);
+            Route::put('reorder', [CategoryController::class, 'reorder']);
+            Route::patch('restore/{id}', [CategoryController::class, 'restore']);
+            Route::delete('force-delete/{id}', [CategoryController::class, 'forceDelete']);
         });
     });
 
@@ -93,11 +103,16 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('show-one/{id}', [QuestionController::class, 'show']);
         Route::get('show-by-category/{id}', [QuestionController::class, 'showByCategory']);
 
+        // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
+        Route::delete('delete/{id}', [QuestionController::class, 'destroy']);
+
         Route::middleware('admin')->group(function () {
             Route::post('create', [QuestionController::class, 'store']);
             Route::post('create-many', [QuestionController::class, 'createMany']);
             Route::put('update/{id}', [QuestionController::class, 'update']);
-            Route::delete('delete/{id}', [QuestionController::class, 'destroy']);
+            Route::put('reorder', [QuestionController::class, 'reorder']);
+            Route::patch('restore/{id}', [QuestionController::class, 'restore']);
+            Route::delete('force-delete/{id}', [QuestionController::class, 'forceDelete']);
         });
     });
 
@@ -107,11 +122,15 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::get('show-one/{id}', [AnswerController::class, 'show']);
         Route::get('show-by-question/{id}', [AnswerController::class, 'showByQuestion']);
 
+        // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
+        Route::delete('delete/{id}', [AnswerController::class, 'destroy']);
+
         Route::middleware('admin')->group(function () {
             Route::post('create', [AnswerController::class, 'create']);
             Route::post('create-many', [AnswerController::class, 'createMany']);
             Route::put('update/{id}', [AnswerController::class, 'update']);
-            Route::delete('delete/{id}', [AnswerController::class, 'destroy']);
+            Route::patch('restore/{id}', [AnswerController::class, 'restore']);
+            Route::delete('force-delete/{id}', [AnswerController::class, 'forceDelete']);
         });
     });
 

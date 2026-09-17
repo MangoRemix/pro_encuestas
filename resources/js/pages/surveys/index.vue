@@ -9,15 +9,30 @@
         <div
             class="mb-6 flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row"
         >
-            <div class="w-full md:w-80">
+            <div class="flex w-full items-center gap-2 md:w-auto">
                 <input
                     v-model="searchQuery"
                     type="text"
                     placeholder="Buscar encuesta..."
-                    class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none"
+                    @keyup.enter="handleSearch"
+                    class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none md:w-80"
                 />
+                <button
+                    @click="handleSearch"
+                    class="shrink-0 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700"
+                >
+                    Buscar
+                </button>
             </div>
-            <div class="flex w-full gap-2 md:w-auto">
+            <div class="flex w-full flex-wrap gap-2 md:w-auto">
+                <button
+                    v-if="isAdmin"
+                    @click="toggleWithTrashed"
+                    class="flex items-center justify-center gap-x-2 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700"
+                    :class="withTrashed ? 'border-blue-500 text-blue-300' : ''"
+                >
+                    {{ withTrashed ? 'Ocultar ocultas' : 'Mostrar ocultas' }}
+                </button>
                 <div class="w-40">
                     <button
                         @click="importSurvey"
@@ -36,36 +51,15 @@
                         {{ isProcessing ? 'Importando...' : 'Importar' }}
                     </button>
                 </div>
-                <!-- <button
-                    @click="importSurvey"
-                    :disabled="isProcessing"
-                    class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-green-600 hover:bg-green-500 font-medium transition-colors disabled:opacity-50"
-                >
-                    <span v-if="isProcessing" class="animate-spin mr-2 border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-                    <Icon v-else class="text-xl mr-2" icon="ic:outline-file-upload" />
-                    {{ isProcessing ? 'Importando...' : 'Importar' }}
-                </button> -->
                 <div class="flex w-50 items-center">
                     <Link
                         href="/surveys/create-survey/step-1"
                         class="green-button-app flex items-center justify-center gap-x-2"
                     >
-                        <Icon class="text-2xl" icon="ic:outline-plus" /> Crear
-                        manual
+                        <Icon class="text-2xl" icon="ic:outline-plus" /> Nueva
+                        encuesta
                     </Link>
-                    <!-- <button class="green-button-app flex items-center justify-center cursor-pointer gap-x-2"
-                    @click="idSurveyToEdit=0; isModalOpen=true;"> 
-                        <Icon class="text-2xl " icon="ic:outline-plus" />
-                        Crear manual
-                    </button> -->
                 </div>
-                <!-- <button
-                    @click="idSurveyToEdit=0; isModalOpen=true;"
-                    class="flex-1 md:flex-none flex justify-center items-center rounded px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-500 font-medium transition-colors"
-                >
-                    <Icon class="text-xl mr-2" icon="ic:outline-plus" />
-                    Crear manual
-                </button> -->
             </div>
         </div>
 
@@ -90,7 +84,7 @@
         </div>
         <div class="space-y-4 md:hidden">
             <div
-                v-for="survey in filteredSurveys"
+                v-for="survey in surveys"
                 :key="survey.id"
                 class="rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-sm"
             >
@@ -111,32 +105,18 @@
                 <div
                     class="flex justify-end gap-2 border-t border-slate-700 pt-3"
                 >
-                    <Link
-                        :href="`/surveys/details/${survey.id}`"
-                        class="rounded-lg p-3 text-blue-400 hover:bg-slate-700"
-                    >
-                        <Icon
-                            class="text-2xl"
-                            icon="ic:baseline-remove-red-eye"
-                        />
-                    </Link>
-                    <button
-                        @click="
+                    <RowActions
+                        :is-admin="isAdmin"
+                        :is-trashed="!!survey.deleted_at"
+                        @view="router.visit(`/surveys/details/${survey.id}`)"
+                        @edit="
                             idSurveyToEdit = survey.id;
                             isModalOpen = true;
                         "
-                        class="rounded-lg p-3 text-yellow-500 hover:bg-slate-700"
-                    >
-                        <Icon class="text-2xl" icon="ic:baseline-edit" />
-                    </button>
-                    <button
-                        class="rounded-lg p-3 text-red-500 hover:bg-slate-700"
-                    >
-                        <Icon
-                            class="text-2xl"
-                            icon="ic:baseline-restore-from-trash"
-                        />
-                    </button>
+                        @hide="handleHideSurvey(survey.id)"
+                        @restore="handleRestoreSurvey(survey.id)"
+                        @force-delete="handleForceDeleteSurvey(survey.id)"
+                    />
                 </div>
             </div>
         </div>
@@ -210,7 +190,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
                         <tr
-                            v-for="survey in filteredSurveys"
+                            v-for="survey in surveys"
                             :key="survey.id"
                             class="text-slate-200 transition-colors hover:bg-slate-600/30"
                         >
@@ -225,28 +205,24 @@
                                 {{ survey.results_count }}
                             </td>
                             <td class="p-4">
-                                <div class="flex justify-center gap-3">
-                                    <Link
-                                        :href="`/surveys/details/${survey.id}`"
-                                    >
-                                        <Icon
-                                            class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
-                                            icon="ic:baseline-remove-red-eye"
-                                        />
-                                    </Link>
-                                    <Icon
-                                        @click="
-                                            idSurveyToEdit = survey.id;
-                                            isModalOpen = true;
-                                        "
-                                        class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
-                                        icon="ic:baseline-edit"
-                                    />
-                                    <Icon
-                                        class="cursor-pointer text-xl text-red-500 hover:text-red-400"
-                                        icon="ic:baseline-restore-from-trash"
-                                    />
-                                </div>
+                                <RowActions
+                                    :is-admin="isAdmin"
+                                    :is-trashed="!!survey.deleted_at"
+                                    @view="
+                                        router.visit(
+                                            `/surveys/details/${survey.id}`,
+                                        )
+                                    "
+                                    @edit="
+                                        idSurveyToEdit = survey.id;
+                                        isModalOpen = true;
+                                    "
+                                    @hide="handleHideSurvey(survey.id)"
+                                    @restore="handleRestoreSurvey(survey.id)"
+                                    @force-delete="
+                                        handleForceDeleteSurvey(survey.id)
+                                    "
+                                />
                             </td>
                         </tr>
                     </tbody>
@@ -261,35 +237,48 @@
             @import-started="handleImportProcess"
         />
         <Modal :show="isModalOpen" @close="isModalOpen = false">
-            <SurveyForm :surveyId="idSurveyToEdit" />
+            <SurveyForm
+                :surveyId="idSurveyToEdit"
+                @updated="handleSurveyUpdated"
+            />
         </Modal>
         <Pagination
-            v-if="pagination"
-            :pagination="pagination"
-            @change="getSurveys"
+            v-if="pagination && pagination.total > 0"
+            :current-page="pagination.current_page"
+            :last-page="pagination.last_page"
+            :total="pagination.total"
+            :from="pagination.from"
+            :to="pagination.to"
+            @page-change="getSurveys"
         />
     </MainLayout>
 </template>
 <script setup>
 import { Icon } from '@iconify/vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import SurveyForm from '@/components/forms/survey-form.vue';
 import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
 import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
+import RowActions from '@/components/RowActions.vue';
 import SortIcon from '@/components/sort-icon.vue';
 import {
     getSurveysPaginated,
+    hideSurvey,
+    restoreSurvey,
+    forceDeleteSurvey,
     importSurveyFromExcel,
 } from '@/composables/api/surveys';
 import { formatedDate } from '@/composables/shared';
+import { useAuth } from '@/composables/useAuth';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 import { useNotification } from '@/composables/useNotification';
 import MainLayout from '@/layouts/main-layout.vue';
 
 const { notify } = useNotification();
+const { isAdmin } = useAuth();
 const { isProcessing, pollBatchStatus } = useBatchProcessor();
 const isModalOpen = ref(false);
 const isImportModalOpen = ref(false);
@@ -300,6 +289,7 @@ const idSurveyToEdit = ref(0);
 const searchQuery = ref('');
 const sortField = ref('name');
 const sortDirection = ref('asc');
+const withTrashed = ref(false);
 const sortableFields = [
     { key: 'name', label: 'Nombre' },
     { key: 'init_date', label: 'Inicio' },
@@ -314,42 +304,22 @@ const toggleSort = (field) => {
         sortField.value = field;
         sortDirection.value = 'asc';
     }
+
+    getSurveys(1);
+};
+
+const handleSearch = () => {
+    getSurveys(1);
+};
+
+const toggleWithTrashed = () => {
+    withTrashed.value = !withTrashed.value;
+    getSurveys(1);
 };
 
 onMounted(async () => {
     const params = new URLSearchParams(window.location.search);
     await getSurveys(parseInt(params.get('page')) || 1);
-});
-
-const filteredSurveys = computed(() => {
-    const query = searchQuery.value.toLowerCase().trim();
-    const filtered = surveys.value.filter((survey) => {
-        const nameMatch = survey.name.toLowerCase().includes(query);
-        const initDateMatch = formatedDate(survey.init_date)
-            .toLowerCase()
-            .includes(query);
-        const finishDateMatch = formatedDate(survey.finish_date)
-            .toLowerCase()
-            .includes(query);
-
-        return nameMatch || initDateMatch || finishDateMatch;
-    });
-
-    return [...filtered].sort((a, b) => {
-        let comparison = 0;
-
-        if (sortField.value === 'name') {
-            comparison = a.name.localeCompare(b.name);
-        } else if (sortField.value === 'init_date') {
-            comparison = new Date(a.init_date) - new Date(b.init_date);
-        } else if (sortField.value === 'finish_date') {
-            comparison = new Date(a.finish_date) - new Date(b.finish_date);
-        } else if (sortField.value === 'results_count') {
-            comparison = (a.results_count || 0) - (b.results_count || 0);
-        }
-
-        return sortDirection.value === 'asc' ? comparison : -comparison;
-    });
 });
 
 const getSurveys = async (page = 1) => {
@@ -363,7 +333,12 @@ const getSurveys = async (page = 1) => {
         },
     );
 
-    const result = await getSurveysPaginated(page);
+    const result = await getSurveysPaginated(page, {
+        search: searchQuery.value,
+        sort: sortField.value,
+        direction: sortDirection.value,
+        withTrashed: withTrashed.value,
+    });
 
     if (!result.errorFlag && result.data) {
         surveys.value = result.data.data;
@@ -373,6 +348,49 @@ const getSurveys = async (page = 1) => {
             result.responseMessage || 'Error al cargar las encuestas',
             'error',
         );
+    }
+};
+
+const handleSurveyUpdated = async () => {
+    isModalOpen.value = false;
+    idSurveyToEdit.value = 0;
+    await getSurveys(pagination.value?.current_page || 1);
+};
+
+const handleHideSurvey = async (id) => {
+    const result = await hideSurvey(id);
+
+    if (!result.errorFlag) {
+        notify('Encuesta ocultada correctamente');
+        await getSurveys(pagination.value?.current_page || 1);
+    } else {
+        notify(result.responseMessage, true);
+    }
+};
+
+const handleRestoreSurvey = async (id) => {
+    const result = await restoreSurvey(id);
+
+    if (!result.errorFlag) {
+        notify('Encuesta restaurada correctamente');
+        await getSurveys(pagination.value?.current_page || 1);
+    } else {
+        notify(result.responseMessage, true);
+    }
+};
+
+const handleForceDeleteSurvey = async (id) => {
+    if (!confirm('¿Eliminar esta encuesta de forma permanente?')) {
+        return;
+    }
+
+    const result = await forceDeleteSurvey(id);
+
+    if (!result.errorFlag) {
+        notify('Encuesta eliminada permanentemente');
+        await getSurveys(pagination.value?.current_page || 1);
+    } else {
+        notify(result.responseMessage, true);
     }
 };
 
@@ -387,9 +405,18 @@ const handleImportProcess = async (formData) => {
     const result = await importSurveyFromExcel(formData);
 
     if (!result.errorFlag && result.data) {
-        await pollBatchStatus(result.data.batch_id);
-        notify('Encuesta importada exitosamente');
-        await getSurveys();
+        try {
+            const report = await pollBatchStatus(result.data.batch_id);
+
+            if (report?.status === 'error') {
+                notify(report.message || 'Error al importar la encuesta', true);
+            } else {
+                notify('Encuesta importada exitosamente');
+                await getSurveys();
+            }
+        } catch (error) {
+            notify(error.message || 'Error al importar la encuesta', true);
+        }
     } else {
         isProcessing.value = false;
         notify(

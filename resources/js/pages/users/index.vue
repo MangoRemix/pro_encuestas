@@ -10,12 +10,21 @@
 
             <!-- Barra de herramientas -->
             <div class="mb-6 flex flex-col justify-between gap-4 md:flex-row">
-                <input
-                    v-model="searchQuery"
-                    type="text"
-                    placeholder="Buscar por nombre, email o rol..."
-                    class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none md:w-80"
-                />
+                <div class="flex w-full items-center gap-2 md:w-80">
+                    <input
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Buscar por nombre, email o rol..."
+                        @keyup.enter="handleSearch"
+                        class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none"
+                    />
+                    <button
+                        @click="handleSearch"
+                        class="shrink-0 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700"
+                    >
+                        Buscar
+                    </button>
+                </div>
                 <div class="w-50">
                     <button
                         @click="openCreateModal"
@@ -39,7 +48,7 @@
                     {{ errorMessage }}
                 </div>
                 <div
-                    v-for="user in filteredStaff"
+                    v-for="user in staffData.data"
                     :key="user.id"
                     class="rounded-lg border border-slate-700 bg-slate-800 p-3 shadow-sm"
                 >
@@ -56,12 +65,32 @@
                     <div class="mb-4 space-y-1 text-sm text-slate-400">
                         <p>Email: {{ user.email }}</p>
                         <p>Sexo: {{ user.sex_id === 1 ? 'M' : 'F' }}</p>
+                        <p v-if="user.disabled_at" class="text-red-400">
+                            Deshabilitado
+                        </p>
                     </div>
-                    <!-- Placeholder for actions if any were needed -->
                     <div
                         class="flex justify-end gap-2 border-t border-slate-700 pt-3"
                     >
-                        <!-- Future implementation for edit/delete actions could go here -->
+                        <Icon
+                            @click="editUser(user)"
+                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                            icon="ic:baseline-edit"
+                        />
+                        <Icon
+                            v-if="user.disabled_at"
+                            @click="handleEnableUser(user.id)"
+                            class="cursor-pointer text-xl text-green-500 hover:text-green-400"
+                            icon="ic:baseline-restore"
+                            title="Habilitar"
+                        />
+                        <Icon
+                            v-else
+                            @click="confirmDisable(user.id)"
+                            class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                            icon="ic:baseline-restore-from-trash"
+                            title="Deshabilitar"
+                        />
                     </div>
                 </div>
             </div>
@@ -100,7 +129,7 @@
                             </td>
                         </tr>
                         <tr
-                            v-for="user in filteredStaff"
+                            v-for="user in staffData.data"
                             :key="user.id"
                             class="text-slate-200 transition-colors hover:bg-slate-600/30"
                         >
@@ -115,6 +144,12 @@
                                 >
                                     {{ getRoleName(user) }}
                                 </span>
+                                <span
+                                    v-if="user.disabled_at"
+                                    class="ml-2 rounded border border-red-700 bg-red-900/50 px-2 py-1 text-xs text-red-300"
+                                >
+                                    Deshabilitado
+                                </span>
                             </td>
                             <td class="p-4">
                                 <div class="flex justify-center gap-3">
@@ -124,9 +159,18 @@
                                         icon="ic:baseline-edit"
                                     />
                                     <Icon
+                                        v-if="user.disabled_at"
+                                        @click="handleEnableUser(user.id)"
+                                        class="cursor-pointer text-xl text-green-500 hover:text-green-400"
+                                        icon="ic:baseline-restore"
+                                        title="Habilitar"
+                                    />
+                                    <Icon
+                                        v-else
                                         class="cursor-pointer text-xl text-red-500 hover:text-red-400"
                                         icon="ic:baseline-restore-from-trash"
-                                        @click="confirmDelete(user.id)"
+                                        title="Deshabilitar"
+                                        @click="confirmDisable(user.id)"
                                     />
                                 </div>
                             </td>
@@ -144,25 +188,33 @@
             />
         </Modal>
 
-        <Modal :show="isDeleteModalOpen" @close="isDeleteModalOpen = false">
+        <Modal :show="isDisableModalOpen" @close="isDisableModalOpen = false">
             <div class="p-4 text-center">
                 <h3 class="mb-4 text-lg font-bold text-slate-800">
-                    Confirmar eliminación
+                    Deshabilitar usuario
                 </h3>
-                <p class="mb-6 text-slate-600">
-                    ¿Estás seguro de que deseas eliminar este usuario? Esta
-                    acción no se puede deshacer.
+                <p class="mb-4 text-slate-600">
+                    El usuario no podrá iniciar sesión mientras esté
+                    deshabilitado. Indica el motivo.
                 </p>
+                <textarea
+                    v-model="disableReason"
+                    rows="3"
+                    maxlength="500"
+                    placeholder="Motivo de la deshabilitación"
+                    class="inputs-form mb-4 w-full"
+                ></textarea>
                 <div class="flex justify-center gap-4">
                     <button
-                        @click="isDeleteModalOpen = false"
+                        @click="isDisableModalOpen = false"
                         class="rounded bg-slate-200 px-4 py-2 text-slate-800 hover:bg-slate-300"
                     >
                         Cancelar
                     </button>
                     <button
-                        @click="handleDeleteUser"
-                        class="cursor-pointer rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                        @click="handleDisableUser"
+                        :disabled="!disableReason.trim()"
+                        class="cursor-pointer rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         Confirmar
                     </button>
@@ -185,7 +237,7 @@
 <script setup>
 import { Icon } from '@iconify/vue';
 import { Head } from '@inertiajs/vue3';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref } from 'vue';
 import UserForm from '@/components/forms/user-form.vue';
 import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
@@ -197,50 +249,46 @@ const {
     isLoading,
     errorMessage,
     getStaff,
-    deleteUser: deleteUserApi,
+    disablePerson,
+    enablePerson,
     getRoleName,
 } = useUsers();
 
 const searchQuery = ref('');
 const isModalOpen = ref(false);
-const isDeleteModalOpen = ref(false);
-const userToDelete = ref(null);
+const isDisableModalOpen = ref(false);
+const userToDisable = ref(null);
+const disableReason = ref('');
 const userToEdit = ref(null);
 
-const filteredStaff = computed(() => {
-    const query = searchQuery.value.toLowerCase();
-
-    if (!query) {
-        return staffData.value.data;
-    }
-
-    return staffData.value.data.filter((user) => {
-        const roleName = getRoleName(user).toLowerCase();
-
-        return (
-            user.name.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query) ||
-            roleName.includes(query)
-        );
-    });
-});
-
-const confirmDelete = (id) => {
-    userToDelete.value = id;
-    isDeleteModalOpen.value = true;
+const handleSearch = () => {
+    getStaff(1, { search: searchQuery.value });
 };
 
-const handleDeleteUser = async () => {
-    if (!userToDelete.value) {
+const confirmDisable = (id) => {
+    userToDisable.value = id;
+    disableReason.value = '';
+    isDisableModalOpen.value = true;
+};
+
+const handleDisableUser = async () => {
+    if (!userToDisable.value || !disableReason.value.trim()) {
         return;
     }
 
-    const success = await deleteUserApi(userToDelete.value);
+    const success = await disablePerson(
+        userToDisable.value,
+        disableReason.value.trim(),
+    );
 
     if (success) {
-        isDeleteModalOpen.value = false;
-        userToDelete.value = null;
+        isDisableModalOpen.value = false;
+        userToDisable.value = null;
     }
+};
+
+const handleEnableUser = async (id) => {
+    await enablePerson(id);
 };
 
 const openCreateModal = () => {

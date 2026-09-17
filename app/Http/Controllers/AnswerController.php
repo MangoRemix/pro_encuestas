@@ -205,18 +205,42 @@ class AnswerController extends Controller
                 throw new Exception('Not found answer register', 404);
             }
 
-            $new_name = $answer->name.'-delete-'.date('Y-m-d_H-i-s');
-
-            $answer->update([
-                'name' => $new_name,
-            ]);
-
             $answer->delete();
 
             return response()->json([
                 'message' => 'Eliminación exitosa',
             ], 200);
 
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
+    }
+
+    /**
+     * Restaurar una respuesta previamente ocultada (soft-delete). Solo ADMIN.
+     */
+    public function restore(int $id)
+    {
+        try {
+            $answer = Answer::withTrashed()->findOrFail($id);
+            $answer->restore();
+
+            return response()->json(['message' => 'Respuesta restaurada'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
+    }
+
+    /**
+     * Eliminación permanente. Solo ADMIN.
+     */
+    public function forceDelete(int $id)
+    {
+        try {
+            $answer = Answer::withTrashed()->findOrFail($id);
+            $answer->forceDelete();
+
+            return response()->json(['message' => 'Respuesta eliminada permanentemente'], 200);
         } catch (Throwable $th) {
             return $this->errorResponse($th);
         }

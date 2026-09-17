@@ -66,11 +66,6 @@ const MENU_ITEMS = [
                 link: '/surveys?page=1',
                 permission: 'ADMIN',
             },
-            {
-                label: 'Crear nueva',
-                link: '/surveys/create-survey/step-1',
-                permission: 'ADMIN',
-            },
         ],
     },
     {

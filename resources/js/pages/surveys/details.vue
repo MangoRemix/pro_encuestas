@@ -40,16 +40,22 @@
                     </button>
                 </div>
                 <div class="custom-scrollbar flex-1 overflow-y-auto">
-                    <ul class="space-y-1 text-blue-100">
-                        <li
-                            @click="categorySelected = category.id"
-                            v-for="category in categories"
-                            :key="category.id"
-                            :class="`cursor-pointer rounded-lg px-3 py-2 transition-all duration-200 ${categorySelected == category.id ? 'bg-blue-600/50 font-bold text-white' : 'hover:bg-slate-700/50'}`"
-                        >
-                            {{ category.name }}
-                        </li>
-                    </ul>
+                    <draggable
+                        v-model="categories"
+                        item-key="id"
+                        tag="ul"
+                        class="space-y-1 text-blue-100"
+                        @end="onReorderCategories"
+                    >
+                        <template #item="{ element: category }">
+                            <li
+                                @click="categorySelected = category.id"
+                                :class="`cursor-pointer rounded-lg px-3 py-2 transition-all duration-200 ${categorySelected == category.id ? 'bg-blue-600/50 font-bold text-white' : 'hover:bg-slate-700/50'}`"
+                            >
+                                {{ category.name }}
+                            </li>
+                        </template>
+                    </draggable>
                 </div>
             </div>
 
@@ -87,64 +93,89 @@
                                     <th class="w-24 p-3 text-center">Acc</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-700/50">
-                                <tr
-                                    v-if="questions.length === 0"
-                                    class="text-sm text-slate-400 italic"
-                                >
+                            <tbody
+                                v-if="questions.length === 0"
+                                class="divide-y divide-slate-700/50"
+                            >
+                                <tr class="text-sm text-slate-400 italic">
                                     <td colspan="3" class="p-4 text-center">
                                         Selecciona una categoría
                                     </td>
                                 </tr>
-                                <tr
-                                    v-for="question in questions"
-                                    :key="question.id"
-                                    @click="questionSelected = question.id"
-                                    :class="`cursor-pointer transition-colors ${questionSelected == question.id ? 'bg-blue-600/30' : 'hover:bg-slate-600/30'}`"
-                                >
-                                    <td class="p-3 font-medium text-slate-200">
-                                        {{ question.order }}
-                                    </td>
-                                    <td
-                                        class="wrap-break-words p-3 whitespace-normal text-slate-200"
-                                        :title="question.name"
-                                    >
-                                        {{ question.name }}
-                                    </td>
-                                    <td class="w-24 p-3">
-                                        <div
-                                            class="flex items-center justify-center gap-x-2"
-                                        >
-                                            <Link
-                                                :href="`/questions/details/${question.id}`"
-                                                class="text-blue-400 hover:text-blue-300"
-                                            >
-                                                <Icon
-                                                    class="text-lg"
-                                                    icon="ic:baseline-remove-red-eye"
-                                                />
-                                            </Link>
-
-                                            <Icon
-                                                @click="
-                                                    getQuestionToEdit(
-                                                        question.id,
-                                                    )
-                                                "
-                                                class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
-                                                icon="ic:baseline-edit"
-                                            />
-                                            <Icon
-                                                @click.stop="
-                                                    deleteQuestion(question.id)
-                                                "
-                                                class="cursor-pointer text-lg text-red-500 hover:text-red-400"
-                                                icon="ic:baseline-restore-from-trash"
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
                             </tbody>
+                            <draggable
+                                v-else
+                                v-model="questions"
+                                item-key="id"
+                                tag="tbody"
+                                class="divide-y divide-slate-700/50"
+                                @end="onReorderQuestions"
+                            >
+                                <template #item="{ element: question }">
+                                    <tr
+                                        @click="questionSelected = question.id"
+                                        :class="`cursor-pointer transition-colors ${questionSelected == question.id ? 'bg-blue-600/30' : 'hover:bg-slate-600/30'}`"
+                                    >
+                                        <td
+                                            class="p-3 font-medium text-slate-200"
+                                        >
+                                            {{ question.order }}
+                                        </td>
+                                        <td
+                                            class="wrap-break-words p-3 whitespace-normal text-slate-200"
+                                            :title="question.name"
+                                        >
+                                            {{ question.name }}
+                                        </td>
+                                        <td class="w-24 p-3">
+                                            <div
+                                                class="flex items-center justify-center gap-x-2"
+                                            >
+                                                <Link
+                                                    :href="`/questions/details/${question.id}`"
+                                                    class="text-blue-400 hover:text-blue-300"
+                                                >
+                                                    <Icon
+                                                        class="text-lg"
+                                                        icon="ic:baseline-remove-red-eye"
+                                                    />
+                                                </Link>
+
+                                                <Icon
+                                                    @click.stop="
+                                                        getQuestionToEdit(
+                                                            question.id,
+                                                        )
+                                                    "
+                                                    class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
+                                                    icon="ic:baseline-edit"
+                                                />
+                                                <Icon
+                                                    @click.stop="
+                                                        deleteQuestion(
+                                                            question.id,
+                                                        )
+                                                    "
+                                                    class="cursor-pointer text-lg text-red-500 hover:text-red-400"
+                                                    icon="ic:baseline-restore-from-trash"
+                                                    title="Ocultar"
+                                                />
+                                                <Icon
+                                                    v-if="isAdmin"
+                                                    @click.stop="
+                                                        forceDeleteQuestionRow(
+                                                            question.id,
+                                                        )
+                                                    "
+                                                    class="cursor-pointer text-lg text-red-800 hover:text-red-600"
+                                                    icon="ic:baseline-delete-forever"
+                                                    title="Eliminar permanentemente"
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </draggable>
                         </table>
                     </div>
                 </div>
@@ -240,6 +271,19 @@
                                                 "
                                                 class="cursor-pointer text-lg text-red-500 hover:text-red-400"
                                                 icon="ic:baseline-restore-from-trash"
+                                                title="Ocultar"
+                                            />
+                                            <Icon
+                                                v-if="isAdmin"
+                                                @click="
+                                                    forceDeleteAnswerRow(
+                                                        answer.id,
+                                                        index,
+                                                    )
+                                                "
+                                                class="cursor-pointer text-lg text-red-800 hover:text-red-600"
+                                                icon="ic:baseline-delete-forever"
+                                                title="Eliminar permanentemente"
                                             />
                                         </div>
                                     </td>
@@ -453,22 +497,31 @@ import { Icon } from '@iconify/vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
+import draggable from 'vuedraggable';
 import CategoryForm from '@/components/forms/category-form.vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
 
-import { useAnswers } from '@/composables/api/answers';
+import { useAnswers, forceDeleteAnswer } from '@/composables/api/answers';
+import { reorderCategories } from '@/composables/api/categories';
 import {
     createMany,
     getQuestion,
     getQuestionsByCategory,
+    hideQuestion,
+    forceDeleteQuestion,
+    reorderQuestions,
 } from '@/composables/api/questions';
 import { getCategoriesBySurvey, getSurvey } from '@/composables/api/surveys';
+import { useApiError } from '@/composables/useApiError';
+import { useAuth } from '@/composables/useAuth';
 import { useNotification } from '@/composables/useNotification';
 import MainLayout from '@/layouts/main-layout.vue';
 import { apiHost } from '@/store/store';
 
 const { message, isError, notify } = useNotification();
+const { extractErrorMessage } = useApiError();
+const { isAdmin } = useAuth();
 const {
     getAnswersByQuestion: getAnswersByQuestionApi,
     deleteAnswer: deleteAnswerApi,
@@ -494,7 +547,7 @@ const formQuestion = ref([
     {
         name: '',
         order: 0,
-        category_id: parseInt(page.props.categoryId),
+        category_id: categorySelected.value,
     },
 ]);
 
@@ -506,20 +559,92 @@ const formAnswer = ref([
     },
 ]);
 
-// Function to delete a question
+// Function to hide (soft-delete) a question
 const deleteQuestion = async (id) => {
-    // Placeholder: You'll need to implement the actual API call here.
-    // Example: You might have a deleteQuestionApi function in your composables.
-    console.log(`Deleting question with id: ${id}`);
-    // const success = await deleteQuestionApi(id); // Uncomment and adapt this line
-    // if (success) {
-    //     // Refresh questions list after deletion
-    //     const { data: questions_ } = await getQuestionsByCategory(categorySelected.value);
-    //     questions.value = questions_;
-    //     notify("Pregunta eliminada correctamente");
-    // } else {
-    //     notify("Error al eliminar la pregunta", true);
-    // }
+    const { errorFlag, responseMessage } = await hideQuestion(id);
+
+    if (!errorFlag) {
+        const { data: questions_ } = await getQuestionsByCategory(
+            categorySelected.value,
+        );
+        questions.value = questions_;
+        notify('Pregunta eliminada correctamente');
+    } else {
+        notify(responseMessage, true);
+    }
+};
+
+const forceDeleteQuestionRow = async (id) => {
+    if (!confirm('¿Eliminar esta pregunta de forma permanente?')) {
+        return;
+    }
+
+    const { errorFlag, responseMessage } = await forceDeleteQuestion(id);
+
+    if (!errorFlag) {
+        const { data: questions_ } = await getQuestionsByCategory(
+            categorySelected.value,
+        );
+        questions.value = questions_;
+        notify('Pregunta eliminada permanentemente');
+    } else {
+        notify(responseMessage, true);
+    }
+};
+
+const onReorderCategories = async () => {
+    const snapshot = categories.value.map((category) => ({ ...category }));
+    const items = categories.value.map((category, index) => ({
+        id: category.id,
+        order: index + 1,
+    }));
+
+    categories.value = categories.value.map((category, index) => ({
+        ...category,
+        order: index + 1,
+    }));
+
+    const { errorFlag, responseMessage } = await reorderCategories(items);
+
+    if (errorFlag) {
+        categories.value = snapshot;
+        notify(responseMessage || 'Error al reordenar las categorías', true);
+    }
+};
+
+const onReorderQuestions = async () => {
+    const snapshot = questions.value.map((question) => ({ ...question }));
+    const items = questions.value.map((question, index) => ({
+        id: question.id,
+        order: index + 1,
+    }));
+
+    questions.value = questions.value.map((question, index) => ({
+        ...question,
+        order: index + 1,
+    }));
+
+    const { errorFlag, responseMessage } = await reorderQuestions(items);
+
+    if (errorFlag) {
+        questions.value = snapshot;
+        notify(responseMessage || 'Error al reordenar las preguntas', true);
+    }
+};
+
+const forceDeleteAnswerRow = async (id, index) => {
+    if (!confirm('¿Eliminar esta respuesta de forma permanente?')) {
+        return;
+    }
+
+    const { success, message: apiMessage } = await forceDeleteAnswer(id);
+
+    if (success) {
+        answersByQuestion.value.splice(index, 1);
+        notify('Respuesta eliminada permanentemente');
+    } else {
+        notify(apiMessage, true);
+    }
 };
 
 onMounted(async () => {
@@ -578,7 +703,7 @@ const incrementFormRow = () => {
     formQuestion.value.push({
         name: '',
         order: 0,
-        category_id: parseInt(page.props.categoryId),
+        category_id: categorySelected.value,
     });
 };
 
@@ -612,7 +737,7 @@ const createManyQuestions = async () => {
             {
                 name: '',
                 order: 0,
-                category_id: parseInt(page.props.categoryId),
+                category_id: categorySelected.value,
             },
         ];
     } else if (errorFlag) {
@@ -624,6 +749,7 @@ const newQuestions = () => {
     operation_name.value = 'Crear';
     formQuestion.value[0].name = '';
     formQuestion.value[0].order = 0;
+    formQuestion.value[0].category_id = categorySelected.value;
 };
 
 watch(questionSelected, async (value) => {
@@ -664,9 +790,8 @@ const createManyAnswers = async () => {
     const { success } = await createManyAnswersApi(formAnswer.value);
 
     if (success) {
-        answersByQuestion.value = await getAnswersByQuestionApi(
-            questionSelected.value,
-        );
+        const { data } = await getAnswersByQuestionApi(questionSelected.value);
+        answersByQuestion.value = data;
         formAnswer.value = [
             {
                 name: '',
@@ -707,7 +832,7 @@ const getAnswerToEdit = async (id) => {
             answerSelectedId.value = id;
         }
     } catch (error) {
-        console.log(error);
+        notify(extractErrorMessage(error), true);
     }
 };
 const updateAnswer = async (id) => {
@@ -716,9 +841,8 @@ const updateAnswer = async (id) => {
     if (success) {
         notify('Respuesta actualizada');
 
-        answersByQuestion.value = await getAnswersByQuestionApi(
-            questionSelected.value,
-        );
+        const { data } = await getAnswersByQuestionApi(questionSelected.value);
+        answersByQuestion.value = data;
         isModalOpen_answers.value = false;
     } else {
         notify('Error al actualizar', true);

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ref } from 'vue';
+import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store';
 
 export function useUsers() {
@@ -14,13 +15,24 @@ export function useUsers() {
     const isLoading = ref(false);
     const errorMessage = ref('');
 
-    const getStaff = async (page = 1) => {
+    const getStaff = async (
+        page = 1,
+        { search = '', sort = '', direction = '' } = {},
+    ) => {
         isLoading.value = true;
         errorMessage.value = '';
 
         try {
             const { data } = await axios.get(
-                `${apiHost}person/pollster-admin/list?page=${page}`,
+                `${apiHost}person/pollster-admin/list`,
+                {
+                    params: {
+                        page,
+                        search: search || undefined,
+                        sort: sort || undefined,
+                        direction: direction || undefined,
+                    },
+                },
             );
             staffData.value = data?.data
                 ? data
@@ -34,23 +46,35 @@ export function useUsers() {
                   };
         } catch (error) {
             console.error('Error al cargar personal:', error);
-            errorMessage.value =
-                'Error al cargar los datos. Inténtalo de nuevo.';
+            errorMessage.value = extractErrorMessage(error);
         } finally {
             isLoading.value = false;
         }
     };
 
-    const deleteUser = async (id) => {
+    const disablePerson = async (id, reason) => {
         try {
-            await axios.delete(`${apiHost}person/delete/${id}`);
+            await axios.put(`${apiHost}person/disable/${id}`, { reason });
             await getStaff(staffData.value.current_page);
 
             return true;
         } catch (error) {
-            console.error('Error al eliminar usuario:', error);
-            errorMessage.value =
-                'Error al eliminar el usuario. Inténtalo de nuevo.';
+            console.error('Error al deshabilitar usuario:', error);
+            errorMessage.value = extractErrorMessage(error);
+
+            return false;
+        }
+    };
+
+    const enablePerson = async (id) => {
+        try {
+            await axios.put(`${apiHost}person/enable/${id}`);
+            await getStaff(staffData.value.current_page);
+
+            return true;
+        } catch (error) {
+            console.error('Error al habilitar usuario:', error);
+            errorMessage.value = extractErrorMessage(error);
 
             return false;
         }
@@ -64,7 +88,8 @@ export function useUsers() {
         isLoading,
         errorMessage,
         getStaff,
-        deleteUser,
+        disablePerson,
+        enablePerson,
         getRoleName,
     };
 }

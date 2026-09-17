@@ -1,10 +1,4 @@
 <template>
-    <div class="lg:pl-6">
-        <h1 class="text-3xl font-extrabold text-blue-100 lg:text-4xl">
-            Dashboard
-        </h1>
-    </div>
-
     <div
         id="cards"
         class="mt-3 mb-6 flex flex-wrap items-center justify-between gap-2 md:px-6 2xl:justify-start"

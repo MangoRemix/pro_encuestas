@@ -3,17 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
+use App\Http\Controllers\Concerns\FiltersAndSorts;
 use App\Models\Category;
 use App\Models\Question;
+use App\Models\Rol;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Throwable;
 
 class QuestionController extends Controller
 {
-    use ApiResponds;
+    use ApiResponds, FiltersAndSorts;
 
     public static function rules($id = null)
     {
@@ -36,11 +40,22 @@ class QuestionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
-        return response()->json(Question::all(), 200);
+        $perPage = $request->query('per_page', 10);
 
+        $query = Question::query();
+
+        if ($request->boolean('with_trashed') && $request->user()?->rol?->name === Rol::ADMIN) {
+            $query->withTrashed();
+        }
+
+        $query = $this->applySearch($query, $request->query('search'), ['name']);
+        $query = $this->applySort($query, $request, ['name', 'order', 'created_at'], 'created_at');
+
+        $questions = $query->paginate($perPage);
+
+        return response()->json($questions, 200);
     }
 
     /**
@@ -197,12 +212,6 @@ class QuestionController extends Controller
                 throw new Exception('Not found question register', 404);
             }
 
-            $new_name = $question->name.'-delete-'.date('Y-m-d_H-i-s');
-
-            $question->update([
-                'name' => $new_name,
-            ]);
-
             $question->delete();
 
             return response()->json([
@@ -270,6 +279,74 @@ class QuestionController extends Controller
             return $this->errorResponse($th);
         }
 
+    }
+
+    /**
+     * Des-ocultar (restaurar) una pregunta soft-deleted. Solo ADMIN.
+     */
+    public function restore(int $id): JsonResponse
+    {
+        try {
+            $question = Question::withTrashed()->findOrFail($id);
+            $question->restore();
+
+            return response()->json(['message' => 'Pregunta restaurada'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th, 404);
+        }
+    }
+
+    /**
+     * Borrado permanente. Solo ADMIN.
+     */
+    public function forceDelete(int $id): JsonResponse
+    {
+        try {
+            $question = Question::withTrashed()->findOrFail($id);
+            $question->forceDelete();
+
+            return response()->json(['message' => 'Pregunta eliminada permanentemente'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th, 404);
+        }
+    }
+
+    /**
+     * Reordenamiento masivo (drag-and-drop), scoped por category_id para que
+     * un request equivocado no corrompa el orden de otra categoría.
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'items' => 'required|array|min:1',
+                'items.*.id' => 'required|integer|exists:questions,id',
+                'items.*.order' => 'required|integer|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            $items = $validator->validated()['items'];
+            $ids = array_column($items, 'id');
+
+            $categoryIdsCount = Question::query()->whereIn('id', $ids)->distinct('category_id')->count('category_id');
+
+            if ($categoryIdsCount > 1) {
+                throw new Exception('Todas las preguntas a reordenar deben pertenecer a la misma categoría', 422);
+            }
+
+            DB::transaction(function () use ($items) {
+                foreach ($items as $item) {
+                    Question::query()->where('id', $item['id'])->update(['order' => $item['order']]);
+                }
+            });
+
+            return response()->json(['message' => 'Orden actualizado con éxito'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
 
     public function showByCategory(int $id)

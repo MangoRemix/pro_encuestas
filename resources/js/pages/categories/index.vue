@@ -110,6 +110,12 @@
                                             icon="ic:baseline-edit"
                                         />
                                         <Icon
+                                            @click="
+                                                handleHideQuestion(
+                                                    question.id,
+                                                    index,
+                                                )
+                                            "
                                             class="cursor-pointer text-lg text-red-600 hover:text-red-500 md:text-2xl"
                                             icon="ic:baseline-restore-from-trash"
                                         />
@@ -211,6 +217,7 @@ import {
     createMany,
     getQuestion,
     getQuestionsByCategory,
+    hideQuestion,
 } from '@/composables/api/questions';
 import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
 import MainLayout from '@/layouts/main-layout.vue';
@@ -230,7 +237,7 @@ const formQuestion = ref([
     {
         name: '',
         order: 0,
-        category_id: parseInt(page.props.categoryId),
+        category_id: categorySelected.value,
     },
 ]);
 
@@ -319,7 +326,7 @@ const incrementFormRow = () => {
     formQuestion.value.push({
         name: '',
         order: 0,
-        category_id: parseInt(page.props.categoryId),
+        category_id: categorySelected.value,
     });
 };
 
@@ -369,7 +376,7 @@ const createManyQuestions = async () => {
                 {
                     name: '',
                     order: 0,
-                    category_id: parseInt(page.props.categoryId),
+                    category_id: categorySelected.value,
                 },
             ];
         }
@@ -391,5 +398,22 @@ const newQuestions = () => {
     operation_name.value = 'Crear';
     formQuestion.value[0].name = '';
     formQuestion.value[0].order = 0;
+    formQuestion.value[0].category_id = categorySelected.value;
+};
+
+const handleHideQuestion = async (id, index) => {
+    const { errorFlag, responseMessage } = await hideQuestion(id);
+
+    if (!errorFlag) {
+        questions.value.splice(index, 1);
+        message.value = 'Pregunta ocultada correctamente';
+    } else {
+        isError.value = true;
+        message.value = responseMessage;
+    }
+
+    setTimeout(() => {
+        message.value = '';
+    }, 3500);
 };
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\FiltersAndSorts;
 use App\Models\Person;
 use App\Models\Rol;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Illuminate\Validation\Rule;
 
 class PersonController extends Controller
 {
+    use FiltersAndSorts;
+
     /**
      * IDs de los roles considerados "personal" (encuestador/admin), sin asumir
      * que el orden de inserción de la tabla roles sea siempre el mismo.
@@ -140,32 +143,76 @@ class PersonController extends Controller
 
     public function getStaff(Request $request)
     {
-        $perPage = $request->query('per_page', 15);
-        $staff = Person::with('rol')->whereIn('rol_id', $this->staffRoleIds())->paginate($perPage);
+        $perPage = $request->query('per_page', 10);
+        $search = $request->query('search');
+
+        $query = Person::with('rol')->whereIn('rol_id', $this->staffRoleIds());
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ILIKE', "%{$search}%")
+                    ->orWhere('email', 'ILIKE', "%{$search}%")
+                    ->orWhereHas('rol', fn ($r) => $r->where('name', 'ILIKE', "%{$search}%"));
+            });
+        }
+
+        $query = $this->applySort($query, $request, ['name', 'email', 'created_at'], 'created_at');
+
+        $staff = $query->paginate($perPage);
 
         return response()->json($staff, 200);
     }
 
-    public function destroy(Request $request, int $id)
+    /**
+     * Deshabilita a un miembro del personal (no se elimina: un hard-delete
+     * violaría el RESTRICT de results.person_id, y es intencional que un
+     * Person nunca se borre físicamente).
+     */
+    public function disable(Request $request, int $id)
     {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'required|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
+        }
+
         $person = Person::findOrFail($id);
 
         if ($request->user()?->id === $person->id) {
-            return response()->json(['message' => 'No puedes eliminar tu propia cuenta'], 422);
+            return response()->json(['message' => 'No puedes deshabilitar tu propia cuenta'], 422);
         }
 
         if ($person->rol?->name === Rol::ADMIN) {
-            $remainingAdmins = Person::whereHas('rol', fn ($q) => $q->where('name', Rol::ADMIN))
+            // Un admin ya deshabilitado no cuenta para mantener "activo" a este.
+            $remainingActiveAdmins = Person::whereHas('rol', fn ($q) => $q->where('name', Rol::ADMIN))
+                ->whereNull('disabled_at')
                 ->where('id', '!=', $person->id)
                 ->count();
 
-            if ($remainingAdmins === 0) {
-                return response()->json(['message' => 'No puedes eliminar al último administrador'], 422);
+            if ($remainingActiveAdmins === 0) {
+                return response()->json(['message' => 'No puedes deshabilitar al último administrador activo'], 422);
             }
         }
 
-        $person->delete();
+        $person->update([
+            'disabled_at' => now(),
+            'disabled_reason' => $validator->validated()['reason'],
+        ]);
 
-        return response()->json(['message' => 'Usuario marcado como eliminado']);
+        return response()->json(['message' => 'Usuario deshabilitado con éxito'], 200);
+    }
+
+    public function enable(int $id)
+    {
+        $person = Person::findOrFail($id);
+
+        $person->update([
+            'disabled_at' => null,
+            'disabled_reason' => null,
+        ]);
+
+        return response()->json(['message' => 'Usuario habilitado con éxito'], 200);
     }
 }

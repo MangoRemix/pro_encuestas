@@ -79,10 +79,12 @@ import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref, reactive, onMounted } from 'vue';
 import { formatedDate } from '@/composables/shared.js';
+import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store.js';
 import NotificationBox from '../notification-box.vue';
 
 const { surveyId } = defineProps(['surveyId']);
+const emit = defineEmits(['updated']);
 
 // Estado del formulario
 const form = reactive({
@@ -109,11 +111,7 @@ const getSurvey = async (id) => {
     try {
         const response = await axios.get(`${apiHost}survey/show-one/${id}`);
 
-        if (response.data.length > 0) {
-            return response.data[0];
-        } else {
-            return 'No hay encuestas registradas.';
-        }
+        return response.data;
     } catch (error) {
         console.log(error);
     }
@@ -146,7 +144,7 @@ const handleSubmit = async () => {
         }, 3000);
 
         if (response.status == 200) {
-            getSurvey(surveyId);
+            emit('updated');
         } else {
             if (response.status == 201) {
                 //console.log(response)
@@ -172,12 +170,7 @@ const handleSubmit = async () => {
         form.finish_date = '';
     } catch (error) {
         isError.value = true;
-
-        if (error.response?.data?.message) {
-            message.value = `Error: ${error.response.data.message}`;
-        } else {
-            message.value = 'Ocurrió un error al procesar la solicitud.';
-        }
+        message.value = extractErrorMessage(error);
 
         setTimeout(() => {
             message.value = '';

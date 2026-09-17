@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 trait FiltersAndSorts
 {
     /**
-     * Aplica una búsqueda ILIKE (Postgres) sobre varias columnas dentro de un
-     * único where agrupado, para que componga bien con otros where ya
-     * aplicados a la query.
+     * Aplica una búsqueda "contiene, sin distinguir mayúsculas" sobre varias
+     * columnas dentro de un único where agrupado, para que componga bien con
+     * otros where ya aplicados a la query. Usa whereLike/orWhereLike (Laravel
+     * 11+) en vez de ILIKE crudo: ILIKE es exclusivo de Postgres y rompe bajo
+     * SQLite (el driver que usan los tests), mientras que whereLike traduce
+     * automáticamente a ILIKE en Postgres y a LOWER(...) LIKE en los demás.
      */
     protected function applySearch(Builder $query, ?string $search, array $columns): Builder
     {
@@ -20,7 +23,7 @@ trait FiltersAndSorts
 
         return $query->where(function (Builder $q) use ($search, $columns) {
             foreach ($columns as $column) {
-                $q->orWhere($column, 'ILIKE', "%{$search}%");
+                $q->orWhereLike($column, "%{$search}%");
             }
         });
     }

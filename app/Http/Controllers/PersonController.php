@@ -150,9 +150,9 @@ class PersonController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'ILIKE', "%{$search}%")
-                    ->orWhere('email', 'ILIKE', "%{$search}%")
-                    ->orWhereHas('rol', fn ($r) => $r->where('name', 'ILIKE', "%{$search}%"));
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('email', "%{$search}%")
+                    ->orWhereHas('rol', fn ($r) => $r->whereLike('name', "%{$search}%"));
             });
         }
 

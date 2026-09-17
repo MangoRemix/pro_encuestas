@@ -206,6 +206,60 @@ class ProductionIssuesTest extends TestCase
         $this->assertDatabaseMissing('answers', ['id' => $answer->id]);
     }
 
+    public function test_an_admin_can_reorder_categories_within_the_same_survey(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $survey = Survey::factory()->create();
+        $categoryA = Category::factory()->create(['survey_id' => $survey->id, 'order' => 1]);
+        $categoryB = Category::factory()->create(['survey_id' => $survey->id, 'order' => 2]);
+
+        $response = $this->actingAs($admin)->putJson('/api/category/reorder', [
+            'items' => [
+                ['id' => $categoryA->id, 'order' => 2],
+                ['id' => $categoryB->id, 'order' => 1],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('categories', ['id' => $categoryA->id, 'order' => 2]);
+        $this->assertDatabaseHas('categories', ['id' => $categoryB->id, 'order' => 1]);
+    }
+
+    public function test_reordering_categories_across_different_surveys_is_rejected(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $categoryFromSurveyA = Category::factory()->create();
+        $categoryFromSurveyB = Category::factory()->create();
+
+        $response = $this->actingAs($admin)->putJson('/api/category/reorder', [
+            'items' => [
+                ['id' => $categoryFromSurveyA->id, 'order' => 1],
+                ['id' => $categoryFromSurveyB->id, 'order' => 2],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_an_admin_can_reorder_questions_within_the_same_category(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $category = Category::factory()->create();
+        $questionA = Question::factory()->create(['category_id' => $category->id, 'order' => 1]);
+        $questionB = Question::factory()->create(['category_id' => $category->id, 'order' => 2]);
+
+        $response = $this->actingAs($admin)->putJson('/api/question/reorder', [
+            'items' => [
+                ['id' => $questionA->id, 'order' => 2],
+                ['id' => $questionB->id, 'order' => 1],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('questions', ['id' => $questionA->id, 'order' => 2]);
+        $this->assertDatabaseHas('questions', ['id' => $questionB->id, 'order' => 1]);
+    }
+
     public function test_a_non_admin_cannot_restore_or_force_delete_a_survey(): void
     {
         $pollster = Person::factory()->create();

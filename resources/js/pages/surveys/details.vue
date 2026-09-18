@@ -25,19 +25,39 @@
             <div
                 class="flex h-150 flex-col rounded-xl border border-blue-700/50 bg-slate-600/50 p-4 shadow-lg backdrop-blur-md lg:col-span-3"
             >
-                <div class="mb-3 flex items-center justify-between">
+                <div class="mb-3 flex items-center justify-between gap-2">
                     <h3 class="text-lg font-extrabold text-white">
                         Categorías
                     </h3>
-                    <button
-                        @click="isModalOpen_categories = true"
-                        class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer"
-                    >
-                        <Icon
-                            class="text-xl text-white"
-                            icon="ic:outline-plus"
-                        />
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            v-if="isAdmin"
+                            @click="
+                                showHiddenCategories = !showHiddenCategories;
+                                refreshCategories();
+                            "
+                            class="cursor-pointer rounded-full border border-slate-500 px-2 py-1 text-xs text-slate-200 transition-colors hover:bg-slate-700/50"
+                            :class="{ 'bg-slate-700/70': showHiddenCategories }"
+                        >
+                            {{
+                                showHiddenCategories
+                                    ? 'Ocultar vistas'
+                                    : 'Ver ocultas'
+                            }}
+                        </button>
+                        <button
+                            @click="
+                                editingCategoryId = 0;
+                                isModalOpen_categories = true;
+                            "
+                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer"
+                        >
+                            <Icon
+                                class="text-xl text-white"
+                                icon="ic:outline-plus"
+                            />
+                        </button>
+                    </div>
                 </div>
                 <div class="custom-scrollbar flex-1 overflow-y-auto">
                     <draggable
@@ -49,10 +69,52 @@
                     >
                         <template #item="{ element: category }">
                             <li
-                                @click="categorySelected = category.id"
-                                :class="`cursor-pointer rounded-lg px-3 py-2 transition-all duration-200 ${categorySelected == category.id ? 'bg-blue-600/50 font-bold text-white' : 'hover:bg-slate-700/50'}`"
+                                :class="`flex items-center justify-between gap-1 rounded-lg px-3 py-2 transition-all duration-200 ${categorySelected == category.id ? 'bg-blue-600/50 font-bold text-white' : 'hover:bg-slate-700/50'} ${category.deleted_at ? 'italic opacity-50' : ''}`"
                             >
-                                {{ category.name }}
+                                <span
+                                    @click="categorySelected = category.id"
+                                    class="min-w-0 flex-1 cursor-pointer truncate"
+                                    >{{ category.name }}</span
+                                >
+                                <div class="flex shrink-0 items-center gap-1.5">
+                                    <template v-if="category.deleted_at">
+                                        <Icon
+                                            @click.stop="
+                                                restoreCategoryRow(category.id)
+                                            "
+                                            class="cursor-pointer text-base text-green-400 hover:text-green-300"
+                                            icon="ic:baseline-restore"
+                                            title="Restaurar"
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <Icon
+                                            @click.stop="
+                                                editCategory(category.id)
+                                            "
+                                            class="cursor-pointer text-base text-yellow-500 hover:text-yellow-400"
+                                            icon="ic:baseline-edit"
+                                            title="Editar"
+                                        />
+                                        <Icon
+                                            @click.stop="
+                                                hideCategoryRow(category.id)
+                                            "
+                                            class="cursor-pointer text-base text-red-500 hover:text-red-400"
+                                            icon="ic:baseline-restore-from-trash"
+                                            title="Ocultar"
+                                        />
+                                    </template>
+                                    <Icon
+                                        v-if="isAdmin"
+                                        @click.stop="
+                                            forceDeleteCategoryRow(category.id)
+                                        "
+                                        class="cursor-pointer text-base text-red-800 hover:text-red-600"
+                                        icon="ic:baseline-delete-forever"
+                                        title="Eliminar permanentemente"
+                                    />
+                                </div>
                             </li>
                         </template>
                     </draggable>
@@ -63,18 +125,35 @@
             <div
                 class="flex h-150 flex-col rounded-xl border border-blue-700/50 bg-slate-600/50 p-4 shadow-lg backdrop-blur-md lg:col-span-5"
             >
-                <div class="mb-3 flex items-center justify-between">
+                <div class="mb-3 flex items-center justify-between gap-2">
                     <h3 class="text-lg font-extrabold text-white">Preguntas</h3>
-                    <button
-                        @click="newQuestions()"
-                        class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
-                        :disabled="!categorySelected"
-                    >
-                        <Icon
-                            class="text-xl text-white"
-                            icon="ic:outline-plus"
-                        />
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            v-if="isAdmin"
+                            @click="
+                                showHiddenQuestions = !showHiddenQuestions;
+                                refreshQuestions();
+                            "
+                            class="cursor-pointer rounded-full border border-slate-500 px-2 py-1 text-xs text-slate-200 transition-colors hover:bg-slate-700/50"
+                            :class="{ 'bg-slate-700/70': showHiddenQuestions }"
+                        >
+                            {{
+                                showHiddenQuestions
+                                    ? 'Ocultar vistas'
+                                    : 'Ver ocultas'
+                            }}
+                        </button>
+                        <button
+                            @click="newQuestions()"
+                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
+                            :disabled="!categorySelected"
+                        >
+                            <Icon
+                                class="text-xl text-white"
+                                icon="ic:outline-plus"
+                            />
+                        </button>
+                    </div>
                 </div>
 
                 <div
@@ -114,7 +193,7 @@
                                 <template #item="{ element: question }">
                                     <tr
                                         @click="questionSelected = question.id"
-                                        :class="`cursor-pointer transition-colors ${questionSelected == question.id ? 'bg-blue-600/30' : 'hover:bg-slate-600/30'}`"
+                                        :class="`cursor-pointer transition-colors ${questionSelected == question.id ? 'bg-blue-600/30' : 'hover:bg-slate-600/30'} ${question.deleted_at ? 'italic opacity-50' : ''}`"
                                     >
                                         <td
                                             class="p-3 font-medium text-slate-200"
@@ -141,25 +220,41 @@
                                                     />
                                                 </Link>
 
-                                                <Icon
-                                                    @click.stop="
-                                                        getQuestionToEdit(
-                                                            question.id,
-                                                        )
-                                                    "
-                                                    class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
-                                                    icon="ic:baseline-edit"
-                                                />
-                                                <Icon
-                                                    @click.stop="
-                                                        deleteQuestion(
-                                                            question.id,
-                                                        )
-                                                    "
-                                                    class="cursor-pointer text-lg text-red-500 hover:text-red-400"
-                                                    icon="ic:baseline-restore-from-trash"
-                                                    title="Ocultar"
-                                                />
+                                                <template
+                                                    v-if="question.deleted_at"
+                                                >
+                                                    <Icon
+                                                        @click.stop="
+                                                            restoreQuestionRow(
+                                                                question.id,
+                                                            )
+                                                        "
+                                                        class="cursor-pointer text-lg text-green-400 hover:text-green-300"
+                                                        icon="ic:baseline-restore"
+                                                        title="Restaurar"
+                                                    />
+                                                </template>
+                                                <template v-else>
+                                                    <Icon
+                                                        @click.stop="
+                                                            getQuestionToEdit(
+                                                                question.id,
+                                                            )
+                                                        "
+                                                        class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
+                                                        icon="ic:baseline-edit"
+                                                    />
+                                                    <Icon
+                                                        @click.stop="
+                                                            deleteQuestion(
+                                                                question.id,
+                                                            )
+                                                        "
+                                                        class="cursor-pointer text-lg text-red-500 hover:text-red-400"
+                                                        icon="ic:baseline-restore-from-trash"
+                                                        title="Ocultar"
+                                                    />
+                                                </template>
                                                 <Icon
                                                     v-if="isAdmin"
                                                     @click.stop="
@@ -353,33 +448,18 @@
                             <div class="mb-2 text-sm font-bold text-slate-700">
                                 Pregunta {{ index + 1 }}
                             </div>
-                            <div class="grid grid-cols-4 gap-2">
-                                <div class="col-span-1">
-                                    <label
-                                        class="mb-1 block text-xs font-bold text-slate-600"
-                                        >Orden</label
-                                    >
-                                    <input
-                                        required
-                                        v-model="formRow.order"
-                                        min="1"
-                                        type="number"
-                                        class="inputs-form"
-                                    />
-                                </div>
-                                <div class="col-span-3">
-                                    <label
-                                        class="mb-1 block text-xs font-bold text-slate-600"
-                                        >Nombre</label
-                                    >
-                                    <input
-                                        required
-                                        minlength="5"
-                                        v-model="formRow.name"
-                                        type="text"
-                                        class="inputs-form"
-                                    />
-                                </div>
+                            <div>
+                                <label
+                                    class="mb-1 block text-xs font-bold text-slate-600"
+                                    >Nombre</label
+                                >
+                                <input
+                                    required
+                                    minlength="5"
+                                    v-model="formRow.name"
+                                    type="text"
+                                    class="inputs-form"
+                                />
                             </div>
                         </div>
                     </div>
@@ -444,33 +524,18 @@
                             <div class="mb-2 text-sm font-bold text-slate-700">
                                 Respuesta {{ index + 1 }}
                             </div>
-                            <div class="grid grid-cols-4 gap-2">
-                                <div class="col-span-1">
-                                    <label
-                                        class="mb-1 block text-xs font-bold text-slate-600"
-                                        >Orden</label
-                                    >
-                                    <input
-                                        required
-                                        v-model="formRow.order"
-                                        min="1"
-                                        type="number"
-                                        class="inputs-form"
-                                    />
-                                </div>
-                                <div class="col-span-3">
-                                    <label
-                                        class="mb-1 block text-xs font-bold text-slate-600"
-                                        >Nombre</label
-                                    >
-                                    <input
-                                        required
-                                        minlength="5"
-                                        v-model="formRow.name"
-                                        type="text"
-                                        class="inputs-form"
-                                    />
-                                </div>
+                            <div>
+                                <label
+                                    class="mb-1 block text-xs font-bold text-slate-600"
+                                    >Nombre</label
+                                >
+                                <input
+                                    required
+                                    minlength="5"
+                                    v-model="formRow.name"
+                                    type="text"
+                                    class="inputs-form"
+                                />
                             </div>
                         </div>
                     </div>
@@ -478,7 +543,7 @@
             </div>
         </Modal>
 
-        <!-- MODAL PARA CREAR CATEGORIES -->
+        <!-- MODAL PARA CREAR/EDITAR CATEGORIES -->
         <Modal
             :show="isModalOpen_categories"
             @close="isModalOpen_categories = false"
@@ -486,7 +551,10 @@
             <div class="mx-auto max-w-2xl min-w-150">
                 <CategoryForm
                     :survey_id="page.props.id"
+                    :category-id="editingCategoryId"
+                    :next-order="categories.length + 1"
                     @update-categories="updateCategories"
+                    @updated="handleCategoryUpdated"
                 />
             </div>
         </Modal>
@@ -503,18 +571,26 @@ import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
 
 import { useAnswers, forceDeleteAnswer } from '@/composables/api/answers';
-import { reorderCategories } from '@/composables/api/categories';
+import {
+    hideCategory,
+    restoreCategory,
+    forceDeleteCategory,
+    reorderCategories,
+} from '@/composables/api/categories';
 import {
     createMany,
     getQuestion,
     getQuestionsByCategory,
     hideQuestion,
+    restoreQuestion,
     forceDeleteQuestion,
     reorderQuestions,
+    updateQuestion as updateQuestionApi,
 } from '@/composables/api/questions';
 import { getCategoriesBySurvey, getSurvey } from '@/composables/api/surveys';
 import { useApiError } from '@/composables/useApiError';
 import { useAuth } from '@/composables/useAuth';
+import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import MainLayout from '@/layouts/main-layout.vue';
 import { apiHost } from '@/store/store';
@@ -522,6 +598,7 @@ import { apiHost } from '@/store/store';
 const { message, isError, notify } = useNotification();
 const { extractErrorMessage } = useApiError();
 const { isAdmin } = useAuth();
+const { confirm: confirmDialog } = useConfirm();
 const {
     getAnswersByQuestion: getAnswersByQuestionApi,
     deleteAnswer: deleteAnswerApi,
@@ -533,6 +610,9 @@ const operation_name = ref('create');
 const isModalOpen = ref(false);
 const isModalOpen_answers = ref(false);
 const isModalOpen_categories = ref(false);
+const editingCategoryId = ref(0);
+const showHiddenCategories = ref(false);
+const showHiddenQuestions = ref(false);
 const questions = ref([]);
 const categories = ref([]);
 const survey = ref([]);
@@ -559,34 +639,108 @@ const formAnswer = ref([
     },
 ]);
 
+const refreshQuestions = async () => {
+    const { data: questions_ } = await getQuestionsByCategory(
+        categorySelected.value,
+        showHiddenQuestions.value,
+    );
+    questions.value = questions_;
+};
+
+const refreshCategories = async () => {
+    const { data } = await getCategoriesBySurvey(
+        page.props.id,
+        showHiddenCategories.value,
+    );
+
+    if (data) {
+        categories.value = data;
+    }
+};
+
 // Function to hide (soft-delete) a question
 const deleteQuestion = async (id) => {
     const { errorFlag, responseMessage } = await hideQuestion(id);
 
     if (!errorFlag) {
-        const { data: questions_ } = await getQuestionsByCategory(
-            categorySelected.value,
-        );
-        questions.value = questions_;
-        notify('Pregunta eliminada correctamente');
+        await refreshQuestions();
+        notify('Pregunta ocultada correctamente');
+    } else {
+        notify(responseMessage, true);
+    }
+};
+
+const restoreQuestionRow = async (id) => {
+    const { errorFlag, responseMessage } = await restoreQuestion(id);
+
+    if (!errorFlag) {
+        await refreshQuestions();
+        notify('Pregunta restaurada correctamente');
     } else {
         notify(responseMessage, true);
     }
 };
 
 const forceDeleteQuestionRow = async (id) => {
-    if (!confirm('¿Eliminar esta pregunta de forma permanente?')) {
+    if (
+        !(await confirmDialog(
+            '¿Eliminar esta pregunta de forma permanente? Esta acción no se puede deshacer.',
+        ))
+    ) {
         return;
     }
 
     const { errorFlag, responseMessage } = await forceDeleteQuestion(id);
 
     if (!errorFlag) {
-        const { data: questions_ } = await getQuestionsByCategory(
-            categorySelected.value,
-        );
-        questions.value = questions_;
+        await refreshQuestions();
         notify('Pregunta eliminada permanentemente');
+    } else {
+        notify(responseMessage, true);
+    }
+};
+
+const editCategory = (id) => {
+    editingCategoryId.value = id;
+    isModalOpen_categories.value = true;
+};
+
+const hideCategoryRow = async (id) => {
+    const { errorFlag, responseMessage } = await hideCategory(id);
+
+    if (!errorFlag) {
+        await refreshCategories();
+        notify('Categoría ocultada correctamente');
+    } else {
+        notify(responseMessage, true);
+    }
+};
+
+const restoreCategoryRow = async (id) => {
+    const { errorFlag, responseMessage } = await restoreCategory(id);
+
+    if (!errorFlag) {
+        await refreshCategories();
+        notify('Categoría restaurada correctamente');
+    } else {
+        notify(responseMessage, true);
+    }
+};
+
+const forceDeleteCategoryRow = async (id) => {
+    if (
+        !(await confirmDialog(
+            '¿Eliminar esta categoría de forma permanente? Esta acción no se puede deshacer.',
+        ))
+    ) {
+        return;
+    }
+
+    const { errorFlag, responseMessage } = await forceDeleteCategory(id);
+
+    if (!errorFlag) {
+        await refreshCategories();
+        notify('Categoría eliminada permanentemente');
     } else {
         notify(responseMessage, true);
     }
@@ -633,7 +787,11 @@ const onReorderQuestions = async () => {
 };
 
 const forceDeleteAnswerRow = async (id, index) => {
-    if (!confirm('¿Eliminar esta respuesta de forma permanente?')) {
+    if (
+        !(await confirmDialog(
+            '¿Eliminar esta respuesta de forma permanente? Esta acción no se puede deshacer.',
+        ))
+    ) {
         return;
     }
 
@@ -689,8 +847,10 @@ watch(categorySelected, async (value) => {
         },
     );
 
-    const { data, errorFlag, responseMessage } =
-        await getQuestionsByCategory(value);
+    const { data, errorFlag, responseMessage } = await getQuestionsByCategory(
+        value,
+        showHiddenQuestions.value,
+    );
 
     if (data) {
         questions.value = data;
@@ -702,7 +862,7 @@ watch(categorySelected, async (value) => {
 const incrementFormRow = () => {
     formQuestion.value.push({
         name: '',
-        order: 0,
+        order: questions.value.length + formQuestion.value.length + 1,
         category_id: categorySelected.value,
     });
 };
@@ -711,8 +871,13 @@ const getQuestionToEdit = async (id) => {
     const { data, errorFlag, responseMessage } = await getQuestion(id);
 
     if (data) {
-        formQuestion.value[0].name = data.name;
-        formQuestion.value[0].order = data.order;
+        formQuestion.value = [
+            {
+                name: data.name,
+                order: data.order,
+                category_id: data.category_id,
+            },
+        ];
         isModalOpen.value = true;
         operation_name.value = 'Editar';
         questionSelected.value = id;
@@ -725,14 +890,11 @@ const createManyQuestions = async () => {
     const { data, errorFlag, responseMessage } = await createMany(
         formQuestion.value,
     );
-    console.log(data);
 
     if (data) {
-        const { data: questions_ } = await getQuestionsByCategory(
-            page.props.categoryId,
-        );
-        questions.value = questions_;
+        await refreshQuestions();
         notify(data);
+        isModalOpen.value = false;
         formQuestion.value = [
             {
                 name: '',
@@ -744,19 +906,39 @@ const createManyQuestions = async () => {
         notify(responseMessage, true);
     }
 };
+
+const updateQuestion = async (id) => {
+    const { data, errorFlag, responseMessage } = await updateQuestionApi(
+        id,
+        formQuestion.value[0],
+    );
+
+    if (data) {
+        await refreshQuestions();
+        notify('Pregunta actualizada correctamente');
+        isModalOpen.value = false;
+    } else if (errorFlag) {
+        notify(responseMessage, true);
+    }
+};
+
 const newQuestions = () => {
     isModalOpen.value = true;
     operation_name.value = 'Crear';
-    formQuestion.value[0].name = '';
-    formQuestion.value[0].order = 0;
-    formQuestion.value[0].category_id = categorySelected.value;
+    formQuestion.value = [
+        {
+            name: '',
+            order: questions.value.length + 1,
+            category_id: categorySelected.value,
+        },
+    ];
 };
 
 watch(questionSelected, async (value) => {
     router.get(
         `/surveys/details/${page.props.id}`,
         {
-            categoryId: page.props.categoryId,
+            categoryId: categorySelected.value,
             questionId: value,
             //page: page.value,
         },
@@ -786,6 +968,18 @@ watch(questionSelected, async (value) => {
 //         console.log(error)
 //     }
 // }
+const newAnswers = () => {
+    isModalOpen_answers.value = true;
+    operation_name.value = 'Crear';
+    formAnswer.value = [
+        {
+            name: '',
+            order: answersByQuestion.value.length + 1,
+            question_id: questionSelected.value,
+        },
+    ];
+};
+
 const createManyAnswers = async () => {
     const { success } = await createManyAnswersApi(formAnswer.value);
 
@@ -851,15 +1045,33 @@ const updateAnswer = async (id) => {
 const incrementFormRow_answer = () => {
     formAnswer.value.push({
         name: '',
-        order: 0,
+        order: answersByQuestion.value.length + formAnswer.value.length + 1,
         question_id: questionSelected.value,
     });
 };
 
 // CATEGORIES METHODS
-const updateCategories = async () => {
+const handleCategoryUpdated = async () => {
+    isModalOpen_categories.value = false;
+    editingCategoryId.value = 0;
+    await refreshCategories();
+};
+
+const updateCategories = async (status) => {
+    if (status && !status.success) {
+        notify(status.message || 'Error al crear la categoría', true);
+
+        return;
+    }
+
+    if (status?.success) {
+        isModalOpen_categories.value = false;
+        notify(status.message || 'Categoría creada con éxito');
+    }
+
     const { data, errorFlag, responseMessage } = await getCategoriesBySurvey(
         page.props.id,
+        showHiddenCategories.value,
     );
 
     if (data) {

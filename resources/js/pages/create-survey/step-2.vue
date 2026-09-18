@@ -13,6 +13,7 @@
         <div class="mx-auto max-w-2xl px-4 py-5">
             <CategoryForm
                 :survey_id="page.props.surveyId"
+                :next-order="categories.length + 1"
                 @update-categories="updateCategories"
             />
         </div>
@@ -61,15 +62,6 @@
                                     <div
                                         class="flex w-full items-center justify-center gap-x-3"
                                     >
-                                        <Link
-                                            :href="`/categories/details/${category.id}`"
-                                        >
-                                            <Icon
-                                                class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
-                                                icon="ic:baseline-remove-red-eye"
-                                            />
-                                        </Link>
-
                                         <Icon
                                             @click="editCategory(category)"
                                             class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
@@ -77,10 +69,12 @@
                                         />
                                         <Icon
                                             @click="
-                                                handleHideCategory(category.id)
+                                                handleDeleteCategory(
+                                                    category.id,
+                                                )
                                             "
                                             class="cursor-pointer text-xl text-red-500 hover:text-red-400"
-                                            icon="ic:baseline-restore-from-trash"
+                                            icon="ic:baseline-delete-forever"
                                         />
                                     </div>
                                 </td>
@@ -105,17 +99,23 @@
 const message = ref('');
 const isError = ref(false);
 import { Icon } from '@iconify/vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import draggable from 'vuedraggable';
 import CategoryForm from '@/components/forms/category-form.vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
 import StepNavigation from '@/components/StepNavigation.vue';
-import { hideCategory, reorderCategories } from '@/composables/api/categories';
+import {
+    forceDeleteCategory,
+    reorderCategories,
+} from '@/composables/api/categories';
 import { getCategoriesBySurvey } from '@/composables/api/surveys';
+import { useConfirm } from '@/composables/useConfirm';
 import MainLayout from '@/layouts/main-layout.vue';
 import { currentStep, stepsBreadcrumb } from '@/store/store';
+
+const { confirm: confirmDialog } = useConfirm();
 
 const page = usePage();
 const categories = ref([]);
@@ -162,12 +162,20 @@ const handleCategoryUpdated = async () => {
     categories.value = data;
 };
 
-const handleHideCategory = async (id) => {
-    const { errorFlag, responseMessage } = await hideCategory(id);
+const handleDeleteCategory = async (id) => {
+    const confirmed = await confirmDialog(
+        '¿Eliminar esta categoría? Se borrará junto con sus preguntas y respuestas, ya que aún no ha sido publicada.',
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const { errorFlag, responseMessage } = await forceDeleteCategory(id);
 
     message.value = errorFlag
-        ? responseMessage || 'Error al ocultar la categoría'
-        : 'Categoría ocultada correctamente';
+        ? responseMessage || 'Error al eliminar la categoría'
+        : 'Categoría eliminada correctamente';
     isError.value = errorFlag;
     setTimeout(() => {
         message.value = '';

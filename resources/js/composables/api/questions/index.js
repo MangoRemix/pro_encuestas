@@ -45,12 +45,13 @@ export async function getQuestion(id) {
     return response;
 }
 
-export async function getQuestionsByCategory(category_id) {
+export async function getQuestionsByCategory(category_id, withTrashed = false) {
     const response = createResponse();
 
     try {
         const { data, status } = await axios.get(
             `${apiHost}question/show-by-category/${category_id}`,
+            { params: withTrashed ? { with_trashed: 1 } : {} },
         );
 
         if (status == 200) {
@@ -194,6 +195,27 @@ export async function createMany(questions = []) {
         response.errorFlag = true;
         response.responseMessage =
             error.response?.data?.message || 'Error al crear las preguntas';
+    }
+
+    return response;
+}
+
+export async function updateQuestion(id, payload) {
+    const response = createResponse();
+
+    try {
+        const { data, status } = await axios.put(
+            `${apiHost}question/update/${id}`,
+            payload,
+        );
+
+        if (status == 200) {
+            response.data = data;
+        }
+    } catch (error) {
+        response.errorFlag = true;
+        response.responseMessage =
+            error.response?.data?.message || 'Error al actualizar la pregunta';
     }
 
     return response;

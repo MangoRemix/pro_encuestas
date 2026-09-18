@@ -4,10 +4,12 @@ import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import Modal from '@/components/modal.vue';
 import { useParishes } from '@/composables/api/parishes';
+import { useConfirm } from '@/composables/useConfirm';
 import MainLayout from '@/layouts/main-layout.vue';
 
 const { parishes, fetchParishes, storeParish, updateParish, deleteParish } =
     useParishes();
+const { confirm: confirmDialog } = useConfirm();
 
 const isModalOpen = ref(false);
 const editingParish = ref(null);
@@ -41,7 +43,7 @@ const save = async () => {
 };
 
 const remove = async (id) => {
-    if (confirm('¿Eliminar esta parroquia?')) {
+    if (await confirmDialog('¿Eliminar esta parroquia?')) {
         await deleteParish(id);
         await fetchParishes();
     }

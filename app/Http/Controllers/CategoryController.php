@@ -356,12 +356,18 @@ class CategoryController extends Controller
         }
     }
 
-    public function showBySurvey(int $id)
+    public function showBySurvey(int $id, Request $request)
     {
 
         try {
             // code...
-            $categories = Category::query()->where('survey_id', $id)->get();
+            $query = Category::query()->where('survey_id', $id);
+
+            if ($request->boolean('with_trashed') && $request->user()?->rol?->name === Rol::ADMIN) {
+                $query->withTrashed();
+            }
+
+            $categories = $query->get();
 
             return response()->json($categories);
 

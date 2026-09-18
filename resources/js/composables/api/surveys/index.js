@@ -136,12 +136,13 @@ export async function getSurvey(id) {
     }
 }
 
-export async function getCategoriesBySurvey(survey_id) {
+export async function getCategoriesBySurvey(survey_id, withTrashed = false) {
     const response = { errorFlag: false, responseMessage: '', data: null };
 
     try {
         const { data, status } = await axios.get(
             `${apiHost}category/show-by-survey/${survey_id}`,
+            { params: withTrashed ? { with_trashed: 1 } : {} },
         );
 
         if (status == 200) {

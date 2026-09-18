@@ -133,34 +133,17 @@
                         <div class="mb-3 text-center font-bold">
                             <span>Pregunta {{ index + 1 }}</span>
                         </div>
-                        <div
-                            class="flex items-center justify-between space-x-2"
-                        >
-                            <div class="flex w-35 items-center space-x-2">
-                                <label for="" class="text-sm font-bold"
-                                    >Orden:
-                                </label>
-                                <input
-                                    required
-                                    v-model="formRow.order"
-                                    min="1"
-                                    type="number"
-                                    class="inputs-form"
-                                />
-                            </div>
-
-                            <div class="flex w-full items-center space-x-2">
-                                <label for="" class="text-sm font-bold"
-                                    >Nombre:
-                                </label>
-                                <input
-                                    required
-                                    minlength="5"
-                                    v-model="formRow.name"
-                                    type="text"
-                                    class="inputs-form"
-                                />
-                            </div>
+                        <div class="flex w-full items-center space-x-2">
+                            <label for="" class="text-sm font-bold"
+                                >Nombre:
+                            </label>
+                            <input
+                                required
+                                minlength="5"
+                                v-model="formRow.name"
+                                type="text"
+                                class="inputs-form"
+                            />
                         </div>
                     </div>
                 </form>
@@ -175,13 +158,19 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
-import { hideQuestion, forceDeleteQuestion } from '@/composables/api/questions';
+import {
+    hideQuestion,
+    forceDeleteQuestion,
+    updateQuestion as updateQuestionApi,
+} from '@/composables/api/questions';
 import { useAuth } from '@/composables/useAuth';
+import { useConfirm } from '@/composables/useConfirm';
 import MainLayout from '@/layouts/main-layout.vue';
 import { apiHost } from '@/store/store';
 
 const page = usePage();
 const { isAdmin } = useAuth();
+const { confirm: confirmDialog } = useConfirm();
 
 const loading = ref(false);
 const message = ref('');
@@ -216,13 +205,18 @@ onMounted(async () => {
 const newQuestions = () => {
     isModalOpen.value = true;
     operation_name.value = 'Crear';
-    form.value[0].name = '';
-    form.value[0].order = 0;
+    form.value = [
+        {
+            name: '',
+            order: questionsByCategory.value.length + 1,
+            category_id: parseInt(page.props.id),
+        },
+    ];
 };
 const incrementFormRow = () => {
     form.value.push({
         name: '',
-        order: 0,
+        order: questionsByCategory.value.length + form.value.length + 1,
         category_id: parseInt(page.props.id),
     });
 };
@@ -307,7 +301,9 @@ const deleteQuestion = async (id, index) => {
 };
 
 const forceDeleteQuestionRow = async (id, index) => {
-    if (!confirm('¿Eliminar esta pregunta de forma permanente?')) {
+    if (
+        !(await confirmDialog('¿Eliminar esta pregunta de forma permanente?'))
+    ) {
         return;
     }
 
@@ -347,18 +343,24 @@ const getQuestionToEdit = async (id) => {
 const updateQuestion = async (id) => {
     try {
         loading.value = true;
-        const { data, status } = await axios.put(
-            `${apiHost}question/update/${id}`,
+        const { data, errorFlag, responseMessage } = await updateQuestionApi(
+            id,
             form.value[0],
         );
 
-        if (status == 200) {
-            message.value = data.message;
+        if (!errorFlag) {
+            message.value = data?.message || 'Pregunta actualizada';
+            isModalOpen.value = false;
+            questionsByCategory.value = await getQuestionsByCategory(
+                category.value.id,
+            );
+        } else {
+            isError.value = true;
+            message.value = responseMessage;
         }
     } catch (error) {
         isError.value = true;
-        const { response } = error;
-        message.value = response?.data;
+        message.value = error.response?.data;
     } finally {
         loading.value = false;
         setTimeout(() => {

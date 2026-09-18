@@ -349,11 +349,17 @@ class QuestionController extends Controller
         }
     }
 
-    public function showByCategory(int $id)
+    public function showByCategory(int $id, Request $request)
     {
         try {
             // code...
-            $questions = Question::query()->where('category_id', $id)->orderBy('order', 'asc')->get();
+            $query = Question::query()->where('category_id', $id);
+
+            if ($request->boolean('with_trashed') && $request->user()?->rol?->name === Rol::ADMIN) {
+                $query->withTrashed();
+            }
+
+            $questions = $query->orderBy('order', 'asc')->get();
 
             return response()->json([
                 'questions' => $questions,

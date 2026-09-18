@@ -33,24 +33,6 @@
                 >
                     {{ withTrashed ? 'Ocultar ocultas' : 'Mostrar ocultas' }}
                 </button>
-                <div class="w-40">
-                    <button
-                        @click="importSurvey"
-                        :disabled="isProcessing"
-                        class="yellow-button-app flex cursor-pointer items-center justify-center gap-x-2"
-                    >
-                        <span
-                            v-if="isProcessing"
-                            class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-                        ></span>
-                        <Icon
-                            v-else
-                            class="text-2xl"
-                            icon="ic:outline-file-upload"
-                        />
-                        {{ isProcessing ? 'Importando...' : 'Importar' }}
-                    </button>
-                </div>
                 <div class="flex w-50 items-center">
                     <Link
                         href="/surveys/create-survey/step-1"
@@ -230,12 +212,6 @@
             </div>
         </div>
 
-        <!-- modal para crear nueva encuesta -->
-        <ImportSurveyModal
-            :show="isImportModalOpen"
-            @close="isImportModalOpen = false"
-            @import-started="handleImportProcess"
-        />
         <Modal :show="isModalOpen" @close="isModalOpen = false">
             <SurveyForm
                 :surveyId="idSurveyToEdit"
@@ -259,7 +235,6 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
 import SurveyForm from '@/components/forms/survey-form.vue';
-import ImportSurveyModal from '@/components/ImportSurveyModal.vue';
 import Modal from '@/components/modal.vue';
 import Pagination from '@/components/pagination.vue';
 import RowActions from '@/components/RowActions.vue';
@@ -269,19 +244,17 @@ import {
     hideSurvey,
     restoreSurvey,
     forceDeleteSurvey,
-    importSurveyFromExcel,
 } from '@/composables/api/surveys';
 import { formatedDate } from '@/composables/shared';
 import { useAuth } from '@/composables/useAuth';
-import { useBatchProcessor } from '@/composables/useBatchProcessor';
+import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import MainLayout from '@/layouts/main-layout.vue';
 
 const { notify } = useNotification();
 const { isAdmin } = useAuth();
-const { isProcessing, pollBatchStatus } = useBatchProcessor();
+const { confirm: confirmDialog } = useConfirm();
 const isModalOpen = ref(false);
-const isImportModalOpen = ref(false);
 const surveys = ref([]);
 const pagination = ref(null);
 
@@ -380,7 +353,9 @@ const handleRestoreSurvey = async (id) => {
 };
 
 const handleForceDeleteSurvey = async (id) => {
-    if (!confirm('¿Eliminar esta encuesta de forma permanente?')) {
+    if (
+        !(await confirmDialog('¿Eliminar esta encuesta de forma permanente?'))
+    ) {
         return;
     }
 
@@ -391,38 +366,6 @@ const handleForceDeleteSurvey = async (id) => {
         await getSurveys(pagination.value?.current_page || 1);
     } else {
         notify(result.responseMessage, true);
-    }
-};
-
-const importSurvey = () => {
-    isImportModalOpen.value = true;
-};
-
-const handleImportProcess = async (formData) => {
-    isImportModalOpen.value = false;
-    isProcessing.value = true;
-
-    const result = await importSurveyFromExcel(formData);
-
-    if (!result.errorFlag && result.data) {
-        try {
-            const report = await pollBatchStatus(result.data.batch_id);
-
-            if (report?.status === 'error') {
-                notify(report.message || 'Error al importar la encuesta', true);
-            } else {
-                notify('Encuesta importada exitosamente');
-                await getSurveys();
-            }
-        } catch (error) {
-            notify(error.message || 'Error al importar la encuesta', true);
-        }
-    } else {
-        isProcessing.value = false;
-        notify(
-            result.responseMessage || 'Error al importar la encuesta',
-            'error',
-        );
     }
 };
 </script>

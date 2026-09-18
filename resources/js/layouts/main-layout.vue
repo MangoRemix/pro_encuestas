@@ -46,6 +46,8 @@
                 <slot />
             </div>
         </div>
+
+        <ConfirmModal />
     </div>
 </template>
 
@@ -53,6 +55,7 @@
 import { Icon } from '@iconify/vue';
 import { usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
 import Menu from '@/components/menu.vue';
 
 const MENU_ITEMS = [

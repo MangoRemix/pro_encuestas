@@ -104,15 +104,6 @@
                                         <div
                                             class="flex items-center justify-center gap-x-2 sm:gap-x-3"
                                         >
-                                            <Link
-                                                :href="`/questions/details/${question.id}`"
-                                            >
-                                                <Icon
-                                                    class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
-                                                    icon="ic:baseline-remove-red-eye"
-                                                />
-                                            </Link>
-
                                             <Icon
                                                 @click.stop="
                                                     getQuestionToEdit(
@@ -182,10 +173,6 @@
                                         class="flex items-center justify-center gap-x-2 sm:gap-x-3"
                                     >
                                         <Icon
-                                            class="cursor-pointer text-xl text-blue-400 hover:text-blue-300"
-                                            icon="ic:baseline-remove-red-eye"
-                                        />
-                                        <Icon
                                             @click="getAnswerToEdit(answer)"
                                             class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
                                             icon="ic:baseline-edit"
@@ -219,7 +206,7 @@
                 @submit.prevent="
                     operation_name == 'Crear'
                         ? createManyQuestions()
-                        : updateQuestion(questionSelected)
+                        : updateQuestion(questionSelected.id)
                 "
                 action=""
                 class="flex h-72 w-full flex-col md:w-150"
@@ -253,37 +240,18 @@
                             <span>Pregunta {{ index + 1 }}</span>
                         </div>
                         <div
-                            class="flex flex-col items-center justify-between gap-y-3 sm:flex-row sm:space-x-2 sm:gap-y-0"
+                            class="flex w-full flex-col gap-y-1 sm:flex-row sm:items-center sm:space-x-2"
                         >
-                            <div
-                                class="flex w-full flex-col gap-y-1 sm:w-35 sm:flex-row sm:items-center sm:space-x-2"
-                            >
-                                <label for="" class="text-sm font-bold"
-                                    >Orden:
-                                </label>
-                                <input
-                                    required
-                                    v-model="formRow.order"
-                                    min="1"
-                                    type="number"
-                                    class="inputs-form w-full sm:w-auto"
-                                />
-                            </div>
-
-                            <div
-                                class="flex w-full flex-col gap-y-1 sm:flex-row sm:items-center sm:space-x-2"
-                            >
-                                <label for="" class="text-sm font-bold"
-                                    >Nombre:
-                                </label>
-                                <input
-                                    required
-                                    minlength="5"
-                                    v-model="formRow.name"
-                                    type="text"
-                                    class="inputs-form w-full"
-                                />
-                            </div>
+                            <label for="" class="text-sm font-bold"
+                                >Nombre:
+                            </label>
+                            <input
+                                required
+                                minlength="5"
+                                v-model="formRow.name"
+                                type="text"
+                                class="inputs-form w-full"
+                            />
                         </div>
                     </div>
                 </div>
@@ -329,37 +297,18 @@
                             <span>Respuesta {{ index + 1 }}</span>
                         </div>
                         <div
-                            class="flex flex-col items-center justify-between gap-y-3 sm:flex-row sm:space-x-2 sm:gap-y-0"
+                            class="flex w-full flex-col gap-y-1 sm:flex-row sm:items-center sm:space-x-2"
                         >
-                            <div
-                                class="flex w-full flex-col gap-y-1 sm:w-35 sm:flex-row sm:items-center sm:space-x-2"
-                            >
-                                <label for="" class="text-sm font-bold"
-                                    >Orden:
-                                </label>
-                                <input
-                                    required
-                                    v-model="formRow.order"
-                                    min="1"
-                                    type="number"
-                                    class="inputs-form w-full sm:w-auto"
-                                />
-                            </div>
-
-                            <div
-                                class="flex w-full flex-col gap-y-1 sm:flex-row sm:items-center sm:space-x-2"
-                            >
-                                <label for="" class="text-sm font-bold"
-                                    >Nombre:
-                                </label>
-                                <input
-                                    required
-                                    minlength="5"
-                                    v-model="formRow.name"
-                                    type="text"
-                                    class="inputs-form w-full"
-                                />
-                            </div>
+                            <label for="" class="text-sm font-bold"
+                                >Nombre:
+                            </label>
+                            <input
+                                required
+                                minlength="5"
+                                v-model="formRow.name"
+                                type="text"
+                                class="inputs-form w-full"
+                            />
                         </div>
                     </div>
                 </div>
@@ -395,7 +344,7 @@
 </template>
 <script setup>
 import { Icon } from '@iconify/vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
 import Modal from '@/components/modal.vue';
@@ -414,6 +363,7 @@ import {
     getQuestionsByCategory,
     hideQuestion,
     reorderQuestions,
+    updateQuestion as updateQuestionApi,
 } from '@/composables/api/questions';
 import {
     getCategoriesBySurvey,
@@ -517,7 +467,7 @@ watch(questionSelected, async (value) => {
         answers.value = data;
         formAnswer.value = [
             {
-                order: 0,
+                order: answers.value.length + 1,
                 name: '',
                 question_id: value.id,
             },
@@ -534,7 +484,7 @@ const getQuestions = async (value) => {
         formQuestion.value = [
             {
                 name: '',
-                order: 0,
+                order: questions.value.length + 1,
                 category_id: categorySelected.value,
             },
         ];
@@ -553,13 +503,13 @@ function incrementFormRow(type) {
     if (type == 'question') {
         formQuestion.value.push({
             name: '',
-            order: 0,
+            order: questions.value.length + formQuestion.value.length + 1,
             category_id: categorySelected.value,
         });
     } else {
         formAnswer.value.push({
             name: '',
-            order: 0,
+            order: answers.value.length + formAnswer.value.length + 1,
             question_id: parseInt(questionSelected.value?.id),
         });
     }
@@ -601,7 +551,37 @@ const createManyQuestions = async () => {
         setTimeout(() => {
             message.value = '';
         }, 3000);
+
+        if (!errorFlag) {
+            isQuestionModalOpen.value = false;
+        }
+
         await getQuestions(categorySelected.value);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const updateQuestion = async (id) => {
+    try {
+        const { data, errorFlag, responseMessage } = await updateQuestionApi(
+            id,
+            formQuestion.value[0],
+        );
+
+        isError.value = errorFlag;
+        message.value = errorFlag
+            ? responseMessage || 'Error al actualizar la pregunta'
+            : data?.message || 'Pregunta actualizada correctamente';
+
+        setTimeout(() => {
+            message.value = '';
+        }, 3000);
+
+        if (!errorFlag) {
+            isQuestionModalOpen.value = false;
+            await getQuestions(categorySelected.value);
+        }
     } catch (error) {
         console.log(error);
     }
@@ -613,7 +593,7 @@ const newQuestions = () => {
     formQuestion.value = [
         {
             name: '',
-            order: 0,
+            order: questions.value.length + 1,
             category_id: categorySelected.value,
         },
     ];
@@ -669,7 +649,7 @@ const newAnswers = () => {
     formAnswer.value = [
         {
             name: '',
-            order: 0,
+            order: (answers.value?.length || 0) + 1,
             question_id: parseInt(questionSelected.value?.id),
         },
     ];

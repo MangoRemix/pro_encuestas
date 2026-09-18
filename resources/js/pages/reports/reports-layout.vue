@@ -6,7 +6,14 @@
                 class="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-3 shadow-sm"
             >
                 <div class="min-w-62.5 flex-1">
+                    <label
+                        for="report-survey-select"
+                        class="mb-1 block text-sm font-semibold text-slate-600"
+                    >
+                        Selecciona una encuesta:
+                    </label>
                     <select
+                        id="report-survey-select"
                         v-model="selectedSurvey"
                         class="w-9/12 rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
                     >
@@ -56,80 +63,95 @@
         </div>
         <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
 
-        <!-- Dropdown de selección de gráficas -->
-        <div
-            class="my-6 ml-13 flex w-fit max-w-2xl items-center gap-x-3 rounded-xl bg-white p-4 shadow-sm"
-        >
-            <span class="text-sm font-semibold opacity-75"
-                >Total encuestados: {{ reportData.total_respondent }}</span
+        <!-- Estado vacío: aún no se ha elegido una encuesta -->
+        <div v-if="!selectedSurvey" class="mx-auto w-11/12">
+            <p
+                class="mt-10 rounded-xl border border-dashed border-slate-300 bg-white/60 py-14 text-center text-lg font-semibold text-slate-500"
             >
+                Selecciona una encuesta arriba para ver sus estadísticas
+            </p>
         </div>
 
-        <div
-            class="mx-auto flex w-11/12 justify-center"
-            v-if="selected_graphic == 'graphics'"
-        >
-            <CategoryFilter
-                :categories="categories"
-                v-model="category_selected"
-            />
-        </div>
-
-        <Transition name="fade" mode="out-in">
+        <template v-else>
+            <!-- Dropdown de selección de gráficas -->
             <div
-                v-if="['table', 'both'].includes(selected_radio)"
-                class="text-slate-800"
+                class="my-6 ml-13 flex w-fit max-w-2xl items-center gap-x-3 rounded-xl bg-white p-4 shadow-sm"
             >
-                <Table :categories="filteredCategories" />
+                <span class="text-sm font-semibold opacity-75"
+                    >Total encuestados: {{ reportData.total_respondent }}</span
+                >
             </div>
-        </Transition>
 
-        <div
-            v-if="['graphics', 'both'].includes(selected_radio)"
-            class="mt-6 space-y-6"
-        >
+            <div
+                class="mx-auto flex w-11/12 justify-center"
+                v-if="selected_graphic == 'graphics'"
+            >
+                <CategoryFilter
+                    :categories="categories"
+                    v-model="category_selected"
+                />
+            </div>
+
             <Transition name="fade" mode="out-in">
-                <template v-if="['all', 'graphics'].includes(selected_graphic)">
-                    <Graphics
-                        :categories="filteredCategories"
-                        :total-respondent="reportData.total_respondent"
-                    />
-                </template>
+                <div
+                    v-if="['table', 'both'].includes(selected_radio)"
+                    class="text-slate-800"
+                >
+                    <Table :categories="filteredCategories" />
+                </div>
             </Transition>
 
             <div
-                v-if="survey_selected"
-                class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2"
+                v-if="['graphics', 'both'].includes(selected_radio)"
+                class="mt-6 space-y-6"
             >
-                <template v-if="['all', 'sexchart'].includes(selected_graphic)">
-                    <SexChart
-                        :survey-id="survey_selected.id"
-                        :total-respondent="reportData.total_respondent"
-                    />
-                </template>
-                <template
-                    v-if="['all', 'parishchart'].includes(selected_graphic)"
+                <Transition name="fade" mode="out-in">
+                    <template
+                        v-if="['all', 'graphics'].includes(selected_graphic)"
+                    >
+                        <Graphics
+                            :categories="filteredCategories"
+                            :total-respondent="reportData.total_respondent"
+                        />
+                    </template>
+                </Transition>
+
+                <div
+                    v-if="survey_selected"
+                    class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2"
                 >
-                    <ParishChart
+                    <template
+                        v-if="['all', 'sexchart'].includes(selected_graphic)"
+                    >
+                        <SexChart
+                            :survey-id="survey_selected.id"
+                            :total-respondent="reportData.total_respondent"
+                        />
+                    </template>
+                    <template
+                        v-if="['all', 'parishchart'].includes(selected_graphic)"
+                    >
+                        <ParishChart
+                            :survey-id="survey_selected.id"
+                            :total-respondent="reportData.total_respondent"
+                        />
+                    </template>
+                </div>
+
+                <template
+                    v-if="
+                        ['all', 'agerangechart'].includes(selected_graphic) &&
+                        survey_selected &&
+                        reportData.total_respondent
+                    "
+                >
+                    <AgeRangeFilter
                         :survey-id="survey_selected.id"
                         :total-respondent="reportData.total_respondent"
                     />
                 </template>
             </div>
-
-            <template
-                v-if="
-                    ['all', 'agerangechart'].includes(selected_graphic) &&
-                    survey_selected &&
-                    reportData.total_respondent
-                "
-            >
-                <AgeRangeFilter
-                    :survey-id="survey_selected.id"
-                    :total-respondent="reportData.total_respondent"
-                />
-            </template>
-        </div>
+        </template>
     </MainLayout>
 </template>
 

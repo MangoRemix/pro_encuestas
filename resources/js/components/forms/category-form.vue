@@ -5,14 +5,18 @@ import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store';
 
 const emits = defineEmits(['update-categories', 'updated']);
-const { survey_id, categoryId } = defineProps({
+const { survey_id, categoryId, nextOrder } = defineProps({
     survey_id: [String, Number],
     categoryId: { type: [String, Number], default: 0 },
+    // Orden que tomará la categoría al crearse: se asigna dinámicamente al
+    // final de la lista (el usuario ya no lo escribe a mano); reordenar se
+    // hace arrastrando en la tabla.
+    nextOrder: { type: Number, default: 1 },
 });
 
 const form = ref({
     name: '',
-    order: 1,
+    order: nextOrder,
     survey_id: parseInt(survey_id),
 });
 
@@ -67,7 +71,7 @@ const submit = async () => {
                 message: 'Categoría creada con éxito',
             });
             form.value.name = '';
-            form.value.order = 1;
+            form.value.order = nextOrder + 1;
         }
     } catch (error) {
         console.error('Error al guardar categoría', error);
@@ -88,32 +92,16 @@ const submit = async () => {
             {{ isEditing ? 'Editar Categoría' : 'Nueva Categoría' }}
         </h2>
 
-        <div class="mb-4 flex items-center space-x-3">
-            <div class="w-42">
-                <label
-                    class="block text-sm font-medium text-nowrap text-gray-700"
-                    for=""
-                    >Orden de categoría</label
-                >
-                <div class="w-18">
-                    <input
-                        v-model="form.order"
-                        type="number"
-                        class="inputs-form"
-                    />
-                </div>
-            </div>
-            <div class="w-full">
-                <label class="block text-sm font-medium text-gray-700"
-                    >Nombre de la Categoría</label
-                >
-                <input
-                    v-model="form.name"
-                    type="text"
-                    class="inputs-form"
-                    required
-                />
-            </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700"
+                >Nombre de la Categoría</label
+            >
+            <input
+                v-model="form.name"
+                type="text"
+                class="inputs-form"
+                required
+            />
         </div>
 
         <div class="mt-6 flex justify-end">
@@ -121,9 +109,10 @@ const submit = async () => {
                 {{ isEditing ? 'Guardar Cambios' : 'Guardar Categoría' }}
             </button>
         </div>
-        <div>
-            <span class="text-sm font-bold text-red-500"
-                >Nota: Prestar atención al orden de las categorías.</span
+        <div v-if="!isEditing">
+            <span class="text-sm font-bold text-slate-500"
+                >Nota: la categoría se agrega al final; arrastra las filas de la
+                tabla para reordenar.</span
             >
         </div>
     </form>

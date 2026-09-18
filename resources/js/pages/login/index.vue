@@ -108,9 +108,7 @@
                     </button>
                 </form>
 
-                <div
-                    class="flex flex-col items-center justify-between gap-3 text-sm text-white sm:flex-row"
-                >
+                <div class="flex items-center gap-3 text-sm text-white">
                     <label class="flex cursor-pointer items-center space-x-2">
                         <input
                             v-model="form.remember"
@@ -119,11 +117,6 @@
                         />
                         <span>Recordarme</span>
                     </label>
-                    <Link
-                        href="/forgot-password"
-                        class="text-white hover:underline"
-                        >¿Olvidaste tu contraseña?</Link
-                    >
                 </div>
             </div>
         </div>
@@ -132,7 +125,7 @@
 
 <script setup>
 import { Icon } from '@iconify/vue';
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import NotificationBox from '@/components/notification-box.vue';
 import MainLayout from '@/layouts/main-layout.vue';

@@ -138,7 +138,7 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
       localUuid: drift.Value(widget.instanceUuid),
       surveyId: drift.Value(_instance!.surveyId),
       pollsterPersonId: drift.Value(_instance!.pollsterPersonId),
-      status: drift.Value(InstanceStatus.preparada),
+      status: const drift.Value(InstanceStatus.preparada),
       updatedAt: drift.Value(DateTime.now()),
     ));
 
@@ -199,23 +199,31 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            for (final answer in _answersByQuestion[question.id] ?? [])
-              question.allowsMultipleAnswers
-                  ? CheckboxListTile(
-                      title: Text(answer.name),
-                      value: _isSelected(answer.id),
-                      onChanged: (_) => _toggleAnswer(question, answer.id),
-                    )
-                  : RadioListTile<int>(
-                      title: Text(answer.name),
-                      value: answer.id,
-                      groupValue: (_answersByQuestion[question.id] ?? [])
-                          .map((a) => a.id)
-                          .firstWhere(_isSelected, orElse: () => -1),
-                      onChanged: (value) {
-                        if (value != null) _toggleAnswer(question, value);
-                      },
-                    ),
+            if (question.allowsMultipleAnswers)
+              for (final answer in _answersByQuestion[question.id] ?? [])
+                CheckboxListTile(
+                  title: Text(answer.name),
+                  value: _isSelected(answer.id),
+                  onChanged: (_) => _toggleAnswer(question, answer.id),
+                )
+            else
+              RadioGroup<int>(
+                groupValue: (_answersByQuestion[question.id] ?? [])
+                    .map((a) => a.id)
+                    .firstWhere(_isSelected, orElse: () => -1),
+                onChanged: (value) {
+                  if (value != null) _toggleAnswer(question, value);
+                },
+                child: Column(
+                  children: [
+                    for (final answer in _answersByQuestion[question.id] ?? [])
+                      RadioListTile<int>(
+                        title: Text(answer.name),
+                        value: answer.id,
+                      ),
+                  ],
+                ),
+              ),
           ],
         ],
       ),

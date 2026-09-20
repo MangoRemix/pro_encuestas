@@ -86,7 +86,7 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
                   final sexes = snapshot.data ?? [];
 
                   return DropdownButtonFormField<int>(
-                    value: _sexId,
+                    initialValue: _sexId,
                     decoration: const InputDecoration(labelText: 'Sexo'),
                     items: [
                       for (final sex in sexes)
@@ -119,7 +119,7 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
                   final parishes = snapshot.data ?? [];
 
                   return DropdownButtonFormField<int>(
-                    value: _parishId,
+                    initialValue: _parishId,
                     decoration: const InputDecoration(labelText: 'Parroquia'),
                     items: [
                       for (final parish in parishes)

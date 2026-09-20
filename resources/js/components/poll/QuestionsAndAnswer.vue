@@ -10,12 +10,21 @@
             <div
                 v-for="answer in answers"
                 :key="answer.id"
-                @click="selectedAnswer = answer.id"
+                @click="toggleAnswer(answer.id)"
                 class="answer-option flex min-h-10 w-full cursor-pointer items-center rounded-lg border border-gray-300 px-4 transition-all duration-200 hover:border-blue-500"
             >
                 <input
+                    v-if="question.allows_multiple_answers"
+                    type="checkbox"
+                    :checked="selectedAnswers.includes(answer.id)"
+                    :id="'answer-' + answer.id"
+                    class="h-5 w-5 text-blue-600"
+                    @click.stop="toggleAnswer(answer.id)"
+                />
+                <input
+                    v-else
                     type="radio"
-                    v-model="selectedAnswer"
+                    v-model="selectedAnswers[0]"
                     :value="answer.id"
                     :id="'answer-' + answer.id"
                     name="answer"
@@ -37,20 +46,41 @@ const emits = defineEmits(['sendAnswer']);
 
 const props = defineProps(['question', 'answers']);
 
-const selectedAnswer = ref(null);
+// Siempre un arreglo: selección única guarda como máximo un id, selección
+// múltiple puede guardar varios. El componente padre recibe siempre un
+// arreglo de ids seleccionados.
+const selectedAnswers = ref([]);
 
 // Reiniciar la selección cuando la pregunta cambie
 watch(
     () => props.question,
     () => {
-        selectedAnswer.value = null;
+        selectedAnswers.value = [];
     },
     { deep: true },
 );
 
-watch(selectedAnswer, (value) => {
-    emits('sendAnswer', value);
-});
+const toggleAnswer = (answerId) => {
+    if (props.question.allows_multiple_answers) {
+        const index = selectedAnswers.value.indexOf(answerId);
+
+        if (index === -1) {
+            selectedAnswers.value.push(answerId);
+        } else {
+            selectedAnswers.value.splice(index, 1);
+        }
+    } else {
+        selectedAnswers.value = [answerId];
+    }
+};
+
+watch(
+    selectedAnswers,
+    (value) => {
+        emits('sendAnswer', [...value]);
+    },
+    { deep: true },
+);
 </script>
 <style scoped>
 .answer-option:has(input:checked) {

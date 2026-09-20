@@ -6,6 +6,9 @@ export function useAuth() {
 
     const user = computed(() => page.props.auth?.user ?? null);
     const isAdmin = computed(() => user.value?.role === 'ADMIN');
+    const canManageSurveys = computed(() =>
+        ['ADMIN', 'GESTOR_ENCUESTAS'].includes(user.value?.role),
+    );
 
-    return { user, isAdmin };
+    return { user, isAdmin, canManageSurveys };
 }

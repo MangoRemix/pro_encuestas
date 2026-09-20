@@ -59,7 +59,7 @@
                 </button>
                 <button
                     v-if="!visibilityFinishButton"
-                    :disabled="!disabledRewind && !selectedAnswer"
+                    :disabled="!disabledRewind && selectedAnswer.length === 0"
                     type="button"
                     class="primary-button-app basis-xs cursor-pointer rounded px-4 py-2 text-white"
                     @click="incrementQuestion"
@@ -72,7 +72,7 @@
                     type="button"
                     class="green-button-app basis-xs cursor-pointer rounded px-4 py-2 text-white"
                     @click="finishSurvey"
-                    :disabled="!selectedAnswer"
+                    :disabled="selectedAnswer.length === 0"
                 >
                     Finalizar
                 </button>
@@ -96,19 +96,14 @@ const showSuccess = ref(false);
 const q = ref([]);
 const a = ref([]);
 const c = ref();
-const selectedAnswer = ref();
+// Siempre un arreglo: 0 o 1 elemento para preguntas de una sola respuesta,
+// varios para preguntas de selección múltiple.
+const selectedAnswer = ref([]);
 const counts = ref({
     actual_category: 0,
     actual_question: 0,
     total_categories: 0,
     total_questions: 0,
-});
-
-const result = ref({
-    person_id: 0,
-    question_id: 0,
-    answer_id: 0,
-    pollster_id: page.props.auth.user.id,
 });
 
 const disabledRewind = ref(true);
@@ -183,7 +178,7 @@ watch(q, (value) => {
 const incrementQuestion = async () => {
     try {
         await storageResults();
-        selectedAnswer.value = null;
+        selectedAnswer.value = [];
 
         const currentCat =
             survey.value.categories[counts.value.actual_category];
@@ -253,19 +248,33 @@ const decrementQuestion = () => {
 };
 
 const storageResults = () => {
-    const historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
-
-    const index = historial.findIndex(
-        (item) => item.question_id === result.value.question_id,
-    );
-
-    if (index !== -1) {
-        historial[index] = { ...result.value };
-    } else {
-        historial.push({ ...result.value });
+    if (selectedAnswer.value.length === 0) {
+        return;
     }
 
-    localStorage.setItem('miHistorialData', JSON.stringify(historial));
+    const historial = JSON.parse(localStorage.getItem('miHistorialData')) || [];
+    const questionId = parseInt(page.props.question);
+    const personId = parseInt(page.props.userId);
+    const pollsterId = page.props.auth.user.id;
+
+    // Quita cualquier respuesta previa para esta pregunta (si el encuestador
+    // retrocedió y cambió su selección) y guarda una fila por cada respuesta
+    // marcada — una sola para selección única, varias para selección múltiple.
+    const withoutThisQuestion = historial.filter(
+        (item) => item.question_id !== questionId,
+    );
+
+    const entriesForThisQuestion = selectedAnswer.value.map((answerId) => ({
+        person_id: personId,
+        question_id: questionId,
+        answer_id: answerId,
+        pollster_id: pollsterId,
+    }));
+
+    localStorage.setItem(
+        'miHistorialData',
+        JSON.stringify([...withoutThisQuestion, ...entriesForThisQuestion]),
+    );
 };
 
 const finishSurvey = async () => {
@@ -304,14 +313,9 @@ const finishSurvey = async () => {
     }
 };
 
-const getAnswer = (answer) => {
-    selectedAnswer.value = answer;
+const getAnswer = (answerIds) => {
+    selectedAnswer.value = answerIds;
 };
-watch(selectedAnswer, (value) => {
-    result.value.answer_id = value;
-    result.value.question_id = parseInt(page.props.question);
-    result.value.person_id = parseInt(page.props.userId);
-});
 </script>
 
 <style scoped>

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ref } from 'vue';
+import { roleLabel } from '@/composables/roleLabels';
 import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store';
 
@@ -80,8 +81,7 @@ export function useUsers() {
         }
     };
 
-    const getRoleName = (user) =>
-        user?.rol?.name === 'ADMIN' ? 'Admin' : 'Encuestador';
+    const getRoleName = (user) => roleLabel(user?.rol?.name);
 
     return {
         staffData,

@@ -3,7 +3,7 @@
         class="mx-auto my-8 max-w-2xl rounded-2xl border border-gray-200 bg-white px-6 py-8 shadow-sm"
     >
         <h2 class="mb-8 text-xl font-bold text-gray-900">
-            Crear Nueva Encuesta
+            {{ headerLabel }}
         </h2>
 
         <form @submit.prevent="handleSubmit" class="space-y-6">
@@ -19,6 +19,30 @@
                     class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
                     required
                 />
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label
+                    for="parish_id"
+                    class="text-sm font-medium text-gray-700"
+                >
+                    Parroquia
+                </label>
+                <select
+                    id="parish_id"
+                    v-model="form.parish_id"
+                    class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
+                    required
+                >
+                    <option value="" disabled>Selecciona una parroquia</option>
+                    <option
+                        v-for="parish in parishes"
+                        :key="parish.id"
+                        :value="parish.id"
+                    >
+                        {{ parish.name }}
+                    </option>
+                </select>
             </div>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -61,7 +85,7 @@
                 :disabled="loading"
                 class="primary-button-app cursor-pointer"
             >
-                {{ loading ? 'Guardando...' : 'Crear Encuesta' }}
+                {{ loading ? 'Guardando...' : submitLabel }}
             </button>
         </form>
 
@@ -77,20 +101,45 @@
 <script setup>
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useParishes } from '@/composables/api/parishes';
 import { formatedDate } from '@/composables/shared.js';
 import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store.js';
 import NotificationBox from '../notification-box.vue';
 
-const { surveyId } = defineProps(['surveyId']);
+const { surveyId, isReactivation } = defineProps({
+    surveyId: { type: [Number, String], default: 0 },
+    // Reactivar = editar una encuesta ya vencida con una parroquia/periodo
+    // nuevos, conservando la jornada anterior en el historial.
+    isReactivation: { type: Boolean, default: false },
+});
 const emit = defineEmits(['updated']);
+
+const { parishes, fetchParishes } = useParishes();
+
+const headerLabel = computed(() => {
+    if (isReactivation) {
+        return 'Reactivar Encuesta';
+    }
+
+    return surveyId ? 'Editar Encuesta' : 'Crear Nueva Encuesta';
+});
+
+const submitLabel = computed(() => {
+    if (isReactivation) {
+        return 'Reactivar Encuesta';
+    }
+
+    return surveyId ? 'Guardar Cambios' : 'Crear Encuesta';
+});
 
 // Estado del formulario
 const form = reactive({
     name: '',
     init_date: '',
     finish_date: '',
+    parish_id: '',
 });
 
 // Estados de la petición
@@ -99,11 +148,21 @@ const message = ref('');
 const isError = ref(false);
 
 onMounted(async () => {
+    await fetchParishes();
+
     if (surveyId > 0) {
         const survey = await getSurvey(surveyId);
+
+        // El nombre siempre se precarga (no cambia al reactivar). La
+        // parroquia y las fechas solo se precargan al EDITAR — al
+        // reactivar se dejan en blanco para forzar a elegir una jornada
+        // nueva en vez de repetir la anterior por accidente.
         form.name = survey.name;
-        form.init_date = formatedDate(survey.init_date);
-        form.finish_date = formatedDate(survey.finish_date);
+        form.parish_id = isReactivation ? '' : survey.parish_id;
+        form.init_date = isReactivation ? '' : formatedDate(survey.init_date);
+        form.finish_date = isReactivation
+            ? ''
+            : formatedDate(survey.finish_date);
     }
 });
 
@@ -130,15 +189,20 @@ const handleSubmit = async () => {
         if (!surveyId) {
             response = await axios.post(`${apiHost}survey/create`, form);
         } else {
-            response = await axios.put(
-                `${apiHost}survey/update/${surveyId}`,
-                form,
-            );
+            response = await axios.put(`${apiHost}survey/update/${surveyId}`, {
+                ...form,
+                is_new_jornada: isReactivation,
+            });
         }
 
-        message.value = surveyId
-            ? '¡Encuesta actualizada con éxito!'
-            : '¡Encuesta creada con éxito!';
+        if (isReactivation) {
+            message.value = '¡Encuesta reactivada con éxito!';
+        } else if (surveyId) {
+            message.value = '¡Encuesta actualizada con éxito!';
+        } else {
+            message.value = '¡Encuesta creada con éxito!';
+        }
+
         setTimeout(() => {
             message.value = '';
         }, 3000);
@@ -168,6 +232,7 @@ const handleSubmit = async () => {
         form.name = '';
         form.init_date = '';
         form.finish_date = '';
+        form.parish_id = '';
     } catch (error) {
         isError.value = true;
         message.value = extractErrorMessage(error);

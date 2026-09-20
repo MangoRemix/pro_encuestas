@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\ApiResponds;
 use App\Http\Controllers\Concerns\FiltersAndSorts;
 use App\Models\Rol;
 use App\Models\Survey;
+use App\Models\SurveyRun;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ class SurveyController extends Controller
             'init_date' => 'required|date',
             // Si necesitas validar un campo único que ignore el ID actual en el update, usarías el $id aquí
             'finish_date' => 'required|date|after_or_equal:init_date',
+            'parish_id' => 'required|integer|exists:parishes,id',
         ];
     }
 
@@ -38,6 +40,7 @@ class SurveyController extends Controller
             'init_date' => 'date',
             // Si necesitas validar un campo único que ignore el ID actual en el update, usarías el $id aquí
             'finish_date' => 'date|after_or_equal:init_date',
+            'parish_id' => 'nullable|integer|exists:parishes,id',
         ];
     }
 
@@ -157,8 +160,16 @@ class SurveyController extends Controller
     {
         try {
             // Los datos ya vienen validados aquí gracias al UpdateSurveyRequest
-            $request['name'] = strtoupper($request->name);
-            $request['finish_date'] = $request->finish_date.' 23:59:59';
+            // Update admite payloads parciales (p. ej. reactivar solo cambia
+            // parroquia/fechas): solo se transforman los campos presentes,
+            // para no pisar name/finish_date con basura cuando no vienen.
+            if ($request->filled('name')) {
+                $request['name'] = strtoupper($request->name);
+            }
+
+            if ($request->filled('finish_date')) {
+                $request['finish_date'] = $request->finish_date.' 23:59:59';
+            }
 
             $validator = Validator::make($request->all(), $this->updateRules());
 
@@ -171,7 +182,23 @@ class SurveyController extends Controller
                 throw new Exception('Not found register', 404);
             }
 
-            $survey->update($validator->validated());
+            $validated = $validator->validated();
+
+            // Reactivar con una jornada nueva (nuevo periodo/parroquia): la
+            // jornada saliente queda registrada en el historial antes de
+            // sobreescribirla. Una edición normal (flag ausente) de una
+            // encuesta aún vigente no genera fila de historial.
+            if ($request->boolean('is_new_jornada') && $survey->parish_id && $survey->init_date && $survey->finish_date) {
+                SurveyRun::create([
+                    'survey_id' => $survey->id,
+                    'parish_id' => $survey->parish_id,
+                    'init_date' => $survey->init_date,
+                    'finish_date' => $survey->finish_date,
+                    'created_by' => $request->user()?->id,
+                ]);
+            }
+
+            $survey->update($validated);
 
             return response()->json([
                 'message' => 'Encuesta actualizada con éxito',

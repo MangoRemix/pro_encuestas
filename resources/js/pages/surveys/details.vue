@@ -101,7 +101,7 @@
                                                 hideCategoryRow(category.id)
                                             "
                                             class="cursor-pointer text-base text-red-500 hover:text-red-400"
-                                            icon="ic:baseline-restore-from-trash"
+                                            icon="ic:round-visibility-off"
                                             title="Ocultar"
                                         />
                                     </template>
@@ -178,7 +178,19 @@
                             >
                                 <tr class="text-sm text-slate-400 italic">
                                     <td colspan="3" class="p-4 text-center">
-                                        Selecciona una categoría
+                                        <template v-if="!categorySelected">
+                                            Selecciona una categoría
+                                        </template>
+                                        <template
+                                            v-else-if="hiddenQuestionsCount > 0"
+                                        >
+                                            Sin preguntas visibles (hay
+                                            {{ hiddenQuestionsCount }} ocultas —
+                                            actívalo con "Ver ocultas")
+                                        </template>
+                                        <template v-else>
+                                            Sin preguntas en esta categoría
+                                        </template>
                                     </td>
                                 </tr>
                             </tbody>
@@ -210,16 +222,6 @@
                                             <div
                                                 class="flex items-center justify-center gap-x-2"
                                             >
-                                                <Link
-                                                    :href="`/questions/details/${question.id}`"
-                                                    class="text-blue-400 hover:text-blue-300"
-                                                >
-                                                    <Icon
-                                                        class="text-lg"
-                                                        icon="ic:baseline-remove-red-eye"
-                                                    />
-                                                </Link>
-
                                                 <template
                                                     v-if="question.deleted_at"
                                                 >
@@ -251,7 +253,7 @@
                                                             )
                                                         "
                                                         class="cursor-pointer text-lg text-red-500 hover:text-red-400"
-                                                        icon="ic:baseline-restore-from-trash"
+                                                        icon="ic:round-visibility-off"
                                                         title="Ocultar"
                                                     />
                                                 </template>
@@ -313,82 +315,94 @@
                                 </tr>
                             </thead>
                             <tbody
-                                class="divide-y divide-slate-700/50 text-slate-200"
+                                v-if="
+                                    !questionSelected ||
+                                    answersByQuestion.length === 0
+                                "
+                                class="divide-y divide-slate-700/50"
                             >
-                                <tr
-                                    v-if="!questionSelected"
-                                    class="text-sm text-slate-400 italic"
-                                >
+                                <tr class="text-sm text-slate-400 italic">
                                     <td colspan="3" class="p-4 text-center">
-                                        Selecciona una pregunta para ver sus
-                                        respuestas
-                                    </td>
-                                </tr>
-                                <tr
-                                    v-else-if="answersByQuestion.length === 0"
-                                    class="text-sm text-slate-400 italic"
-                                >
-                                    <td colspan="3" class="p-4 text-center">
-                                        Sin respuestas
-                                    </td>
-                                </tr>
-                                <tr
-                                    v-for="(answer, index) in answersByQuestion"
-                                    :key="answer.id"
-                                    class="transition-colors hover:bg-slate-600/30"
-                                >
-                                    <td class="p-3 font-medium">
-                                        {{ answer.order }}
-                                    </td>
-                                    <td
-                                        class="wrap-break-words p-3 whitespace-normal text-slate-200"
-                                        :title="answer.name"
-                                    >
-                                        {{ answer.name }}
-                                    </td>
-                                    <td class="w-24 p-3">
-                                        <div
-                                            class="flex items-center justify-center gap-x-2"
-                                        >
-                                            <Icon
-                                                @click="
-                                                    getAnswerToEdit(answer.id)
-                                                "
-                                                class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
-                                                icon="ic:baseline-edit"
-                                            />
-                                            <Icon
-                                                @click="
-                                                    deleteAnswer(
-                                                        answer.id,
-                                                        index,
-                                                    )
-                                                "
-                                                class="cursor-pointer text-lg text-red-500 hover:text-red-400"
-                                                icon="ic:baseline-restore-from-trash"
-                                                title="Ocultar"
-                                            />
-                                            <Icon
-                                                v-if="isAdmin"
-                                                @click="
-                                                    forceDeleteAnswerRow(
-                                                        answer.id,
-                                                        index,
-                                                    )
-                                                "
-                                                class="cursor-pointer text-lg text-red-800 hover:text-red-600"
-                                                icon="ic:baseline-delete-forever"
-                                                title="Eliminar permanentemente"
-                                            />
-                                        </div>
+                                        {{
+                                            !questionSelected
+                                                ? 'Selecciona una pregunta para ver sus respuestas'
+                                                : 'Sin respuestas'
+                                        }}
                                     </td>
                                 </tr>
                             </tbody>
+                            <draggable
+                                v-else
+                                v-model="answersByQuestion"
+                                item-key="id"
+                                tag="tbody"
+                                class="divide-y divide-slate-700/50 text-slate-200"
+                                @end="onReorderAnswers"
+                            >
+                                <template #item="{ element: answer, index }">
+                                    <tr
+                                        class="transition-colors hover:bg-slate-600/30"
+                                    >
+                                        <td class="p-3 font-medium">
+                                            {{ answer.order }}
+                                        </td>
+                                        <td
+                                            class="wrap-break-words p-3 whitespace-normal text-slate-200"
+                                            :title="answer.name"
+                                        >
+                                            {{ answer.name }}
+                                        </td>
+                                        <td class="w-24 p-3">
+                                            <div
+                                                class="flex items-center justify-center gap-x-2"
+                                            >
+                                                <Icon
+                                                    @click="
+                                                        getAnswerToEdit(
+                                                            answer.id,
+                                                        )
+                                                    "
+                                                    class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
+                                                    icon="ic:baseline-edit"
+                                                />
+                                                <Icon
+                                                    @click="
+                                                        deleteAnswer(
+                                                            answer.id,
+                                                            index,
+                                                        )
+                                                    "
+                                                    class="cursor-pointer text-lg text-red-500 hover:text-red-400"
+                                                    icon="ic:round-visibility-off"
+                                                    title="Ocultar"
+                                                />
+                                                <Icon
+                                                    v-if="isAdmin"
+                                                    @click="
+                                                        forceDeleteAnswerRow(
+                                                            answer.id,
+                                                            index,
+                                                        )
+                                                    "
+                                                    class="cursor-pointer text-lg text-red-800 hover:text-red-600"
+                                                    icon="ic:baseline-delete-forever"
+                                                    title="Eliminar permanentemente"
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </draggable>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
+
+        <AssignPollstersPanel
+            v-if="canManageSurveys"
+            :survey-id="page.props.id"
+        />
 
         <!-- MODALES -->
         <Modal :show="isModalOpen" @close="isModalOpen = false">
@@ -461,6 +475,15 @@
                                     class="inputs-form"
                                 />
                             </div>
+                            <label
+                                class="mt-2 flex cursor-pointer items-center gap-2 text-xs font-bold text-slate-600"
+                            >
+                                <input
+                                    type="checkbox"
+                                    v-model="formRow.allows_multiple_answers"
+                                />
+                                Permite selección múltiple
+                            </label>
                         </div>
                     </div>
                 </form>
@@ -562,15 +585,20 @@
 </template>
 <script setup>
 import { Icon } from '@iconify/vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
+import AssignPollstersPanel from '@/components/AssignPollstersPanel.vue';
 import CategoryForm from '@/components/forms/category-form.vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
 
-import { useAnswers, forceDeleteAnswer } from '@/composables/api/answers';
+import {
+    useAnswers,
+    forceDeleteAnswer,
+    reorderAnswers,
+} from '@/composables/api/answers';
 import {
     hideCategory,
     restoreCategory,
@@ -597,7 +625,7 @@ import { apiHost } from '@/store/store';
 
 const { message, isError, notify } = useNotification();
 const { extractErrorMessage } = useApiError();
-const { isAdmin } = useAuth();
+const { isAdmin, canManageSurveys } = useAuth();
 const { confirm: confirmDialog } = useConfirm();
 const {
     getAnswersByQuestion: getAnswersByQuestionApi,
@@ -613,6 +641,7 @@ const isModalOpen_categories = ref(false);
 const editingCategoryId = ref(0);
 const showHiddenCategories = ref(false);
 const showHiddenQuestions = ref(false);
+const hiddenQuestionsCount = ref(0);
 const questions = ref([]);
 const categories = ref([]);
 const survey = ref([]);
@@ -628,6 +657,7 @@ const formQuestion = ref([
         name: '',
         order: 0,
         category_id: categorySelected.value,
+        allows_multiple_answers: false,
     },
 ]);
 
@@ -645,6 +675,20 @@ const refreshQuestions = async () => {
         showHiddenQuestions.value,
     );
     questions.value = questions_;
+
+    if (
+        !showHiddenQuestions.value &&
+        questions_.length === 0 &&
+        categorySelected.value
+    ) {
+        const { data: allQuestions_ } = await getQuestionsByCategory(
+            categorySelected.value,
+            true,
+        );
+        hiddenQuestionsCount.value = allQuestions_.length;
+    } else {
+        hiddenQuestionsCount.value = 0;
+    }
 };
 
 const refreshCategories = async () => {
@@ -660,6 +704,10 @@ const refreshCategories = async () => {
 
 // Function to hide (soft-delete) a question
 const deleteQuestion = async (id) => {
+    if (!(await confirmDialog('¿Ocultar esta pregunta?'))) {
+        return;
+    }
+
     const { errorFlag, responseMessage } = await hideQuestion(id);
 
     if (!errorFlag) {
@@ -706,6 +754,10 @@ const editCategory = (id) => {
 };
 
 const hideCategoryRow = async (id) => {
+    if (!(await confirmDialog('¿Ocultar esta categoría?'))) {
+        return;
+    }
+
     const { errorFlag, responseMessage } = await hideCategory(id);
 
     if (!errorFlag) {
@@ -786,6 +838,26 @@ const onReorderQuestions = async () => {
     }
 };
 
+const onReorderAnswers = async () => {
+    const snapshot = answersByQuestion.value.map((answer) => ({ ...answer }));
+    const items = answersByQuestion.value.map((answer, index) => ({
+        id: answer.id,
+        order: index + 1,
+    }));
+
+    answersByQuestion.value = answersByQuestion.value.map((answer, index) => ({
+        ...answer,
+        order: index + 1,
+    }));
+
+    const { errorFlag, responseMessage } = await reorderAnswers(items);
+
+    if (errorFlag) {
+        answersByQuestion.value = snapshot;
+        notify(responseMessage || 'Error al reordenar las respuestas', true);
+    }
+};
+
 const forceDeleteAnswerRow = async (id, index) => {
     if (
         !(await confirmDialog(
@@ -855,6 +927,16 @@ watch(categorySelected, async (value) => {
     if (data) {
         questions.value = data;
         answersByQuestion.value = [];
+
+        if (!showHiddenQuestions.value && data.length === 0 && value) {
+            const { data: allQuestions_ } = await getQuestionsByCategory(
+                value,
+                true,
+            );
+            hiddenQuestionsCount.value = allQuestions_.length;
+        } else {
+            hiddenQuestionsCount.value = 0;
+        }
     } else if (errorFlag) {
         notify(responseMessage, true);
     }
@@ -864,6 +946,7 @@ const incrementFormRow = () => {
         name: '',
         order: questions.value.length + formQuestion.value.length + 1,
         category_id: categorySelected.value,
+        allows_multiple_answers: false,
     });
 };
 
@@ -876,6 +959,7 @@ const getQuestionToEdit = async (id) => {
                 name: data.name,
                 order: data.order,
                 category_id: data.category_id,
+                allows_multiple_answers: data.allows_multiple_answers,
             },
         ];
         isModalOpen.value = true;
@@ -900,6 +984,7 @@ const createManyQuestions = async () => {
                 name: '',
                 order: 0,
                 category_id: categorySelected.value,
+                allows_multiple_answers: false,
             },
         ];
     } else if (errorFlag) {
@@ -930,6 +1015,7 @@ const newQuestions = () => {
             name: '',
             order: questions.value.length + 1,
             category_id: categorySelected.value,
+            allows_multiple_answers: false,
         },
     ];
 };
@@ -1001,6 +1087,10 @@ const createManyAnswers = async () => {
 };
 
 const deleteAnswer = async (id, index) => {
+    if (!(await confirmDialog('¿Ocultar esta respuesta?'))) {
+        return;
+    }
+
     const success = await deleteAnswerApi(id);
 
     if (success) {

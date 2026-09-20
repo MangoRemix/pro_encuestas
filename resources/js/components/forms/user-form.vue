@@ -148,11 +148,7 @@
                             :key="role.id"
                             :value="role.id"
                         >
-                            {{
-                                role.name === 'ADMIN'
-                                    ? 'Administrador'
-                                    : 'Encuestador'
-                            }}
+                            {{ roleLabel(role.name) }}
                         </option>
                     </select>
                 </div>
@@ -210,6 +206,7 @@
 import axios from 'axios';
 import { ref, reactive, onMounted, computed } from 'vue';
 import NotificationBox from '@/components/notification-box.vue';
+import { roleLabel } from '@/composables/roleLabels';
 import { apiHost } from '@/store/store.js';
 
 const props = defineProps({

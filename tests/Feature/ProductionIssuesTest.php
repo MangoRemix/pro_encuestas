@@ -260,6 +260,41 @@ class ProductionIssuesTest extends TestCase
         $this->assertDatabaseHas('questions', ['id' => $questionB->id, 'order' => 1]);
     }
 
+    public function test_an_admin_can_reorder_answers_within_the_same_question(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $question = Question::factory()->create();
+        $answerA = Answer::factory()->create(['question_id' => $question->id, 'order' => 1]);
+        $answerB = Answer::factory()->create(['question_id' => $question->id, 'order' => 2]);
+
+        $response = $this->actingAs($admin)->putJson('/api/answer/reorder', [
+            'items' => [
+                ['id' => $answerA->id, 'order' => 2],
+                ['id' => $answerB->id, 'order' => 1],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('answers', ['id' => $answerA->id, 'order' => 2]);
+        $this->assertDatabaseHas('answers', ['id' => $answerB->id, 'order' => 1]);
+    }
+
+    public function test_reordering_answers_across_different_questions_is_rejected(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $answerFromQuestionA = Answer::factory()->create();
+        $answerFromQuestionB = Answer::factory()->create();
+
+        $response = $this->actingAs($admin)->putJson('/api/answer/reorder', [
+            'items' => [
+                ['id' => $answerFromQuestionA->id, 'order' => 1],
+                ['id' => $answerFromQuestionB->id, 'order' => 2],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
     public function test_a_non_admin_cannot_restore_or_force_delete_a_survey(): void
     {
         $pollster = Person::factory()->create();

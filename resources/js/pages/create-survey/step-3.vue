@@ -88,7 +88,7 @@
                                     :class="[
                                         'w-full cursor-pointer text-slate-200 transition-colors',
                                         questionSelected?.id === question.id
-                                            ? 'bg-yellow-500 font-semibold text-white'
+                                            ? 'bg-blue-600/30 font-semibold text-white'
                                             : 'hover:bg-slate-600/30',
                                     ]"
                                 >
@@ -120,7 +120,8 @@
                                                     )
                                                 "
                                                 class="cursor-pointer text-xl text-red-500 hover:text-red-400"
-                                                icon="ic:baseline-restore-from-trash"
+                                                icon="ic:round-visibility-off"
+                                                title="Ocultar"
                                             />
                                         </div>
                                     </td>
@@ -185,7 +186,8 @@
                                                 )
                                             "
                                             class="cursor-pointer text-xl text-red-500 hover:text-red-400"
-                                            icon="ic:baseline-restore-from-trash"
+                                            icon="ic:round-visibility-off"
+                                            title="Ocultar"
                                         />
                                     </div>
                                 </td>
@@ -253,6 +255,15 @@
                                 class="inputs-form w-full"
                             />
                         </div>
+                        <label
+                            class="mt-2 flex cursor-pointer items-center gap-2 text-sm font-bold"
+                        >
+                            <input
+                                type="checkbox"
+                                v-model="formRow.allows_multiple_answers"
+                            />
+                            Permite selección múltiple
+                        </label>
                     </div>
                 </div>
             </form>
@@ -369,8 +380,11 @@ import {
     getCategoriesBySurvey,
     showFullSurvey,
 } from '@/composables/api/surveys';
+import { useConfirm } from '@/composables/useConfirm';
 import MainLayout from '@/layouts/main-layout.vue';
 import { currentStep, stepsBreadcrumb } from '@/store/store';
+
+const { confirm: confirmDialog } = useConfirm();
 
 const operation_name = ref('create');
 const isQuestionModalOpen = ref(false);
@@ -401,6 +415,7 @@ const formQuestion = ref([
         name: '',
         order: 0,
         category_id: categorySelected.value,
+        allows_multiple_answers: false,
     },
 ]);
 
@@ -486,6 +501,7 @@ const getQuestions = async (value) => {
                 name: '',
                 order: questions.value.length + 1,
                 category_id: categorySelected.value,
+                allows_multiple_answers: false,
             },
         ];
     } else {
@@ -505,6 +521,7 @@ function incrementFormRow(type) {
             name: '',
             order: questions.value.length + formQuestion.value.length + 1,
             category_id: categorySelected.value,
+            allows_multiple_answers: false,
         });
     } else {
         formAnswer.value.push({
@@ -522,6 +539,8 @@ const getQuestionToEdit = async (id) => {
         if (data) {
             formQuestion.value[0].name = data.name;
             formQuestion.value[0].order = data.order;
+            formQuestion.value[0].allows_multiple_answers =
+                data.allows_multiple_answers;
             isQuestionModalOpen.value = true;
             operation_name.value = 'Editar';
             questionSelected.value = data;
@@ -595,11 +614,16 @@ const newQuestions = () => {
             name: '',
             order: questions.value.length + 1,
             category_id: categorySelected.value,
+            allows_multiple_answers: false,
         },
     ];
 };
 
 const handleHideQuestion = async (id) => {
+    if (!(await confirmDialog('¿Ocultar esta pregunta?'))) {
+        return;
+    }
+
     const { errorFlag, responseMessage } = await hideQuestion(id);
 
     if (!errorFlag) {
@@ -684,6 +708,10 @@ const refreshAnswers = async () => {
 };
 
 const handleHideAnswer = async (id, index) => {
+    if (!(await confirmDialog('¿Ocultar esta respuesta?'))) {
+        return;
+    }
+
     const { success, message: apiMessage } = await hideAnswer(id);
 
     if (success) {

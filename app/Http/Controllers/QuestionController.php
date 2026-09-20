@@ -25,6 +25,7 @@ class QuestionController extends Controller
             'name' => 'required|string|max:250',
             'order' => 'required|integer|min:1',
             'category_id' => 'required|integer|min:1',
+            'allows_multiple_answers' => 'boolean',
         ];
     }
 
@@ -34,6 +35,7 @@ class QuestionController extends Controller
             'name' => 'required|string|max:250|min:5',
             'order' => 'required|integer|min:1',
             'category_id' => 'integer|min:1',
+            'allows_multiple_answers' => 'boolean',
         ];
     }
 
@@ -241,6 +243,7 @@ class QuestionController extends Controller
             foreach ($request->all() as $questions => $value) {
                 // code...
                 $value['name'] = strtoupper($value['name']);
+                $value['allows_multiple_answers'] = $value['allows_multiple_answers'] ?? false;
                 $value['created_at'] = now();
                 $value['updated_at'] = now();
                 // return response()->json($value);
@@ -255,6 +258,7 @@ class QuestionController extends Controller
                 '*.order' => ['required', 'integer', 'distinct', Rule::unique('questions', 'order')->where(function ($query) use ($category_id) {
                     $query->where('category_id', $category_id)->where('deleted_at', null);
                 })], // <--- "distinct" hace la magia
+                '*.allows_multiple_answers' => 'boolean',
                 '*.created_at' => 'date',
                 '*.updated_at' => 'date',
             ], [

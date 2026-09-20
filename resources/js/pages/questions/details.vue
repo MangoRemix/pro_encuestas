@@ -69,7 +69,7 @@
                                                 deleteAnswer(answer.id, index)
                                             "
                                             class="cursor-pointer text-2xl text-red-600 hover:text-red-500"
-                                            icon="ic:baseline-restore-from-trash"
+                                            icon="ic:round-visibility-off"
                                             title="Ocultar"
                                         />
                                         <Icon
@@ -285,6 +285,10 @@ const createManyAnswers = async () => {
 };
 
 const deleteAnswer = async (id, index) => {
+    if (!(await confirmDialog('¿Ocultar esta respuesta?'))) {
+        return;
+    }
+
     loading.value = true;
 
     const { success, message: apiMessage } = await hideAnswer(id);

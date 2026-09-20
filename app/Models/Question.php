@@ -9,12 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'order', 'category_id'])]
+#[Fillable(['name', 'order', 'category_id', 'allows_multiple_answers'])]
 
 class Question extends Model
 {
     //
     use HasFactory,SoftDeletes;
+
+    protected $casts = [
+        'allows_multiple_answers' => 'boolean',
+    ];
 
     protected static function booted()
     {

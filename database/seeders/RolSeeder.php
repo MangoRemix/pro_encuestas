@@ -11,6 +11,7 @@ class RolSeeder extends Seeder
         ['name' => 'POLLSTER'],
         ['name' => 'RESPONDENT'],
         ['name' => 'ADMIN'],
+        ['name' => 'GESTOR_ENCUESTAS'],
     ];
 
     public function run(): void

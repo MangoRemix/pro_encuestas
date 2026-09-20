@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\MobileLoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ParishController;
@@ -11,12 +12,14 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\SexController;
+use App\Http\Controllers\SurveyAssignmentController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyImportController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas Públicas (Lectura de catálogos necesarios para formularios y registro)
 Route::post('login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+Route::post('mobile/login', [MobileLoginController::class, 'store'])->middleware('throttle:5,1');
 
 Route::prefix('sex')->group(function () {
     Route::get('show-all', [SexController::class, 'index']);
@@ -68,15 +71,30 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
         Route::delete('delete/{id}', [SurveyController::class, 'destroy']);
 
-        // Escritura: solo ADMIN (gestión de encuestas)
-        Route::middleware('admin')->group(function () {
+        // Escritura: ADMIN o GESTOR_ENCUESTAS (gestión de encuestas)
+        Route::middleware('manage-surveys')->group(function () {
             Route::post('create', [SurveyController::class, 'store']);
             Route::post('import-excel', [SurveyImportController::class, 'importFromExcel']);
             Route::put('update/{id}', [SurveyController::class, 'update']);
             Route::patch('restore/{id}', [SurveyController::class, 'restore']);
+
+            Route::post('{survey}/assign', [SurveyAssignmentController::class, 'assign']);
+            Route::delete('{survey}/unassign/{person}', [SurveyAssignmentController::class, 'unassign']);
+            Route::get('{survey}/pollsters', [SurveyAssignmentController::class, 'pollsters']);
+        });
+
+        // Eliminación permanente: solo ADMIN
+        Route::middleware('admin')->group(function () {
             Route::delete('force-delete/{id}', [SurveyController::class, 'forceDelete']);
         });
     });
+
+    /** APP MÓVIL: encuestas asignadas al usuario autenticado + cierre de sesión (revoca el token) */
+    Route::get('mobile/surveys', [SurveyAssignmentController::class, 'assignedToMe']);
+    Route::post('mobile/logout', [MobileLoginController::class, 'destroy']);
+
+    Route::get('person/{person}/assigned-surveys', [SurveyAssignmentController::class, 'assignedSurveys'])
+        ->middleware('manage-surveys');
 
     /** CATEGORIES RESOURCES */
     Route::prefix('category')->group(function () {
@@ -87,12 +105,15 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
         Route::delete('delete/{id}', [CategoryController::class, 'destroy']);
 
-        Route::middleware('admin')->group(function () {
+        Route::middleware('manage-surveys')->group(function () {
             Route::post('create', [CategoryController::class, 'store']);
             Route::post('create-many', [CategoryController::class, 'createMany']);
             Route::put('update/{id}', [CategoryController::class, 'update']);
             Route::put('reorder', [CategoryController::class, 'reorder']);
             Route::patch('restore/{id}', [CategoryController::class, 'restore']);
+        });
+
+        Route::middleware('admin')->group(function () {
             Route::delete('force-delete/{id}', [CategoryController::class, 'forceDelete']);
         });
     });
@@ -106,12 +127,15 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
         Route::delete('delete/{id}', [QuestionController::class, 'destroy']);
 
-        Route::middleware('admin')->group(function () {
+        Route::middleware('manage-surveys')->group(function () {
             Route::post('create', [QuestionController::class, 'store']);
             Route::post('create-many', [QuestionController::class, 'createMany']);
             Route::put('update/{id}', [QuestionController::class, 'update']);
             Route::put('reorder', [QuestionController::class, 'reorder']);
             Route::patch('restore/{id}', [QuestionController::class, 'restore']);
+        });
+
+        Route::middleware('admin')->group(function () {
             Route::delete('force-delete/{id}', [QuestionController::class, 'forceDelete']);
         });
     });
@@ -125,11 +149,15 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         // Ocultar: cualquier autenticado (soft-delete reutilizado como "Ocultar")
         Route::delete('delete/{id}', [AnswerController::class, 'destroy']);
 
-        Route::middleware('admin')->group(function () {
+        Route::middleware('manage-surveys')->group(function () {
             Route::post('create', [AnswerController::class, 'create']);
             Route::post('create-many', [AnswerController::class, 'createMany']);
             Route::put('update/{id}', [AnswerController::class, 'update']);
+            Route::put('reorder', [AnswerController::class, 'reorder']);
             Route::patch('restore/{id}', [AnswerController::class, 'restore']);
+        });
+
+        Route::middleware('admin')->group(function () {
             Route::delete('force-delete/{id}', [AnswerController::class, 'forceDelete']);
         });
     });
@@ -140,6 +168,9 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('create', [ResultController::class, 'create']);
         Route::post('batch', [ResultController::class, 'storeBatch']);
         Route::get('batch-status/{batchId}', [ResultController::class, 'getBatchStatus']);
+        // Subida atómica desde la app móvil: crea el encuestado + todas sus
+        // respuestas en una transacción, idempotente por instance_uuid.
+        Route::post('batch-instance', [ResultController::class, 'batchInstance']);
 
         // Reportes y administración de resultados — solo ADMIN
         Route::middleware('admin')->group(function () {

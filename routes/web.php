@@ -11,7 +11,7 @@ Route::middleware(['auth'])->group(function () {
     Route::inertia('/', 'index')->name('home');
     Route::inertia('/settings', 'settings/index')->name('settings');
 
-    Route::middleware(['admin'])->group(function () {
+    Route::middleware(['manage-surveys'])->group(function () {
         Route::prefix('surveys')->name('surveys.')->group(function () {
             Route::get('/', function (Request $request) {
                 $validated = $request->validate(['page' => ['nullable', 'integer']]);
@@ -71,7 +71,11 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('questions')->name('questions.')->group(function () {
             Route::get('/details/{id}', fn (int $id) => Inertia::render('questions/details', ['id' => $id]))->whereNumber('id')->name('show');
         });
+    });
 
+    // Datos sensibles / administración de la plataforma — solo ADMIN, ni
+    // siquiera GESTOR_ENCUESTAS tiene acceso a estos módulos.
+    Route::middleware(['admin'])->group(function () {
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', function (Request $request) {
                 $validated = $request->validate(['surveyId' => ['nullable', 'integer'], 'categoryId' => ['nullable', 'integer']]);

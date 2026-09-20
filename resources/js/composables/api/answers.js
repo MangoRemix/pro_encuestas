@@ -148,3 +148,20 @@ export async function forceDeleteAnswer(id) {
         };
     }
 }
+
+// {errorFlag, responseMessage} en vez de {success, message}: misma forma que
+// reorderQuestions/reorderCategories, para que los 3 handlers de arrastre en
+// surveys/details.vue sean idénticos entre sí.
+export async function reorderAnswers(items) {
+    try {
+        const { data } = await axios.put(`${apiHost}answer/reorder`, { items });
+
+        return { errorFlag: false, responseMessage: '', data };
+    } catch (error) {
+        return {
+            errorFlag: true,
+            responseMessage: extractErrorMessage(error),
+            data: null,
+        };
+    }
+}

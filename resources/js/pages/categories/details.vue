@@ -68,7 +68,7 @@
                                                 )
                                             "
                                             class="cursor-pointer text-2xl text-red-600 hover:text-red-500"
-                                            icon="ic:baseline-restore-from-trash"
+                                            icon="ic:round-visibility-off"
                                             title="Ocultar"
                                         />
                                         <Icon
@@ -145,6 +145,15 @@
                                 class="inputs-form"
                             />
                         </div>
+                        <label
+                            class="mt-2 flex cursor-pointer items-center gap-2 text-sm font-bold"
+                        >
+                            <input
+                                type="checkbox"
+                                v-model="formRow.allows_multiple_answers"
+                            />
+                            Permite selección múltiple
+                        </label>
                     </div>
                 </form>
             </Modal>
@@ -187,6 +196,7 @@ const form = ref([
         name: '',
         order: 0,
         category_id: parseInt(page.props.id),
+        allows_multiple_answers: false,
     },
 ]);
 
@@ -210,6 +220,7 @@ const newQuestions = () => {
             name: '',
             order: questionsByCategory.value.length + 1,
             category_id: parseInt(page.props.id),
+            allows_multiple_answers: false,
         },
     ];
 };
@@ -218,6 +229,7 @@ const incrementFormRow = () => {
         name: '',
         order: questionsByCategory.value.length + form.value.length + 1,
         category_id: parseInt(page.props.id),
+        allows_multiple_answers: false,
     });
 };
 
@@ -285,6 +297,10 @@ const createManyQuestions = async () => {
 };
 
 const deleteQuestion = async (id, index) => {
+    if (!(await confirmDialog('¿Ocultar esta pregunta?'))) {
+        return;
+    }
+
     const { errorFlag, responseMessage } = await hideQuestion(id);
 
     if (!errorFlag) {
@@ -331,6 +347,8 @@ const getQuestionToEdit = async (id) => {
         if (status == 200) {
             form.value[0].name = data.name;
             form.value[0].order = data.order;
+            form.value[0].allows_multiple_answers =
+                data.allows_multiple_answers;
             isModalOpen.value = true;
             operation_name.value = 'Editar';
             questionSelectedId.value = id;

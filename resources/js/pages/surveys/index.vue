@@ -87,6 +87,16 @@
                 <div
                     class="flex justify-end gap-2 border-t border-slate-700 pt-3"
                 >
+                    <Icon
+                        v-if="canManageSurveys && isSurveyExpired(survey)"
+                        @click="
+                            idSurveyToReactivate = survey.id;
+                            isReactivateModalOpen = true;
+                        "
+                        class="cursor-pointer text-xl text-green-500 hover:text-green-400"
+                        icon="ic:round-refresh"
+                        title="Reactivar encuesta"
+                    />
                     <RowActions
                         :is-admin="isAdmin"
                         :is-trashed="!!survey.deleted_at"
@@ -187,24 +197,43 @@
                                 {{ survey.results_count }}
                             </td>
                             <td class="p-4">
-                                <RowActions
-                                    :is-admin="isAdmin"
-                                    :is-trashed="!!survey.deleted_at"
-                                    @view="
-                                        router.visit(
-                                            `/surveys/details/${survey.id}`,
-                                        )
-                                    "
-                                    @edit="
-                                        idSurveyToEdit = survey.id;
-                                        isModalOpen = true;
-                                    "
-                                    @hide="handleHideSurvey(survey.id)"
-                                    @restore="handleRestoreSurvey(survey.id)"
-                                    @force-delete="
-                                        handleForceDeleteSurvey(survey.id)
-                                    "
-                                />
+                                <div
+                                    class="flex items-center justify-center gap-3"
+                                >
+                                    <Icon
+                                        v-if="
+                                            canManageSurveys &&
+                                            isSurveyExpired(survey)
+                                        "
+                                        @click="
+                                            idSurveyToReactivate = survey.id;
+                                            isReactivateModalOpen = true;
+                                        "
+                                        class="cursor-pointer text-xl text-green-500 hover:text-green-400"
+                                        icon="ic:round-refresh"
+                                        title="Reactivar encuesta"
+                                    />
+                                    <RowActions
+                                        :is-admin="isAdmin"
+                                        :is-trashed="!!survey.deleted_at"
+                                        @view="
+                                            router.visit(
+                                                `/surveys/details/${survey.id}`,
+                                            )
+                                        "
+                                        @edit="
+                                            idSurveyToEdit = survey.id;
+                                            isModalOpen = true;
+                                        "
+                                        @hide="handleHideSurvey(survey.id)"
+                                        @restore="
+                                            handleRestoreSurvey(survey.id)
+                                        "
+                                        @force-delete="
+                                            handleForceDeleteSurvey(survey.id)
+                                        "
+                                    />
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -216,6 +245,16 @@
             <SurveyForm
                 :surveyId="idSurveyToEdit"
                 @updated="handleSurveyUpdated"
+            />
+        </Modal>
+        <Modal
+            :show="isReactivateModalOpen"
+            @close="isReactivateModalOpen = false"
+        >
+            <SurveyForm
+                :surveyId="idSurveyToReactivate"
+                :is-reactivation="true"
+                @updated="handleSurveyReactivated"
             />
         </Modal>
         <Pagination
@@ -252,13 +291,15 @@ import { useNotification } from '@/composables/useNotification';
 import MainLayout from '@/layouts/main-layout.vue';
 
 const { notify } = useNotification();
-const { isAdmin } = useAuth();
+const { isAdmin, canManageSurveys } = useAuth();
 const { confirm: confirmDialog } = useConfirm();
 const isModalOpen = ref(false);
+const isReactivateModalOpen = ref(false);
 const surveys = ref([]);
 const pagination = ref(null);
 
 const idSurveyToEdit = ref(0);
+const idSurveyToReactivate = ref(0);
 const searchQuery = ref('');
 const sortField = ref('name');
 const sortDirection = ref('asc');
@@ -327,6 +368,15 @@ const getSurveys = async (page = 1) => {
 const handleSurveyUpdated = async () => {
     isModalOpen.value = false;
     idSurveyToEdit.value = 0;
+    await getSurveys(pagination.value?.current_page || 1);
+};
+
+const isSurveyExpired = (survey) =>
+    new Date(survey.finish_date).getTime() < Date.now();
+
+const handleSurveyReactivated = async () => {
+    isReactivateModalOpen.value = false;
+    idSurveyToReactivate.value = 0;
     await getSurveys(pagination.value?.current_page || 1);
 };
 

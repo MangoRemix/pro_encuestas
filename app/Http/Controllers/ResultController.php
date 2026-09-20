@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ApiResponds;
 use App\Jobs\ProcessResultBatch;
 use App\Models\Answer;
+use App\Models\Person;
+use App\Models\Question;
 use App\Models\Result;
 use App\Services\ResultReportService;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Throwable;
@@ -70,12 +74,20 @@ class ResultController extends Controller
                 throw new Exception('Bad Request respuesta no pertenece a pregunta', 400);
             }
 
+            $allowsMultipleAnswers = (bool) Question::query()
+                ->where('id', $request['question_id'])
+                ->value('allows_multiple_answers');
+
             $already_answered = Result::query()
                 ->where('person_id', $request['person_id'])
                 ->where('question_id', $request['question_id'])
+                ->when($allowsMultipleAnswers, fn ($query) => $query->where('answer_id', $request['answer_id']))
                 ->first();
             if ($already_answered) {
-                throw new Exception('Esta persona ya respondió esta pregunta', 409);
+                $message = $allowsMultipleAnswers
+                    ? 'Esta persona ya marcó esta respuesta'
+                    : 'Esta persona ya respondió esta pregunta';
+                throw new Exception($message, 409);
             }
 
             Result::create($validator->validated());
@@ -105,6 +117,83 @@ class ResultController extends Controller
         ProcessResultBatch::dispatch($results, $batchId)->delay(now()->addSecond(10));
 
         return response()->json(['batch_id' => $batchId], 202);
+    }
+
+    /**
+     * Subida atómica de una encuesta completa desde la app móvil offline:
+     * crea el encuestado y todas sus respuestas en una sola transacción.
+     * Idempotente por instance_uuid — reintentar una subida cortada por
+     * falta de conexión no duplica datos.
+     */
+    public function batchInstance(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'instance_uuid' => 'required|string|max:255',
+                'survey_id' => 'required|integer|exists:surveys,id',
+                'pollster_id' => 'required|integer|exists:persons,id',
+                'respondent' => 'required|array',
+                'respondent.sex_id' => 'required|integer|exists:sexes,id',
+                'respondent.age' => 'required|integer|min:0|max:120',
+                'respondent.parish_id' => 'required|integer|exists:parishes,id',
+                'answers' => 'required|array|min:1',
+                'answers.*.question_id' => 'required|integer|exists:questions,id',
+                'answers.*.answer_id' => 'required|integer|exists:answers,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            $validated = $validator->validated();
+
+            $existing = Result::where('client_instance_uuid', $validated['instance_uuid'])->first();
+
+            if ($existing) {
+                return response()->json([
+                    'message' => 'Esta instancia ya había sido procesada',
+                    'server_person_id' => $existing->person_id,
+                ], 200);
+            }
+
+            $person = DB::transaction(function () use ($validated) {
+                $person = Person::create([
+                    'sex_id' => $validated['respondent']['sex_id'],
+                    'age' => $validated['respondent']['age'],
+                    'parish_id' => $validated['respondent']['parish_id'],
+                ]);
+
+                foreach ($validated['answers'] as $answer) {
+                    $belongsToQuestion = Answer::where('id', $answer['answer_id'])
+                        ->where('question_id', $answer['question_id'])
+                        ->exists();
+
+                    if (! $belongsToQuestion) {
+                        throw new Exception(
+                            "La respuesta {$answer['answer_id']} no pertenece a la pregunta {$answer['question_id']}",
+                            400
+                        );
+                    }
+
+                    Result::create([
+                        'person_id' => $person->id,
+                        'question_id' => $answer['question_id'],
+                        'answer_id' => $answer['answer_id'],
+                        'pollster_id' => $validated['pollster_id'],
+                        'client_instance_uuid' => $validated['instance_uuid'],
+                    ]);
+                }
+
+                return $person;
+            });
+
+            return response()->json([
+                'message' => 'Encuesta subida con éxito',
+                'server_person_id' => $person->id,
+            ], 201);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
     }
 
     /**

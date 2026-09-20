@@ -62,4 +62,11 @@ class PersonFactory extends Factory
             'rol_id' => fn () => Rol::query()->firstOrCreate(['name' => Rol::ADMIN])->id,
         ]);
     }
+
+    public function gestorEncuestas(): static
+    {
+        return $this->state(fn () => [
+            'rol_id' => fn () => Rol::query()->firstOrCreate(['name' => Rol::GESTOR_ENCUESTAS])->id,
+        ]);
+    }
 }

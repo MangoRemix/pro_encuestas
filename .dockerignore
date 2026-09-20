@@ -8,6 +8,9 @@
 node_modules
 vendor
 
+# App móvil Flutter: proyecto independiente, no forma parte de la imagen PHP
+mobile
+
 # Assets compilados (se compilan en el build)
 public/build
 public/hot

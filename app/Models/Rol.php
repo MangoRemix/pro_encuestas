@@ -25,6 +25,8 @@ class Rol extends Model
 
     public const ADMIN = 'ADMIN';
 
+    public const GESTOR_ENCUESTAS = 'GESTOR_ENCUESTAS';
+
     public function persons(): HasMany
     {
 

@@ -1,0 +1,50 @@
+name: mobile-ci
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - master
+      - workos
+    paths:
+      - 'mobile/**'
+  pull_request:
+    branches:
+      - develop
+      - main
+      - master
+      - workos
+    paths:
+      - 'mobile/**'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate Drift code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build debug APK (compile smoke test)
+        run: flutter build apk --debug

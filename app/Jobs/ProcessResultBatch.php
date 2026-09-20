@@ -28,14 +28,17 @@ class ProcessResultBatch implements ShouldQueue
                 DB::transaction(function () use ($surveyResults) {
                     foreach ($surveyResults as $item) {
                         // updateOrCreate: hace el job idempotente ante reintentos
-                        // de la cola o doble envío del cliente.
+                        // de la cola o doble envío del cliente. La clave incluye
+                        // answer_id porque una pregunta de selección múltiple
+                        // puede tener varias filas para la misma persona+pregunta,
+                        // una por cada respuesta marcada.
                         Result::updateOrCreate(
                             [
                                 'person_id' => $item['person_id'],
                                 'question_id' => $item['question_id'],
+                                'answer_id' => $item['answer_id'],
                             ],
                             [
-                                'answer_id' => $item['answer_id'],
                                 'pollster_id' => $item['pollster_id'],
                             ]
                         );

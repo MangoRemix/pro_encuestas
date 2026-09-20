@@ -20,7 +20,7 @@ class PersonController extends Controller
      */
     private function staffRoleIds(): array
     {
-        return Rol::whereIn('name', [Rol::POLLSTER, Rol::ADMIN])->pluck('id')->all();
+        return Rol::whereIn('name', [Rol::POLLSTER, Rol::ADMIN, Rol::GESTOR_ENCUESTAS])->pluck('id')->all();
     }
 
     public function preCreate(Request $request)

@@ -12,7 +12,7 @@ class RolController extends Controller
      */
     public function staffRoles()
     {
-        $roles = Rol::whereIn('name', [Rol::POLLSTER, Rol::ADMIN])->get(['id', 'name']);
+        $roles = Rol::whereIn('name', [Rol::POLLSTER, Rol::ADMIN, Rol::GESTOR_ENCUESTAS])->get(['id', 'name']);
 
         return response()->json($roles, 200);
     }

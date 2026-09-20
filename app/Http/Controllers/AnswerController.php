@@ -6,7 +6,9 @@ use App\Http\Controllers\Concerns\ApiResponds;
 use App\Models\Answer;
 use App\Models\Question;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Throwable;
@@ -241,6 +243,43 @@ class AnswerController extends Controller
             $answer->forceDelete();
 
             return response()->json(['message' => 'Respuesta eliminada permanentemente'], 200);
+        } catch (Throwable $th) {
+            return $this->errorResponse($th);
+        }
+    }
+
+    /**
+     * Reordenar las respuestas de una pregunta (arrastrar y soltar).
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'items' => 'required|array|min:1',
+                'items.*.id' => 'required|integer|exists:answers,id',
+                'items.*.order' => 'required|integer|min:1',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            $items = $validator->validated()['items'];
+            $ids = array_column($items, 'id');
+
+            $questionIdsCount = Answer::query()->whereIn('id', $ids)->distinct('question_id')->count('question_id');
+
+            if ($questionIdsCount > 1) {
+                throw new Exception('Todas las respuestas a reordenar deben pertenecer a la misma pregunta', 422);
+            }
+
+            DB::transaction(function () use ($items) {
+                foreach ($items as $item) {
+                    Answer::query()->where('id', $item['id'])->update(['order' => $item['order']]);
+                }
+            });
+
+            return response()->json(['message' => 'Orden actualizado con éxito'], 200);
         } catch (Throwable $th) {
             return $this->errorResponse($th);
         }

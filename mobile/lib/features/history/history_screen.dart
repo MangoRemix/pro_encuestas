@@ -155,7 +155,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               onPressed: instances.isEmpty ? null : () => _deleteAll(instances),
             ),
             loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         ],
       ),

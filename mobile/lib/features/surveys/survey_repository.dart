@@ -53,7 +53,7 @@ class SurveyRepository {
 
     await _db.replaceCatalogSurveys([
       CachedSurveysCompanion.insert(
-        id: survey['id'] as int,
+        id: Value(survey['id'] as int),
         name: survey['name'] as String,
         initDate: DateTime.parse(survey['init_date'] as String),
         finishDate: DateTime.parse(survey['finish_date'] as String),
@@ -67,7 +67,7 @@ class SurveyRepository {
     for (final category in (survey['categories'] as List<dynamic>)) {
       final categoryMap = category as Map<String, dynamic>;
       categories.add(CachedCategoriesCompanion.insert(
-        id: categoryMap['id'] as int,
+        id: Value(categoryMap['id'] as int),
         surveyId: surveyId,
         name: categoryMap['name'] as String,
         order: categoryMap['order'] as int,
@@ -76,7 +76,7 @@ class SurveyRepository {
       for (final question in (categoryMap['questions'] as List<dynamic>)) {
         final questionMap = question as Map<String, dynamic>;
         questions.add(CachedQuestionsCompanion.insert(
-          id: questionMap['id'] as int,
+          id: Value(questionMap['id'] as int),
           categoryId: categoryMap['id'] as int,
           name: questionMap['name'] as String,
           order: questionMap['order'] as int,
@@ -88,7 +88,7 @@ class SurveyRepository {
         for (final answer in (questionMap['answers'] as List<dynamic>)) {
           final answerMap = answer as Map<String, dynamic>;
           answers.add(CachedAnswersCompanion.insert(
-            id: answerMap['id'] as int,
+            id: Value(answerMap['id'] as int),
             questionId: questionMap['id'] as int,
             name: answerMap['name'] as String,
             order: answerMap['order'] as int,
@@ -109,7 +109,7 @@ class SurveyRepository {
     final parishesResponse = await _apiClient.dio.get('parish/show-all');
     final parishes = (parishesResponse.data as List<dynamic>)
         .map((p) => CachedParishesCompanion.insert(
-              id: (p as Map<String, dynamic>)['id'] as int,
+              id: Value((p as Map<String, dynamic>)['id'] as int),
               name: p['name'] as String,
             ))
         .toList();
@@ -118,7 +118,7 @@ class SurveyRepository {
     final sexesResponse = await _apiClient.dio.get('sex/show-all');
     final sexes = (sexesResponse.data as List<dynamic>)
         .map((s) => CachedSexesCompanion.insert(
-              id: (s as Map<String, dynamic>)['id'] as int,
+              id: Value((s as Map<String, dynamic>)['id'] as int),
               abbreviation: s['abbreviation'] as String,
               description: s['description'] as String,
             ))

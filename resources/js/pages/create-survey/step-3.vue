@@ -236,8 +236,16 @@
                     <div
                         v-for="(formRow, index) in formQuestion"
                         :key="index"
-                        class="mb-3"
+                        class="relative mb-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
                     >
+                        <button
+                            type="button"
+                            v-if="index > 0"
+                            @click="formQuestion.splice(index, 1)"
+                            class="absolute top-2 right-2 cursor-pointer text-red-500 hover:text-red-700"
+                        >
+                            <Icon icon="ic:baseline-close" class="text-xl" />
+                        </button>
                         <div class="mb-3 text-center font-bold">
                             <span>Pregunta {{ index + 1 }}</span>
                         </div>
@@ -302,8 +310,16 @@
                     <div
                         v-for="(formRow, index) in formAnswer"
                         :key="index"
-                        class="mb-3"
+                        class="relative mb-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
                     >
+                        <button
+                            type="button"
+                            v-if="index > 0"
+                            @click="formAnswer.splice(index, 1)"
+                            class="absolute top-2 right-2 cursor-pointer text-red-500 hover:text-red-700"
+                        >
+                            <Icon icon="ic:baseline-close" class="text-xl" />
+                        </button>
                         <div class="mb-3 text-center font-bold">
                             <span>Respuesta {{ index + 1 }}</span>
                         </div>

@@ -51,6 +51,14 @@ Route::middleware(['auth'])->group(function () {
             });
         });
 
+        Route::get('/activities', function (Request $request) {
+            $validated = $request->validate(['surveyId' => ['nullable', 'integer']]);
+
+            return Inertia::render('activities/index', [
+                'surveyId' => $validated['surveyId'] ?? null,
+            ]);
+        })->name('activities.index');
+
         Route::prefix('categories')->name('categories.')->group(function () {
             Route::get('/', function (Request $request) {
                 $validated = $request->validate(['surveyId' => ['nullable', 'integer'], 'categoryId' => ['nullable', 'integer']]);

@@ -175,6 +175,34 @@ class ActivityAssignmentAndRolesTest extends TestCase
         $this->assertCount(1, $history);
     }
 
+    public function test_cannot_assign_a_pollster_to_a_closed_activity(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $pollster = Person::factory()->create();
+        $activity = Activity::factory()->create([
+            'init_date' => now()->subMonth(),
+            'finish_date' => now()->subDay(),
+        ]);
+
+        $this->actingAs($admin)->postJson("/api/activity/{$activity->id}/assign", [
+            'person_id' => $pollster->id,
+        ])->assertStatus(409);
+    }
+
+    public function test_cannot_update_a_closed_activity(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $activity = Activity::factory()->create([
+            'init_date' => now()->subMonth(),
+            'finish_date' => now()->subDay(),
+        ]);
+        $newParish = Parish::factory()->create();
+
+        $this->actingAs($admin)->putJson("/api/activity/update/{$activity->id}", [
+            'parish_id' => $newParish->id,
+        ])->assertStatus(409);
+    }
+
     public function test_a_survey_can_have_several_activities_in_different_parishes(): void
     {
         $admin = Person::factory()->admin()->create();

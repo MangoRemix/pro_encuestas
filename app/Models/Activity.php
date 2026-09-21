@@ -71,6 +71,17 @@ class Activity extends Model
         return $this->results()->exists();
     }
 
+    /**
+     * Ya pasó su fecha de fin ("Finalizada" en la UI). Una actividad
+     * cerrada no admite más modificaciones ni asignar nuevos encuestadores
+     * — solo tiene sentido seguir asignando gente a algo que todavía va a
+     * ejecutarse (vigente o programada a futuro).
+     */
+    public function isClosed(): bool
+    {
+        return Carbon::now()->gt($this->finish_date);
+    }
+
     public function results(): HasMany
     {
         return $this->hasMany(Result::class);

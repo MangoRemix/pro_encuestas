@@ -25,8 +25,6 @@ const props = defineProps({
     surveyId: { type: [Number, String], required: true },
     totalRespondent: { type: Number, required: true },
     activityId: { type: [Number, String], default: '' },
-    dateFrom: { type: String, default: '' },
-    dateTo: { type: String, default: '' },
 });
 
 const min = ref('');
@@ -48,8 +46,6 @@ const fetchData = async () => {
                     min: minVal,
                     max: maxVal,
                     activity_id: props.activityId || undefined,
-                    from: props.dateFrom || undefined,
-                    to: props.dateTo || undefined,
                 },
             },
         );

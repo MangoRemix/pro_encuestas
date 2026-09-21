@@ -8,12 +8,16 @@ const createResponse = () => ({
     data: null,
 });
 
-export async function getActivitiesForSurvey(surveyId) {
+/**
+ * Lista actividades, opcionalmente filtradas por encuesta. Sin surveyId
+ * trae las de todas las encuestas (vista de gestión de actividades).
+ */
+export async function getActivities({ surveyId } = {}) {
     const response = createResponse();
 
     try {
         const { data } = await axios.get(`${apiHost}activity/show-all`, {
-            params: { survey_id: surveyId },
+            params: surveyId ? { survey_id: surveyId } : {},
         });
         response.data = data;
     } catch (error) {

@@ -418,10 +418,14 @@
             </div>
         </div>
 
-        <ActivitiesPanel
-            v-if="canManageSurveys"
-            :survey-id="page.props.id"
-        />
+        <div v-if="canManageSurveys" class="mt-4 flex justify-center">
+            <Link
+                :href="`/activities?surveyId=${page.props.id}`"
+                class="yellow-button-app w-auto cursor-pointer px-6"
+            >
+                Gestionar actividades de esta encuesta
+            </Link>
+        </div>
 
         <!-- MODALES -->
         <Modal :show="isModalOpen" @close="isModalOpen = false">
@@ -604,11 +608,10 @@
 </template>
 <script setup>
 import { Icon } from '@iconify/vue';
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, onMounted, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
-import ActivitiesPanel from '@/components/ActivitiesPanel.vue';
 import CategoryForm from '@/components/forms/category-form.vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';

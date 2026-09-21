@@ -69,6 +69,11 @@ const MENU_ITEMS = [
                 link: '/surveys?page=1',
                 permission: 'ADMIN',
             },
+            {
+                label: 'Actividades',
+                link: '/activities',
+                permission: 'ADMIN',
+            },
         ],
     },
     {

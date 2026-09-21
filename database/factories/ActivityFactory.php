@@ -16,13 +16,15 @@ class ActivityFactory extends Factory
 
     public function definition(): array
     {
-        $init = fake()->dateTimeBetween('-1 month', 'now');
-
+        // Por defecto siempre vigente (ni cerrada ni futura): la mayoría de
+        // los tests solo necesitan una actividad "normal" y asumible como
+        // asignable. Los tests que sí les importa el estado (cerrada,
+        // futura, vencida) pasan sus propias init_date/finish_date.
         return [
             'survey_id' => Survey::factory(),
             'parish_id' => fn () => Parish::query()->firstOrCreate(['name' => 'ALTAGRACIA'])->id,
-            'init_date' => $init,
-            'finish_date' => fake()->dateTimeBetween($init, '+1 month'),
+            'init_date' => now()->subDay(),
+            'finish_date' => now()->addMonth(),
             'created_by' => null,
         ];
     }

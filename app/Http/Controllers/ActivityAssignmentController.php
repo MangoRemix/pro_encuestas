@@ -32,6 +32,10 @@ class ActivityAssignmentController extends Controller
                 return response()->json($validator->errors(), 422);
             }
 
+            if ($activity->isClosed()) {
+                throw new Exception('Esta actividad ya finalizó; no se pueden asignar más encuestadores', 409);
+            }
+
             $person = Person::find($request->person_id);
 
             if (! $person || $person->rol?->name !== Rol::POLLSTER) {

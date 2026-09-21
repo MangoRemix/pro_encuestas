@@ -127,6 +127,10 @@ class ActivityController extends Controller
                 throw new Exception('Esta actividad ya tiene datos recolectados; no puede modificarse.', 409);
             }
 
+            if ($activity->isClosed()) {
+                throw new Exception('Esta actividad ya finalizó; no puede modificarse.', 409);
+            }
+
             $activity->update($validator->validated());
 
             return response()->json(['message' => 'Actividad actualizada con éxito'], 200);

@@ -63,44 +63,25 @@
 
             <div
                 v-if="selectedSurvey"
-                class="mt-3 flex flex-wrap items-end gap-4 border-t border-slate-100 pt-3"
+                class="mt-3 border-t border-slate-200 pt-3"
             >
-                <div class="min-w-56 flex-1">
-                    <label class="mb-1 block text-sm font-semibold text-slate-600">
-                        Actividad:
-                    </label>
-                    <select
-                        v-model="selectedActivity"
-                        class="w-full rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
+                <label class="mb-1 block text-sm font-semibold text-slate-600">
+                    Actividad:
+                </label>
+                <select
+                    v-model="selectedActivity"
+                    class="w-full max-w-md rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                >
+                    <option value="">Todas las actividades</option>
+                    <option
+                        v-for="activity in activities"
+                        :key="activity.id"
+                        :value="activity.id"
                     >
-                        <option value="">Todas las actividades</option>
-                        <option
-                            v-for="activity in activities"
-                            :key="activity.id"
-                            :value="activity.id"
-                        >
-                            {{ activity.parish?.name }} ({{ formatedDate(activity.init_date) }} -
-                            {{ formatedDate(activity.finish_date) }})
-                        </option>
-                    </select>
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-sm font-semibold text-slate-600">Desde:</label>
-                    <input
-                        type="date"
-                        v-model="dateFrom"
-                        class="rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
-                    />
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-sm font-semibold text-slate-600">Hasta:</label>
-                    <input
-                        type="date"
-                        v-model="dateTo"
-                        :min="dateFrom"
-                        class="rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
-                    />
-                </div>
+                        {{ activity.parish?.name }} ({{ formatedDate(activity.init_date) }} -
+                        {{ formatedDate(activity.finish_date) }})
+                    </option>
+                </select>
             </div>
         </div>
         <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
@@ -169,8 +150,6 @@
                             :survey-id="survey_selected.id"
                             :total-respondent="reportData.total_respondent"
                             :activity-id="selectedActivity"
-                            :date-from="dateFrom"
-                            :date-to="dateTo"
                         />
                     </template>
                     <template
@@ -180,8 +159,6 @@
                             :survey-id="survey_selected.id"
                             :total-respondent="reportData.total_respondent"
                             :activity-id="selectedActivity"
-                            :date-from="dateFrom"
-                            :date-to="dateTo"
                         />
                     </template>
                 </div>
@@ -197,8 +174,6 @@
                         :survey-id="survey_selected.id"
                         :total-respondent="reportData.total_respondent"
                         :activity-id="selectedActivity"
-                        :date-from="dateFrom"
-                        :date-to="dateTo"
                     />
                 </template>
             </div>
@@ -232,8 +207,6 @@ const selected_radio = ref('table');
 
 const activities = ref([]);
 const selectedActivity = ref('');
-const dateFrom = ref('');
-const dateTo = ref('');
 
 const reportData = ref([]);
 
@@ -294,8 +267,6 @@ const loadReport = async () => {
 
         const report = await getReportStructure(selectedSurvey.value, {
             activityId: selectedActivity.value,
-            dateFrom: dateFrom.value,
-            dateTo: dateTo.value,
         });
 
         if (report.data) {
@@ -319,7 +290,7 @@ watch(selectedSurvey, async (surveyId) => {
     }
 });
 
-watch([selectedActivity, dateFrom, dateTo], loadReport);
+watch(selectedActivity, loadReport);
 
 watch(selectedSurvey, loadReport, { immediate: true });
 </script>

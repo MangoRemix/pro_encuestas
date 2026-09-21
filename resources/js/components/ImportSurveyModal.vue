@@ -9,8 +9,6 @@ defineProps({
 const emit = defineEmits(['close', 'import-started']);
 
 const file = ref(null);
-const init_date = ref(new Date().toISOString().split('T')[0]);
-const finish_date = ref('');
 const errorMessage = ref('');
 
 const handleFileChange = (e) => {
@@ -24,16 +22,8 @@ const submitUpload = async () => {
         return;
     }
 
-    if (!init_date.value || !finish_date.value) {
-        errorMessage.value = 'Por favor selecciona fecha de inicio y fin.';
-
-        return;
-    }
-
     const formData = new FormData();
     formData.append('file', file.value);
-    formData.append('init_date', init_date.value);
-    formData.append('finish_date', finish_date.value);
 
     emit('import-started', formData);
 };
@@ -56,29 +46,6 @@ const submitUpload = async () => {
                     @change="handleFileChange"
                     class="block w-full text-sm text-zinc-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
                 />
-            </div>
-
-            <div class="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-zinc-700"
-                        >Fecha Inicio</label
-                    >
-                    <input
-                        type="date"
-                        v-model="init_date"
-                        class="mt-1 w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-zinc-700"
-                        >Fecha Fin</label
-                    >
-                    <input
-                        type="date"
-                        v-model="finish_date"
-                        class="mt-1 w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                </div>
             </div>
 
             <p v-if="errorMessage" class="mb-4 text-sm text-red-600">

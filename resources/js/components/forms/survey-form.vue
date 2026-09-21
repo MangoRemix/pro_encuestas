@@ -21,65 +21,6 @@
                 />
             </div>
 
-            <div class="flex flex-col gap-2">
-                <label
-                    for="parish_id"
-                    class="text-sm font-medium text-gray-700"
-                >
-                    Parroquia
-                </label>
-                <select
-                    id="parish_id"
-                    v-model="form.parish_id"
-                    class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
-                    required
-                >
-                    <option value="" disabled>Selecciona una parroquia</option>
-                    <option
-                        v-for="parish in parishes"
-                        :key="parish.id"
-                        :value="parish.id"
-                    >
-                        {{ parish.name }}
-                    </option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div class="flex flex-col gap-2">
-                    <label
-                        for="init_date"
-                        class="text-sm font-medium text-gray-700"
-                    >
-                        Fecha de Inicio
-                    </label>
-                    <input
-                        type="date"
-                        id="init_date"
-                        v-model="form.init_date"
-                        class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
-                        required
-                    />
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label
-                        for="finish_date"
-                        class="text-sm font-medium text-gray-700"
-                    >
-                        Fecha de Finalización
-                    </label>
-                    <input
-                        type="date"
-                        id="finish_date"
-                        v-model="form.finish_date"
-                        :min="form.init_date"
-                        class="inputs-form w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-700"
-                        required
-                    />
-                </div>
-            </div>
-
             <button
                 type="submit"
                 :disabled="loading"
@@ -93,7 +34,7 @@
             v-if="message || isError"
             :message="message"
             :isError="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
     </div>
 </template>
@@ -102,44 +43,26 @@
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useParishes } from '@/composables/api/parishes';
-import { formatedDate } from '@/composables/shared.js';
 import { extractErrorMessage } from '@/composables/useApiError';
 import { apiHost } from '@/store/store.js';
 import NotificationBox from '../notification-box.vue';
 
-const { surveyId, isReactivation } = defineProps({
+const { surveyId } = defineProps({
     surveyId: { type: [Number, String], default: 0 },
-    // Reactivar = editar una encuesta ya vencida con una parroquia/periodo
-    // nuevos, conservando la jornada anterior en el historial.
-    isReactivation: { type: Boolean, default: false },
 });
 const emit = defineEmits(['updated']);
 
-const { parishes, fetchParishes } = useParishes();
+const headerLabel = computed(() =>
+    surveyId ? 'Editar Encuesta' : 'Crear Nueva Encuesta',
+);
 
-const headerLabel = computed(() => {
-    if (isReactivation) {
-        return 'Reactivar Encuesta';
-    }
-
-    return surveyId ? 'Editar Encuesta' : 'Crear Nueva Encuesta';
-});
-
-const submitLabel = computed(() => {
-    if (isReactivation) {
-        return 'Reactivar Encuesta';
-    }
-
-    return surveyId ? 'Guardar Cambios' : 'Crear Encuesta';
-});
+const submitLabel = computed(() =>
+    surveyId ? 'Guardar Cambios' : 'Crear Encuesta',
+);
 
 // Estado del formulario
 const form = reactive({
     name: '',
-    init_date: '',
-    finish_date: '',
-    parish_id: '',
 });
 
 // Estados de la petición
@@ -148,21 +71,12 @@ const message = ref('');
 const isError = ref(false);
 
 onMounted(async () => {
-    await fetchParishes();
-
     if (surveyId > 0) {
         const survey = await getSurvey(surveyId);
 
-        // El nombre siempre se precarga (no cambia al reactivar). La
-        // parroquia y las fechas solo se precargan al EDITAR — al
-        // reactivar se dejan en blanco para forzar a elegir una jornada
-        // nueva en vez de repetir la anterior por accidente.
-        form.name = survey.name;
-        form.parish_id = isReactivation ? '' : survey.parish_id;
-        form.init_date = isReactivation ? '' : formatedDate(survey.init_date);
-        form.finish_date = isReactivation
-            ? ''
-            : formatedDate(survey.finish_date);
+        if (survey) {
+            form.name = survey.name;
+        }
     }
 });
 
@@ -183,25 +97,17 @@ const handleSubmit = async () => {
     isError.value = false;
 
     try {
-        // Ajusta la URL según la configuración de tu entorno
         let response = null;
 
         if (!surveyId) {
             response = await axios.post(`${apiHost}survey/create`, form);
         } else {
-            response = await axios.put(`${apiHost}survey/update/${surveyId}`, {
-                ...form,
-                is_new_jornada: isReactivation,
-            });
+            response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
         }
 
-        if (isReactivation) {
-            message.value = '¡Encuesta reactivada con éxito!';
-        } else if (surveyId) {
-            message.value = '¡Encuesta actualizada con éxito!';
-        } else {
-            message.value = '¡Encuesta creada con éxito!';
-        }
+        message.value = surveyId
+            ? '¡Encuesta actualizada con éxito!'
+            : '¡Encuesta creada con éxito!';
 
         setTimeout(() => {
             message.value = '';
@@ -209,30 +115,17 @@ const handleSubmit = async () => {
 
         if (response.status == 200) {
             emit('updated');
-        } else {
-            if (response.status == 201) {
-                //console.log(response)
-                setTimeout(() => {
-                    if (response.data.data.id) {
-                        router.get('/surveys/create-survey/step-2', {
-                            surveyId: response.data.data.id,
-                        });
-                    }
-                }, 250);
-                //setTimeout(() => {
-                //  if(response.data.data.id)
-                //  router.get('/categories/create',{
-                //    surveyId:response.data.data.id
-                //  })
-                //}, 750);
-            }
+        } else if (response.status == 201) {
+            setTimeout(() => {
+                if (response.data.data.id) {
+                    router.get('/surveys/create-survey/step-2', {
+                        surveyId: response.data.data.id,
+                    });
+                }
+            }, 250);
         }
 
-        // Limpiar el formulario
         form.name = '';
-        form.init_date = '';
-        form.finish_date = '';
-        form.parish_id = '';
     } catch (error) {
         isError.value = true;
         message.value = extractErrorMessage(error);

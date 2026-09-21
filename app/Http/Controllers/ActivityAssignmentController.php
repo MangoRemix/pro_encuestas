@@ -3,25 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
+use App\Models\Activity;
 use App\Models\Person;
 use App\Models\Rol;
-use App\Models\Survey;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
-class SurveyAssignmentController extends Controller
+class ActivityAssignmentController extends Controller
 {
     use ApiResponds;
 
     /**
-     * Asigna una encuesta a un encuestador. Nunca reescribe una fila
+     * Asigna una actividad a un encuestador. Nunca reescribe una fila
      * existente: cada ciclo de asignación/desasignación es su propia fila,
      * para conservar el historial completo.
      */
-    public function assign(Request $request, Survey $survey): JsonResponse
+    public function assign(Request $request, Activity $activity): JsonResponse
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -38,16 +38,16 @@ class SurveyAssignmentController extends Controller
                 throw new Exception('La persona indicada no es un encuestador', 422);
             }
 
-            $alreadyAssigned = $survey->assignedPollsters()
+            $alreadyAssigned = $activity->assignedPollsters()
                 ->wherePivotNull('unassigned_at')
                 ->where('persons.id', $person->id)
                 ->exists();
 
             if ($alreadyAssigned) {
-                throw new Exception('Este encuestador ya está asignado a esta encuesta', 409);
+                throw new Exception('Este encuestador ya está asignado a esta actividad', 409);
             }
 
-            $survey->assignedPollsters()->attach($person->id, [
+            $activity->assignedPollsters()->attach($person->id, [
                 'assigned_by' => $request->user()->id,
                 'assigned_at' => now(),
             ]);
@@ -61,19 +61,19 @@ class SurveyAssignmentController extends Controller
     /**
      * Desasigna (nunca borra la fila — queda como historial).
      */
-    public function unassign(Survey $survey, Person $person): JsonResponse
+    public function unassign(Activity $activity, Person $person): JsonResponse
     {
         try {
-            $pivot = $survey->assignedPollsters()
+            $pivot = $activity->assignedPollsters()
                 ->wherePivotNull('unassigned_at')
                 ->where('persons.id', $person->id)
                 ->first();
 
             if (! $pivot) {
-                throw new Exception('No hay una asignación activa para este encuestador en esta encuesta', 404);
+                throw new Exception('No hay una asignación activa para este encuestador en esta actividad', 404);
             }
 
-            $survey->assignedPollsters()->updateExistingPivot($person->id, [
+            $activity->assignedPollsters()->updateExistingPivot($person->id, [
                 'unassigned_at' => now(),
                 'unassigned_by' => request()->user()->id,
             ]);
@@ -85,42 +85,31 @@ class SurveyAssignmentController extends Controller
     }
 
     /**
-     * Encuestadores asignados a una encuesta. ?history=true incluye también
-     * las asignaciones ya finalizadas.
+     * Encuestadores asignados a una actividad. ?history=true incluye
+     * también las asignaciones ya finalizadas.
      */
-    public function pollsters(Request $request, Survey $survey): JsonResponse
+    public function pollsters(Request $request, Activity $activity): JsonResponse
     {
         $query = $request->boolean('history')
-            ? $survey->assignedPollsters()
-            : $survey->activePollsters();
+            ? $activity->assignedPollsters()
+            : $activity->activePollsters();
 
-        return response()->json($query->orderByDesc('survey_person.assigned_at')->get(), 200);
+        return response()->json($query->orderByDesc('activity_person.assigned_at')->get(), 200);
     }
 
     /**
-     * Encuestas asignadas a un encuestador (vista de staff — sin filtrar por
-     * jornada vigente, a diferencia de assignedToMe()).
-     */
-    public function assignedSurveys(Request $request, Person $person): JsonResponse
-    {
-        $query = $request->boolean('history')
-            ? $person->assignedSurveys()
-            : $person->activeAssignedSurveys();
-
-        return response()->json($query->orderByDesc('survey_person.assigned_at')->get(), 200);
-    }
-
-    /**
-     * Encuestas que el usuario autenticado puede descargar/llenar: asignadas
-     * activamente Y dentro de su jornada vigente. Consumido por la app móvil.
+     * Actividades que el usuario autenticado puede descargar/llenar:
+     * asignadas activamente Y dentro de su rango de fechas vigente.
+     * Consumido por la app móvil.
      */
     public function assignedToMe(Request $request): JsonResponse
     {
-        $surveys = $request->user()
-            ->activeAssignedSurveys()
+        $activities = $request->user()
+            ->activeAssignedActivities()
+            ->with(['survey', 'parish'])
             ->active()
             ->get();
 
-        return response()->json($surveys, 200);
+        return response()->json($activities, 200);
     }
 }

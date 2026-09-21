@@ -6,7 +6,6 @@ use App\Http\Controllers\Concerns\ApiResponds;
 use App\Http\Controllers\Concerns\FiltersAndSorts;
 use App\Models\Rol;
 use App\Models\Survey;
-use App\Models\SurveyRun;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,10 +25,6 @@ class SurveyController extends Controller
     {
         return [
             'name' => 'required|string|max:550',
-            'init_date' => 'required|date',
-            // Si necesitas validar un campo único que ignore el ID actual en el update, usarías el $id aquí
-            'finish_date' => 'required|date|after_or_equal:init_date',
-            'parish_id' => 'required|integer|exists:parishes,id',
         ];
     }
 
@@ -37,10 +32,6 @@ class SurveyController extends Controller
     {
         return [
             'name' => 'string|max:550',
-            'init_date' => 'date',
-            // Si necesitas validar un campo único que ignore el ID actual en el update, usarías el $id aquí
-            'finish_date' => 'date|after_or_equal:init_date',
-            'parish_id' => 'nullable|integer|exists:parishes,id',
         ];
     }
 
@@ -70,12 +61,22 @@ class SurveyController extends Controller
             ]);
 
             $query = $this->applySearch($query, $request->query('search'), ['name']);
-            $query = $this->applySort($query, $request, ['name', 'created_at', 'init_date', 'finish_date'], 'created_at');
+            $query = $this->applySort($query, $request, ['name', 'created_at'], 'created_at');
 
             $surveys = $query->paginate($perPage);
         }
 
         return response()->json($surveys, 200);
+    }
+
+    /**
+     * Auxiliar para show()/index(): agrega has_results a la representación
+     * en array de una encuesta ya cargada (evita otra consulta redundante en
+     * la respuesta de show()).
+     */
+    private function withHasResults(Survey $survey): array
+    {
+        return array_merge($survey->toArray(), ['has_results' => $survey->hasResults()]);
     }
 
     /**
@@ -85,7 +86,6 @@ class SurveyController extends Controller
     {
         try {
             $request['name'] = strtoupper($request->name);
-            $request['finish_date'] = $request->finish_date.' 23:59:59';
 
             $validator = Validator::make($request->all(), $this->rules());
 
@@ -125,7 +125,7 @@ class SurveyController extends Controller
                 throw new Exception('Not found register', 404);
             }
 
-            return response()->json($survey, 200);
+            return response()->json($this->withHasResults($survey), 200);
         } catch (Throwable $th) {
             return $this->errorResponse($th);
         }
@@ -144,7 +144,7 @@ class SurveyController extends Controller
                 'categories.questions.answers' => fn ($query) => $query->orderBy('order', 'asc'),
             ])->findOrFail($id);
 
-            return response()->json($survey, 200);
+            return response()->json($this->withHasResults($survey), 200);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'No se pudo cargar la estructura de la encuesta.',
@@ -159,16 +159,8 @@ class SurveyController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         try {
-            // Los datos ya vienen validados aquí gracias al UpdateSurveyRequest
-            // Update admite payloads parciales (p. ej. reactivar solo cambia
-            // parroquia/fechas): solo se transforman los campos presentes,
-            // para no pisar name/finish_date con basura cuando no vienen.
             if ($request->filled('name')) {
                 $request['name'] = strtoupper($request->name);
-            }
-
-            if ($request->filled('finish_date')) {
-                $request['finish_date'] = $request->finish_date.' 23:59:59';
             }
 
             $validator = Validator::make($request->all(), $this->updateRules());
@@ -182,23 +174,7 @@ class SurveyController extends Controller
                 throw new Exception('Not found register', 404);
             }
 
-            $validated = $validator->validated();
-
-            // Reactivar con una jornada nueva (nuevo periodo/parroquia): la
-            // jornada saliente queda registrada en el historial antes de
-            // sobreescribirla. Una edición normal (flag ausente) de una
-            // encuesta aún vigente no genera fila de historial.
-            if ($request->boolean('is_new_jornada') && $survey->parish_id && $survey->init_date && $survey->finish_date) {
-                SurveyRun::create([
-                    'survey_id' => $survey->id,
-                    'parish_id' => $survey->parish_id,
-                    'init_date' => $survey->init_date,
-                    'finish_date' => $survey->finish_date,
-                    'created_by' => $request->user()?->id,
-                ]);
-            }
-
-            $survey->update($validated);
+            $survey->update($validator->validated());
 
             return response()->json([
                 'message' => 'Encuesta actualizada con éxito',

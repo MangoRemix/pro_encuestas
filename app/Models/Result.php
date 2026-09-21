@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['person_id', 'question_id', 'answer_id', 'pollster_id', 'client_instance_uuid'])]
+#[Fillable(['person_id', 'question_id', 'answer_id', 'pollster_id', 'activity_id', 'client_instance_uuid'])]
 
 class Result extends Model
 {
@@ -19,6 +19,11 @@ class Result extends Model
 
         return $this->belongsTo(Person::class);
 
+    }
+
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(Activity::class);
     }
 
     public function questions(): BelongsTo

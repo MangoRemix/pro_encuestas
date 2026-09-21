@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
 use App\Jobs\ProcessResultBatch;
+use App\Models\Activity;
 use App\Models\Answer;
 use App\Models\Person;
 use App\Models\Question;
@@ -131,6 +132,7 @@ class ResultController extends Controller
             $validator = Validator::make($request->all(), [
                 'instance_uuid' => 'required|string|max:255',
                 'survey_id' => 'required|integer|exists:surveys,id',
+                'activity_id' => 'required|integer|exists:activities,id',
                 'pollster_id' => 'required|integer|exists:persons,id',
                 'respondent' => 'required|array',
                 'respondent.sex_id' => 'required|integer|exists:sexes,id',
@@ -156,7 +158,30 @@ class ResultController extends Controller
                 ], 200);
             }
 
-            $person = DB::transaction(function () use ($validated) {
+            $activity = Activity::query()->find($validated['activity_id']);
+
+            if (! $activity || $activity->survey_id != $validated['survey_id']) {
+                throw new Exception('La actividad no pertenece a esta encuesta', 422);
+            }
+
+            if (! Activity::query()->whereKey($activity->id)->active()->exists()) {
+                throw new Exception('Esta actividad ya no está vigente', 409);
+            }
+
+            $pollsterAssigned = $activity->activePollsters()
+                ->where('persons.id', $validated['pollster_id'])
+                ->exists();
+
+            if (! $pollsterAssigned) {
+                throw new Exception('El encuestador no está asignado a esta actividad', 403);
+            }
+
+            // La parroquia del encuestado es siempre la de la actividad
+            // asignada (el servidor es la fuente de verdad, no lo que
+            // reporte el cliente).
+            $validated['respondent']['parish_id'] = $activity->parish_id;
+
+            $person = DB::transaction(function () use ($validated, $activity) {
                 $person = Person::create([
                     'sex_id' => $validated['respondent']['sex_id'],
                     'age' => $validated['respondent']['age'],
@@ -180,6 +205,7 @@ class ResultController extends Controller
                         'question_id' => $answer['question_id'],
                         'answer_id' => $answer['answer_id'],
                         'pollster_id' => $validated['pollster_id'],
+                        'activity_id' => $activity->id,
                         'client_instance_uuid' => $validated['instance_uuid'],
                     ]);
                 }
@@ -283,7 +309,14 @@ class ResultController extends Controller
         $minVal = ($min !== null && $min !== '' && $min !== '*') ? (int) $min : null;
         $maxVal = ($max !== null && $max !== '' && $max !== '*') ? (int) $max : null;
 
-        $count = $this->reportService->getRespondentCountByAgeRange($surveyId, $minVal, $maxVal);
+        $count = $this->reportService->getRespondentCountByAgeRange(
+            $surveyId,
+            $minVal,
+            $maxVal,
+            $request->query('activity_id'),
+            $request->query('from'),
+            $request->query('to')
+        );
 
         return response()->json(['count' => $count]);
     }
@@ -291,7 +324,13 @@ class ResultController extends Controller
     public function reportCountAnswersByQuestion(Request $request, int $surveyId)
     {
         try {
-            $results = $this->reportService->reportCountAnswersByQuestion($surveyId, $request->query('category_id'));
+            $results = $this->reportService->reportCountAnswersByQuestion(
+                $surveyId,
+                $request->query('category_id'),
+                $request->query('activity_id'),
+                $request->query('from'),
+                $request->query('to')
+            );
 
             return response()->json($results, 200);
         } catch (Throwable $th) {
@@ -299,11 +338,16 @@ class ResultController extends Controller
         }
     }
 
-    public function newReportStructure($id)
+    public function newReportStructure(Request $request, $id)
     {
 
         try {
-            $survey = $this->reportService->getSurveyReportStructure($id);
+            $survey = $this->reportService->getSurveyReportStructure(
+                $id,
+                $request->query('activity_id'),
+                $request->query('from'),
+                $request->query('to')
+            );
 
             return response()->json($survey, 200);
         } catch (Throwable $th) {
@@ -314,10 +358,34 @@ class ResultController extends Controller
         }
     }
 
+    /**
+     * Actividades de una encuesta, para poblar el selector de "todas las
+     * actividades vs. una específica" en Reportes.
+     */
+    public function getActivitiesForSurvey(int $surveyId)
+    {
+        try {
+            $activities = $this->reportService->getActivitiesForSurvey($surveyId);
+
+            return response()->json($activities, 200);
+        } catch (Throwable $th) {
+            return response()->json([
+                'error' => 'No se pudieron obtener las actividades de la encuesta.',
+                'details' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
     public function getRespondentCountBySex(Request $request, int $surveyId)
     {
         try {
-            $results = $this->reportService->getRespondentCountBySex($surveyId, $request->query('sex_id'));
+            $results = $this->reportService->getRespondentCountBySex(
+                $surveyId,
+                $request->query('sex_id'),
+                $request->query('activity_id'),
+                $request->query('from'),
+                $request->query('to')
+            );
 
             return response()->json($results, 200);
         } catch (Throwable $th) {
@@ -331,7 +399,13 @@ class ResultController extends Controller
     public function getRespondentCountByParish(Request $request, int $surveyId)
     {
         try {
-            $results = $this->reportService->getRespondentCountByParish($surveyId, $request->query('parish_id'));
+            $results = $this->reportService->getRespondentCountByParish(
+                $surveyId,
+                $request->query('parish_id'),
+                $request->query('activity_id'),
+                $request->query('from'),
+                $request->query('to')
+            );
 
             return response()->json($results, 200);
         } catch (Throwable $th) {
@@ -345,7 +419,12 @@ class ResultController extends Controller
     public function getTopPollsters(Request $request)
     {
         try {
-            $results = $this->reportService->getTopPollsters($request->query('survey_id'));
+            $results = $this->reportService->getTopPollsters(
+                $request->query('survey_id'),
+                $request->query('activity_id'),
+                $request->query('from'),
+                $request->query('to')
+            );
 
             return response()->json($results, 200);
         } catch (Throwable $th) {

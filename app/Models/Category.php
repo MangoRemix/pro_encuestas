@@ -22,10 +22,19 @@ class Category extends Model
         static::deleted(function ($category) {
             // Esto buscará todos los resultados asociados y aplicará softDelete
             $category->results()->delete();
+
+            // Ocultar en cadena: una categoría oculta no debe dejar sus
+            // preguntas visibles/usables. Cada Question::delete() dispara a
+            // su vez su propio hook, que cascada hacia sus answers/results.
+            $category->questions()->get()->each->delete();
         });
 
         static::restored(function ($category) {
-            // Opcional: Si restauras la respuesta, podrías restaurar los resultados
+            // Restaurar en cadena (simétrico al ocultado): las preguntas
+            // primero, para que luego category->results() (hasManyThrough
+            // Question) pueda encontrarlas — el scope de SoftDeletes excluye
+            // preguntas ocultas del JOIN intermedio.
+            $category->questions()->withTrashed()->get()->each->restore();
             $category->results()->restore();
         });
     }

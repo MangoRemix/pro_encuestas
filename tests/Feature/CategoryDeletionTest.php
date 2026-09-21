@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Answer;
 use App\Models\Category;
 use App\Models\Question;
 use App\Models\Result;
@@ -22,6 +23,30 @@ class CategoryDeletionTest extends TestCase
 
         $this->assertSoftDeleted($category);
         $this->assertSoftDeleted($result);
+    }
+
+    public function test_hiding_a_category_cascades_to_its_questions_and_answers(): void
+    {
+        $category = Category::factory()->create();
+        $question = Question::factory()->create(['category_id' => $category->id]);
+        $answer = Answer::factory()->create(['question_id' => $question->id]);
+
+        $category->delete();
+
+        $this->assertSoftDeleted($category);
+        $this->assertSoftDeleted($question);
+        $this->assertSoftDeleted($answer);
+    }
+
+    public function test_hiding_a_question_cascades_to_its_answers(): void
+    {
+        $question = Question::factory()->create();
+        $answer = Answer::factory()->create(['question_id' => $question->id]);
+
+        $question->delete();
+
+        $this->assertSoftDeleted($question);
+        $this->assertSoftDeleted($answer);
     }
 
     public function test_restoring_a_category_restores_its_results(): void

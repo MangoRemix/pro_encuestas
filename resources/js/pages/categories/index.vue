@@ -5,7 +5,7 @@
             v-if="message || isError ? true : false"
             :message="message"
             :is-error="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
         <div class="mx-auto my-3 flex min-h-10 w-100 flex-col">
             <select

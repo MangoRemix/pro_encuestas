@@ -60,6 +60,48 @@
                     </select>
                 </div>
             </div>
+
+            <div
+                v-if="selectedSurvey"
+                class="mt-3 flex flex-wrap items-end gap-4 border-t border-slate-100 pt-3"
+            >
+                <div class="min-w-56 flex-1">
+                    <label class="mb-1 block text-sm font-semibold text-slate-600">
+                        Actividad:
+                    </label>
+                    <select
+                        v-model="selectedActivity"
+                        class="w-full rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
+                    >
+                        <option value="">Todas las actividades</option>
+                        <option
+                            v-for="activity in activities"
+                            :key="activity.id"
+                            :value="activity.id"
+                        >
+                            {{ activity.parish?.name }} ({{ formatedDate(activity.init_date) }} -
+                            {{ formatedDate(activity.finish_date) }})
+                        </option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-semibold text-slate-600">Desde:</label>
+                    <input
+                        type="date"
+                        v-model="dateFrom"
+                        class="rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-semibold text-slate-600">Hasta:</label>
+                    <input
+                        type="date"
+                        v-model="dateTo"
+                        :min="dateFrom"
+                        class="rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
+                    />
+                </div>
+            </div>
         </div>
         <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
 
@@ -126,6 +168,9 @@
                         <SexChart
                             :survey-id="survey_selected.id"
                             :total-respondent="reportData.total_respondent"
+                            :activity-id="selectedActivity"
+                            :date-from="dateFrom"
+                            :date-to="dateTo"
                         />
                     </template>
                     <template
@@ -134,6 +179,9 @@
                         <ParishChart
                             :survey-id="survey_selected.id"
                             :total-respondent="reportData.total_respondent"
+                            :activity-id="selectedActivity"
+                            :date-from="dateFrom"
+                            :date-to="dateTo"
                         />
                     </template>
                 </div>
@@ -148,6 +196,9 @@
                     <AgeRangeFilter
                         :survey-id="survey_selected.id"
                         :total-respondent="reportData.total_respondent"
+                        :activity-id="selectedActivity"
+                        :date-from="dateFrom"
+                        :date-to="dateTo"
                     />
                 </template>
             </div>
@@ -159,8 +210,12 @@
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, watch, computed } from 'vue';
 import CategoryFilter from '@/components/CategoryFilter.vue';
-import { getReportStructure } from '@/composables/api/reports';
+import {
+    getActivitiesForSurveyReport,
+    getReportStructure,
+} from '@/composables/api/reports';
 import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
+import { formatedDate } from '@/composables/shared.js';
 import MainLayout from '@/layouts/main-layout.vue';
 import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
 import Graphics from './sublayouts/graphics.vue';
@@ -174,6 +229,11 @@ const categories = ref([]);
 const category_selected = ref(null);
 const survey_selected = ref(null);
 const selected_radio = ref('table');
+
+const activities = ref([]);
+const selectedActivity = ref('');
+const dateFrom = ref('');
+const dateTo = ref('');
 
 const reportData = ref([]);
 
@@ -196,7 +256,7 @@ const filteredCategories = computed(() => {
 const graphicOptions = [
     { name: 'Todas las gráficas', component: 'all' },
     { name: 'Categorías', component: 'graphics' },
-    { name: 'Sexo', component: 'sexchart' },
+    { name: 'Género', component: 'sexchart' },
     { name: 'Parroquias', component: 'parishchart' },
     { name: 'Rangos de edad', component: 'agerangechart' },
 ];
@@ -232,13 +292,34 @@ const loadReport = async () => {
             categories.value = data;
         }
 
-        const report = await getReportStructure(selectedSurvey.value);
+        const report = await getReportStructure(selectedSurvey.value, {
+            activityId: selectedActivity.value,
+            dateFrom: dateFrom.value,
+            dateTo: dateTo.value,
+        });
 
         if (report.data) {
             reportData.value = report.data;
         }
     }
 };
+
+watch(selectedSurvey, async (surveyId) => {
+    selectedActivity.value = '';
+    activities.value = [];
+
+    if (!surveyId) {
+        return;
+    }
+
+    const { data } = await getActivitiesForSurveyReport(surveyId);
+
+    if (data) {
+        activities.value = data;
+    }
+});
+
+watch([selectedActivity, dateFrom, dateTo], loadReport);
 
 watch(selectedSurvey, loadReport, { immediate: true });
 </script>

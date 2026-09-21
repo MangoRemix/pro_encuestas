@@ -6,7 +6,7 @@
             v-if="message || isError ? true : false"
             :message="message"
             :isError="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
         <div class="mx-auto min-h-100 w-270 py-10">
             <div class="text-center text-white">
@@ -285,7 +285,11 @@ const createManyAnswers = async () => {
 };
 
 const deleteAnswer = async (id, index) => {
-    if (!(await confirmDialog('¿Ocultar esta respuesta?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta respuesta? Dejará de estar disponible para seleccionar en la app y no aparecerá en los demás apartados hasta que la restaures.',
+        ))
+    ) {
         return;
     }
 

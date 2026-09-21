@@ -17,15 +17,36 @@ class InstanceStatus {
 
 /// Encuestas descargadas (una vez) para poder llenarlas sin conexión.
 ///
+/// La encuesta en sí ya no tiene parroquia ni fechas propias (eso vive en
+/// `CachedActivities` — ver más abajo); esta tabla solo cachea su nombre
+/// para no depender de tener conexión al abrir la app.
+///
 /// Nota: cada tabla declara su nombre de clase de fila explícitamente con
 /// @DataClassName — la pluralización automática de Drift ("strip trailing
 /// s") acierta con Survey/Question/Answer/Instance pero falla con
-/// Categories/Parishes/Sexes, así que se evita depender de esa heurística
+/// Categories/Sexes/Activities, así que se evita depender de esa heurística
 /// en absoluto.
 @DataClassName('CachedSurvey')
 class CachedSurveys extends Table {
   IntColumn get id => integer()(); // id del servidor
   TextColumn get name => text()();
+  DateTimeColumn get downloadedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Actividades asignadas al encuestador autenticado: una encuesta aplicada
+/// en UNA parroquia durante un rango de fechas. Reemplaza lo que antes
+/// vivía directamente en CachedSurveys (parish_id/init_date/finish_date) —
+/// ahora la encuesta puede tener varias de estas actividades.
+@DataClassName('CachedActivity')
+class CachedActivities extends Table {
+  IntColumn get id => integer()(); // id de la actividad en el servidor
+  IntColumn get surveyId => integer()();
+  TextColumn get surveyName => text()();
+  IntColumn get parishId => integer()();
+  TextColumn get parishName => text()();
   DateTimeColumn get initDate => dateTime()();
   DateTimeColumn get finishDate => dateTime()();
   DateTimeColumn get downloadedAt => dateTime().withDefault(currentDateAndTime)();
@@ -69,16 +90,6 @@ class CachedAnswers extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Catálogos públicos (parroquias/sexos) para el registro del encuestado.
-@DataClassName('CachedParish')
-class CachedParishes extends Table {
-  IntColumn get id => integer()();
-  TextColumn get name => text()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
 @DataClassName('CachedSex')
 class CachedSexes extends Table {
   IntColumn get id => integer()();
@@ -96,18 +107,30 @@ class CachedSexes extends Table {
 class SurveyInstances extends Table {
   TextColumn get localUuid => text()();
   IntColumn get surveyId => integer()();
+  // Actividad de campo (encuesta+parroquia+fechas) a la que pertenece esta
+  // instancia. Nullable solo por compatibilidad con filas creadas antes de
+  // esta columna existir; toda instancia nueva siempre la trae.
+  IntColumn get activityId => integer().nullable()();
   IntColumn get pollsterPersonId => integer()();
 
   IntColumn get respondentSexId => integer().nullable()();
   IntColumn get respondentAge => integer().nullable()();
+  // La parroquia del encuestado ya no la elige el encuestador: se
+  // autocompleta con la de la actividad asignada.
   IntColumn get respondentParishId => integer().nullable()();
 
   TextColumn get status =>
       text().withDefault(const Constant(InstanceStatus.incompleta))();
 
-  // Categoría en la que se quedó el encuestador — permite reanudar
-  // exactamente donde lo dejó si cierra la app a medias.
+  // Categoría en la que se quedó el encuestador — ya no se usa para
+  // reanudar (ver currentQuestionId), se deja sin tocar para no complicar
+  // la migración.
   IntColumn get currentCategoryId => integer().nullable()();
+
+  // Pregunta exacta en la que se quedó el encuestador — el llenado avanza
+  // de a una pregunta, así que esto es lo que permite reanudar exactamente
+  // donde lo dejó si cierra la app a medias.
+  IntColumn get currentQuestionId => integer().nullable()();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
@@ -137,10 +160,10 @@ class InstanceAnswers extends Table {
 @DriftDatabase(
   tables: [
     CachedSurveys,
+    CachedActivities,
     CachedCategories,
     CachedQuestions,
     CachedAnswers,
-    CachedParishes,
     CachedSexes,
     SurveyInstances,
     InstanceAnswers,
@@ -150,12 +173,43 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // CachedSurveys/CachedParishes son solo caché redescargable —
+            // más simple recrearlas que migrar columna por columna. Los
+            // datos reales del encuestador (SurveyInstances/InstanceAnswers)
+            // se preservan.
+            await m.deleteTable('cached_surveys');
+            await m.createTable(cachedSurveys);
+            await m.createTable(cachedActivities);
+            // Tabla de la v1 que ya no se usa (el picker de parroquia se
+            // quitó del flujo del encuestador).
+            await m.deleteTable('cached_parishes');
+
+            await m.addColumn(surveyInstances, surveyInstances.activityId);
+          }
+
+          if (from < 3) {
+            // El llenado ahora avanza de a una pregunta (no por categoría) —
+            // hace falta guardar en cuál se quedó para poder reanudar.
+            await m.addColumn(surveyInstances, surveyInstances.currentQuestionId);
+          }
+        },
+      );
 
   // ── Catálogos: reemplazo completo en cada descarga ──────────────────────
 
   Future<void> replaceCatalogSurveys(List<CachedSurveysCompanion> rows) async {
     await batch((b) => b.insertAllOnConflictUpdate(cachedSurveys, rows));
+  }
+
+  Future<void> replaceCatalogActivities(List<CachedActivitiesCompanion> rows) async {
+    await batch((b) => b.insertAllOnConflictUpdate(cachedActivities, rows));
   }
 
   Future<void> replaceSurveyStructure({
@@ -171,15 +225,23 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> replaceParishes(List<CachedParishesCompanion> rows) async {
-    await batch((b) => b.insertAllOnConflictUpdate(cachedParishes, rows));
-  }
-
   Future<void> replaceSexes(List<CachedSexesCompanion> rows) async {
     await batch((b) => b.insertAllOnConflictUpdate(cachedSexes, rows));
   }
 
   Future<List<CachedSurvey>> allCachedSurveys() => select(cachedSurveys).get();
+
+  Future<CachedSurvey?> surveyById(int id) =>
+      (select(cachedSurveys)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  Future<List<CachedActivity>> allCachedActivities() =>
+      (select(cachedActivities)
+            ..orderBy([(t) => OrderingTerm.desc(t.initDate)]))
+          .get();
+
+  Future<CachedActivity?> activityById(int id) =>
+      (select(cachedActivities)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
 
   Future<List<CachedCategory>> categoriesForSurvey(int surveyId) =>
       (select(cachedCategories)
@@ -198,8 +260,6 @@ class AppDatabase extends _$AppDatabase {
             ..where((t) => t.questionId.equals(questionId))
             ..orderBy([(t) => OrderingTerm.asc(t.order)]))
           .get();
-
-  Future<List<CachedParish>> allParishes() => select(cachedParishes).get();
 
   Future<List<CachedSex>> allSexes() => select(cachedSexes).get();
 

@@ -81,7 +81,24 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
   }
 
+  /// Una encuesta "preparada" (completa, ya lista para subir) no se puede
+  /// borrar: es el estado con más riesgo real de perder datos ya
+  /// recolectados por accidente. Hay que subirla (o esperar a que se suba
+  /// sola) antes de poder eliminarla.
+  bool _canDelete(SurveyInstance instance) =>
+      instance.status != InstanceStatus.preparada;
+
   Future<void> _deleteOne(SurveyInstance instance) async {
+    if (!_canDelete(instance)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'Esta encuesta ya está lista para subir; súbela antes de poder borrarla.',
+        ),
+      ));
+
+      return;
+    }
+
     final isUnsynced = instance.status != InstanceStatus.completada;
     final confirmed = await _confirm(
       isUnsynced
@@ -94,16 +111,25 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
   }
 
+  /// Solo borra las ya subidas ("completada") — las "incompleta"/"preparada"
+  /// quedan fuera del borrado masivo; si hace falta borrarlas se hace una
+  /// por una desde su propio ícono de papelera.
   Future<void> _deleteAll(List<SurveyInstance> instances) async {
+    final completed = instances
+        .where((i) => i.status == InstanceStatus.completada)
+        .toList();
+
+    if (completed.isEmpty) return;
+
     final confirmed = await _confirm(
-      '¿Eliminar TODAS las encuestas del historial? Las que no se hayan subido se perderán.',
+      '¿Eliminar todas las encuestas ya subidas? Esto no afecta las que aún no se han subido.',
     );
 
     if (!confirmed) return;
 
     final db = ref.read(appDatabaseProvider);
 
-    for (final instance in instances) {
+    for (final instance in completed) {
       await db.deleteInstance(instance.localUuid);
     }
   }
@@ -151,8 +177,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           instancesAsync.when(
             data: (instances) => IconButton(
               icon: const Icon(Icons.delete_sweep_outlined),
-              tooltip: 'Eliminar todas',
-              onPressed: instances.isEmpty ? null : () => _deleteAll(instances),
+              tooltip: 'Eliminar todas las ya subidas',
+              onPressed:
+                  instances.any((i) => i.status == InstanceStatus.completada)
+                      ? () => _deleteAll(instances)
+                      : null,
             ),
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
@@ -195,7 +224,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      onPressed: () => _deleteOne(instance),
+                      tooltip: _canDelete(instance)
+                          ? null
+                          : 'Súbela antes de poder borrarla',
+                      onPressed: _canDelete(instance)
+                          ? () => _deleteOne(instance)
+                          : null,
                     ),
                   ],
                 ),

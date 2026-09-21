@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
 use App\Http\Controllers\Concerns\FiltersAndSorts;
+use App\Http\Controllers\Concerns\GuardsSurveyStructure;
 use App\Models\Category;
 use App\Models\Rol;
 use App\Models\Survey;
@@ -17,7 +18,7 @@ use Throwable;
 
 class CategoryController extends Controller
 {
-    use ApiResponds, FiltersAndSorts;
+    use ApiResponds, FiltersAndSorts, GuardsSurveyStructure;
 
     /**
      * Display a listing of the resource.
@@ -85,10 +86,7 @@ class CategoryController extends Controller
                 return response()->json($validator->errors(), 422);
             }
 
-            // $survey = Survey::query()->where('id',$request['survey_id'])->first();
-
-            // if(!$survey)
-            //     throw new Exception("Not found survey_id", 404);
+            $this->assertSurveyStructureEditable($request->survey_id);
 
             $exist_category_order = Category::query()->where('order', $request->order)->where('survey_id', $request->survey_id)
                 ->join('surveys', 'categories.survey_id', '=', 'surveys.id')
@@ -170,6 +168,8 @@ class CategoryController extends Controller
 
             $surveyId = $request->survey_id ?? $category->survey_id;
 
+            $this->assertSurveyStructureEditable($surveyId);
+
             if ($request->filled('order') && $category->order != $request->order) {
                 $exist_category_order = Category::query()
                     ->where('order', $request['order'])
@@ -218,6 +218,8 @@ class CategoryController extends Controller
                 throw new Exception('Not found register', 404);
             }
 
+            $this->assertSurveyStructureEditable($category->survey_id);
+
             Category::query()->where('id', $id)->delete();
 
             return response()->json([
@@ -242,6 +244,8 @@ class CategoryController extends Controller
             if (! $survey) {
                 throw new Exception('Error not found survey register', 404);
             }
+
+            $this->assertSurveyStructureEditable($survey_id);
 
             $data = [];
 
@@ -343,6 +347,10 @@ class CategoryController extends Controller
             if ($surveyIdsCount > 1) {
                 throw new Exception('Todas las categorías a reordenar deben pertenecer a la misma encuesta', 422);
             }
+
+            $this->assertSurveyStructureEditable(
+                Category::query()->whereIn('id', $ids)->value('survey_id')
+            );
 
             DB::transaction(function () use ($items) {
                 foreach ($items as $item) {

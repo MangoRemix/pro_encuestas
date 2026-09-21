@@ -19,19 +19,17 @@ class SurveyImportController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
-            'init_date' => 'required|date',
-            'finish_date' => 'required|date|after:init_date',
         ]);
 
         $batchId = (string) Str::uuid();
         $path = $request->file('file')->store('temp_imports');
 
-        ImportSurveyExcelJob::dispatch($path, $batchId, $request->init_date, $request->finish_date);
+        ImportSurveyExcelJob::dispatch($path, $batchId);
 
         return response()->json(['batch_id' => $batchId], 202);
     }
 
-    public function processExcelFile(string $fullPath, string $initDate, string $finishDate)
+    public function processExcelFile(string $fullPath)
     {
         $spreadsheet = IOFactory::load($fullPath);
         $sheet = $spreadsheet->getActiveSheet();
@@ -41,13 +39,11 @@ class SurveyImportController extends Controller
             throw new \Exception('El archivo Excel está vacío');
         }
 
-        return DB::transaction(function () use ($rows, $initDate, $finishDate) {
+        return DB::transaction(function () use ($rows) {
             $surveyName = trim((string) ($rows[0][0] ?? 'Encuesta Importada'));
 
             $survey = Survey::create([
                 'name' => $surveyName !== '' ? $surveyName : 'Encuesta Importada',
-                'init_date' => $initDate,
-                'finish_date' => $finishDate,
             ]);
 
             $categoryNames = $rows[2] ?? [];

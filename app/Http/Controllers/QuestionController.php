@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
 use App\Http\Controllers\Concerns\FiltersAndSorts;
+use App\Http\Controllers\Concerns\GuardsSurveyStructure;
 use App\Models\Category;
 use App\Models\Question;
 use App\Models\Rol;
@@ -17,7 +18,7 @@ use Throwable;
 
 class QuestionController extends Controller
 {
-    use ApiResponds, FiltersAndSorts;
+    use ApiResponds, FiltersAndSorts, GuardsSurveyStructure;
 
     public static function rules($id = null)
     {
@@ -90,6 +91,8 @@ class QuestionController extends Controller
             if (! $category) {
                 throw new Exception('Not found category register', 404);
             }
+
+            $this->assertSurveyStructureEditable($category->survey_id);
 
             $exist_question_order = Question::query()
                 ->where('order', $request['order'])
@@ -169,6 +172,8 @@ class QuestionController extends Controller
                 }
             }
 
+            $this->assertSurveyStructureEditable($this->surveyIdOfCategory($categoryId));
+
             $name_question_category_exist = Question::query()
                 ->where('name', $request->name)
                 ->where('category_id', $categoryId)
@@ -209,10 +214,12 @@ class QuestionController extends Controller
         //
         try {
             // code...
-            $question = Question::select('id', 'name')->find($id);
+            $question = Question::select('id', 'name', 'category_id')->find($id);
             if (! $question) {
                 throw new Exception('Not found question register', 404);
             }
+
+            $this->assertSurveyStructureEditable($this->surveyIdOfCategory($question->category_id));
 
             $question->delete();
 
@@ -237,6 +244,8 @@ class QuestionController extends Controller
             if (! $category) {
                 throw new Exception('Error not found category register', 404);
             }
+
+            $this->assertSurveyStructureEditable($category->survey_id);
 
             $data = [];
 
@@ -340,6 +349,10 @@ class QuestionController extends Controller
             if ($categoryIdsCount > 1) {
                 throw new Exception('Todas las preguntas a reordenar deben pertenecer a la misma categoría', 422);
             }
+
+            $this->assertSurveyStructureEditable(
+                $this->surveyIdOfCategory(Question::query()->whereIn('id', $ids)->value('category_id'))
+            );
 
             DB::transaction(function () use ($items) {
                 foreach ($items as $item) {

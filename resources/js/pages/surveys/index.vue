@@ -80,23 +80,9 @@
                         {{ survey.results_count }} respuestas
                     </span>
                 </div>
-                <div class="mb-4 space-y-1 text-sm text-slate-400">
-                    <p>Inicio: {{ formatedDate(survey.init_date) }}</p>
-                    <p>Fin: {{ formatedDate(survey.finish_date) }}</p>
-                </div>
                 <div
                     class="flex justify-end gap-2 border-t border-slate-700 pt-3"
                 >
-                    <Icon
-                        v-if="canManageSurveys && isSurveyExpired(survey)"
-                        @click="
-                            idSurveyToReactivate = survey.id;
-                            isReactivateModalOpen = true;
-                        "
-                        class="cursor-pointer text-xl text-green-500 hover:text-green-400"
-                        icon="ic:round-refresh"
-                        title="Reactivar encuesta"
-                    />
                     <RowActions
                         :is-admin="isAdmin"
                         :is-trashed="!!survey.deleted_at"
@@ -137,32 +123,6 @@
                                 </div>
                             </th>
                             <th
-                                class="cursor-pointer p-4 select-none"
-                                @click="toggleSort('init_date')"
-                            >
-                                <div class="flex items-center gap-2">
-                                    Fecha de inicio
-                                    <SortIcon
-                                        field="init_date"
-                                        :current-field="sortField"
-                                        :direction="sortDirection"
-                                    />
-                                </div>
-                            </th>
-                            <th
-                                class="cursor-pointer p-4 select-none"
-                                @click="toggleSort('finish_date')"
-                            >
-                                <div class="flex items-center gap-2">
-                                    Fecha de finalización
-                                    <SortIcon
-                                        field="finish_date"
-                                        :current-field="sortField"
-                                        :direction="sortDirection"
-                                    />
-                                </div>
-                            </th>
-                            <th
                                 class="cursor-pointer p-4 text-center select-none"
                                 @click="toggleSort('results_count')"
                             >
@@ -187,12 +147,6 @@
                             class="text-slate-200 transition-colors hover:bg-slate-600/30"
                         >
                             <td class="p-4 font-medium">{{ survey.name }}</td>
-                            <td class="p-4">
-                                {{ formatedDate(survey.init_date) }}
-                            </td>
-                            <td class="p-4">
-                                {{ formatedDate(survey.finish_date) }}
-                            </td>
                             <td class="p-4 text-center">
                                 {{ survey.results_count }}
                             </td>
@@ -200,19 +154,6 @@
                                 <div
                                     class="flex items-center justify-center gap-3"
                                 >
-                                    <Icon
-                                        v-if="
-                                            canManageSurveys &&
-                                            isSurveyExpired(survey)
-                                        "
-                                        @click="
-                                            idSurveyToReactivate = survey.id;
-                                            isReactivateModalOpen = true;
-                                        "
-                                        class="cursor-pointer text-xl text-green-500 hover:text-green-400"
-                                        icon="ic:round-refresh"
-                                        title="Reactivar encuesta"
-                                    />
                                     <RowActions
                                         :is-admin="isAdmin"
                                         :is-trashed="!!survey.deleted_at"
@@ -247,16 +188,6 @@
                 @updated="handleSurveyUpdated"
             />
         </Modal>
-        <Modal
-            :show="isReactivateModalOpen"
-            @close="isReactivateModalOpen = false"
-        >
-            <SurveyForm
-                :surveyId="idSurveyToReactivate"
-                :is-reactivation="true"
-                @updated="handleSurveyReactivated"
-            />
-        </Modal>
         <Pagination
             v-if="pagination && pagination.total > 0"
             :current-page="pagination.current_page"
@@ -284,30 +215,25 @@ import {
     restoreSurvey,
     forceDeleteSurvey,
 } from '@/composables/api/surveys';
-import { formatedDate } from '@/composables/shared';
 import { useAuth } from '@/composables/useAuth';
 import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import MainLayout from '@/layouts/main-layout.vue';
 
 const { notify } = useNotification();
-const { isAdmin, canManageSurveys } = useAuth();
+const { isAdmin } = useAuth();
 const { confirm: confirmDialog } = useConfirm();
 const isModalOpen = ref(false);
-const isReactivateModalOpen = ref(false);
 const surveys = ref([]);
 const pagination = ref(null);
 
 const idSurveyToEdit = ref(0);
-const idSurveyToReactivate = ref(0);
 const searchQuery = ref('');
 const sortField = ref('name');
 const sortDirection = ref('asc');
 const withTrashed = ref(false);
 const sortableFields = [
     { key: 'name', label: 'Nombre' },
-    { key: 'init_date', label: 'Inicio' },
-    { key: 'finish_date', label: 'Fin' },
     { key: 'results_count', label: 'Respuestas' },
 ];
 
@@ -371,16 +297,15 @@ const handleSurveyUpdated = async () => {
     await getSurveys(pagination.value?.current_page || 1);
 };
 
-const isSurveyExpired = (survey) =>
-    new Date(survey.finish_date).getTime() < Date.now();
-
-const handleSurveyReactivated = async () => {
-    isReactivateModalOpen.value = false;
-    idSurveyToReactivate.value = 0;
-    await getSurveys(pagination.value?.current_page || 1);
-};
-
 const handleHideSurvey = async (id) => {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta encuesta? Dejará de estar disponible para los encuestadores en la app y no aparecerá en los demás apartados hasta que la restaures.',
+        ))
+    ) {
+        return;
+    }
+
     const result = await hideSurvey(id);
 
     if (!result.errorFlag) {

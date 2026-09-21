@@ -58,7 +58,7 @@ export function useAnswers() {
         } catch (e) {
             error.value = extractErrorMessage(e);
 
-            return { success: false };
+            return { success: false, message: error.value };
         } finally {
             loading.value = false;
         }

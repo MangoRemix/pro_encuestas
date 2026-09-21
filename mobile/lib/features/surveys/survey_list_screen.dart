@@ -14,10 +14,59 @@ class SurveyListScreen extends ConsumerStatefulWidget {
 }
 
 class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
-  List<CachedSurvey> _surveys = [];
+  List<CachedActivity> _activities = [];
   bool _loading = true;
-  int? _downloadingSurveyId;
+  int? _downloadingActivityId;
   String? _bannerMessage;
+
+  // Filtros: un encuestador puede tener varias actividades asignadas en la
+  // semana, en distintas parroquias o fechas — esto ayuda a ubicarse.
+  String? _parishFilter;
+  DateTime? _dateFilter;
+
+  List<String> get _availableParishes =>
+      _activities.map((a) => a.parishName).toSet().toList()..sort();
+
+  List<CachedActivity> get _filteredActivities => _activities.where((a) {
+        if (_parishFilter != null && a.parishName != _parishFilter) {
+          return false;
+        }
+
+        if (_dateFilter != null && !_activityCoversDate(a, _dateFilter!)) {
+          return false;
+        }
+
+        return true;
+      }).toList();
+
+  bool _activityCoversDate(CachedActivity activity, DateTime date) {
+    final day = DateTime(date.year, date.month, date.day);
+    final init = DateTime(
+      activity.initDate.year,
+      activity.initDate.month,
+      activity.initDate.day,
+    );
+    final finish = DateTime(
+      activity.finishDate.year,
+      activity.finishDate.month,
+      activity.finishDate.day,
+    );
+
+    return !day.isBefore(init) && !day.isAfter(finish);
+  }
+
+  Future<void> _pickDateFilter() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dateFilter ?? DateTime.now(),
+      firstDate: DateTime(DateTime.now().year - 2),
+      lastDate: DateTime(DateTime.now().year + 2),
+    );
+
+    if (picked != null) {
+      setState(() => _dateFilter = picked);
+    }
+  }
 
   @override
   void initState() {
@@ -32,42 +81,43 @@ class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
 
     try {
       await repository.downloadCatalogs();
-      final remote = await repository.fetchAssignedSurveys();
+      final remote = await repository.fetchAssignedActivities();
+      await repository.cacheActivities(remote);
 
-      for (final summary in remote) {
-        if (!await repository.isSurveyDownloaded(summary.id)) {
-          await repository.downloadSurvey(summary.id);
+      for (final activity in remote) {
+        if (!await repository.isSurveyDownloaded(activity.surveyId)) {
+          await repository.downloadSurvey(activity.surveyId);
         }
       }
 
       _bannerMessage = null;
     } catch (_) {
       _bannerMessage =
-          'Sin conexión: mostrando encuestas ya descargadas en este dispositivo.';
+          'Sin conexión: mostrando actividades ya descargadas en este dispositivo.';
     }
 
-    final cached = await repository.cachedSurveys();
+    final cached = await repository.cachedActivities();
 
     if (mounted) {
       setState(() {
-        _surveys = cached;
+        _activities = cached;
         _loading = false;
       });
     }
   }
 
-  Future<void> _openSurvey(CachedSurvey survey) async {
-    setState(() => _downloadingSurveyId = survey.id);
+  Future<void> _openActivity(CachedActivity activity) async {
+    setState(() => _downloadingActivityId = activity.id);
 
     try {
       final repository = ref.read(surveyRepositoryProvider);
 
-      if (!await repository.isSurveyDownloaded(survey.id)) {
-        await repository.downloadSurvey(survey.id);
+      if (!await repository.isSurveyDownloaded(activity.surveyId)) {
+        await repository.downloadSurvey(activity.surveyId);
       }
 
       if (mounted) {
-        context.push('/respondent/${survey.id}');
+        context.push('/respondent/${activity.id}');
       }
     } catch (error) {
       if (mounted) {
@@ -81,7 +131,7 @@ class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _downloadingSurveyId = null);
+        setState(() => _downloadingActivityId = null);
       }
     }
   }
@@ -90,7 +140,7 @@ class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Encuestas disponibles'),
+        title: const Text('Actividades asignadas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
@@ -117,30 +167,89 @@ class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
                       padding: const EdgeInsets.all(12),
                       child: Text(_bannerMessage!),
                     ),
-                  if (_surveys.isEmpty)
+                  if (_activities.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 200,
+                            child: DropdownButtonFormField<String?>(
+                              initialValue: _parishFilter,
+                              decoration: const InputDecoration(
+                                labelText: 'Parroquia',
+                                isDense: true,
+                              ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text('Todas'),
+                                ),
+                                for (final parish in _availableParishes)
+                                  DropdownMenuItem(
+                                    value: parish,
+                                    child: Text(parish),
+                                  ),
+                              ],
+                              onChanged: (value) =>
+                                  setState(() => _parishFilter = value),
+                            ),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.event, size: 18),
+                            label: Text(
+                              _dateFilter == null
+                                  ? 'Fecha'
+                                  : _formatDate(_dateFilter!),
+                            ),
+                            onPressed: _pickDateFilter,
+                          ),
+                          if (_dateFilter != null)
+                            IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              tooltip: 'Quitar filtro de fecha',
+                              onPressed: () =>
+                                  setState(() => _dateFilter = null),
+                            ),
+                        ],
+                      ),
+                    ),
+                  if (_activities.isEmpty)
                     const Padding(
                       padding: EdgeInsets.all(32),
                       child: Text(
-                        'No tienes encuestas asignadas por ahora. '
+                        'No tienes actividades asignadas por ahora. '
                         'Cuando un administrador te asigne una, aparecerá aquí.',
                         textAlign: TextAlign.center,
                       ),
+                    )
+                  else if (_filteredActivities.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text(
+                        'Ninguna actividad coincide con los filtros elegidos.',
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  for (final survey in _surveys)
+                  for (final activity in _filteredActivities)
                     ListTile(
-                      leading: _downloadingSurveyId == survey.id
+                      leading: _downloadingActivityId == activity.id
                           ? const SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.assignment_outlined),
-                      title: Text(survey.name),
+                      title: Text(activity.surveyName),
                       subtitle: Text(
-                        'Del ${_formatDate(survey.initDate)} al ${_formatDate(survey.finishDate)}',
+                        '${activity.parishName} · Del ${_formatDate(activity.initDate)} '
+                        'al ${_formatDate(activity.finishDate)}',
                       ),
-                      onTap: _downloadingSurveyId == null
-                          ? () => _openSurvey(survey)
+                      onTap: _downloadingActivityId == null
+                          ? () => _openActivity(activity)
                           : null,
                     ),
                 ],

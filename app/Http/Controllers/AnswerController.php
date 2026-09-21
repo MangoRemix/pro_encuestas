@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponds;
+use App\Http\Controllers\Concerns\GuardsSurveyStructure;
 use App\Models\Answer;
 use App\Models\Question;
 use Exception;
@@ -15,7 +16,7 @@ use Throwable;
 
 class AnswerController extends Controller
 {
-    use ApiResponds;
+    use ApiResponds, GuardsSurveyStructure;
 
     public static function rules($id = null)
     {
@@ -69,6 +70,8 @@ class AnswerController extends Controller
             if (! $question) {
                 throw new Exception('Not found question register', 404);
             }
+
+            $this->assertSurveyStructureEditable($this->surveyIdOfQuestion($question->id));
 
             $exist_answer_order = Answer::query()
                 ->where('order', $request['order'])
@@ -161,6 +164,8 @@ class AnswerController extends Controller
 
             $questionId = $request->filled('question_id') ? $request->question_id : $answer->question_id;
 
+            $this->assertSurveyStructureEditable($this->surveyIdOfQuestion($questionId));
+
             if ($answer->order != $request->order) {
                 $exist_answer_order = Answer::query()
                     ->where('order', $request['order'])
@@ -202,10 +207,12 @@ class AnswerController extends Controller
         try {
             // code...
 
-            $answer = Answer::select('id', 'name')->find($id);
+            $answer = Answer::select('id', 'name', 'question_id')->find($id);
             if (! $answer) {
                 throw new Exception('Not found answer register', 404);
             }
+
+            $this->assertSurveyStructureEditable($this->surveyIdOfQuestion($answer->question_id));
 
             $answer->delete();
 
@@ -273,6 +280,10 @@ class AnswerController extends Controller
                 throw new Exception('Todas las respuestas a reordenar deben pertenecer a la misma pregunta', 422);
             }
 
+            $this->assertSurveyStructureEditable(
+                $this->surveyIdOfQuestion(Answer::query()->whereIn('id', $ids)->value('question_id'))
+            );
+
             DB::transaction(function () use ($items) {
                 foreach ($items as $item) {
                     Answer::query()->where('id', $item['id'])->update(['order' => $item['order']]);
@@ -297,6 +308,8 @@ class AnswerController extends Controller
             if (! $question) {
                 throw new Exception('Error not found question register', 404);
             }
+
+            $this->assertSurveyStructureEditable($this->surveyIdOfQuestion($question_id));
 
             $data = [];
 

@@ -5,14 +5,40 @@ import '../../core/db/app_database.dart';
 import '../../core/network/api_client.dart';
 import '../../core/providers.dart';
 
-class RemoteSurveySummary {
-  RemoteSurveySummary({required this.id, required this.name});
+/// Una actividad asignada al encuestador: una encuesta aplicada en una
+/// parroquia concreta, dentro de un rango de fechas concreto.
+class RemoteActivitySummary {
+  RemoteActivitySummary({
+    required this.id,
+    required this.surveyId,
+    required this.surveyName,
+    required this.parishId,
+    required this.parishName,
+    required this.initDate,
+    required this.finishDate,
+  });
 
   final int id;
-  final String name;
+  final int surveyId;
+  final String surveyName;
+  final int parishId;
+  final String parishName;
+  final DateTime initDate;
+  final DateTime finishDate;
 
-  factory RemoteSurveySummary.fromJson(Map<String, dynamic> json) {
-    return RemoteSurveySummary(id: json['id'] as int, name: json['name'] as String);
+  factory RemoteActivitySummary.fromJson(Map<String, dynamic> json) {
+    final survey = json['survey'] as Map<String, dynamic>?;
+    final parish = json['parish'] as Map<String, dynamic>?;
+
+    return RemoteActivitySummary(
+      id: json['id'] as int,
+      surveyId: json['survey_id'] as int,
+      surveyName: (survey?['name'] as String?) ?? '',
+      parishId: json['parish_id'] as int,
+      parishName: (parish?['name'] as String?) ?? '',
+      initDate: DateTime.parse(json['init_date'] as String),
+      finishDate: DateTime.parse(json['finish_date'] as String),
+    );
   }
 }
 
@@ -24,19 +50,34 @@ class SurveyRepository {
   final ApiClient _apiClient;
   final AppDatabase _db;
 
-  /// Encuestas asignadas y vigentes para el encuestador autenticado. Si no
+  /// Actividades asignadas y vigentes para el encuestador autenticado. Si no
   /// hay conexión, se propaga el error para que la pantalla pueda mostrar el
   /// listado ya cacheado en su lugar.
-  Future<List<RemoteSurveySummary>> fetchAssignedSurveys() async {
-    final response = await _apiClient.dio.get('mobile/surveys');
+  Future<List<RemoteActivitySummary>> fetchAssignedActivities() async {
+    final response = await _apiClient.dio.get('mobile/activities');
     final data = response.data as List<dynamic>;
 
     return data
-        .map((item) => RemoteSurveySummary.fromJson(item as Map<String, dynamic>))
+        .map((item) => RemoteActivitySummary.fromJson(item as Map<String, dynamic>))
         .toList();
   }
 
-  Future<List<CachedSurvey>> cachedSurveys() => _db.allCachedSurveys();
+  Future<List<CachedActivity>> cachedActivities() => _db.allCachedActivities();
+
+  Future<void> cacheActivities(List<RemoteActivitySummary> activities) async {
+    await _db.replaceCatalogActivities([
+      for (final activity in activities)
+        CachedActivitiesCompanion.insert(
+          id: Value(activity.id),
+          surveyId: activity.surveyId,
+          surveyName: activity.surveyName,
+          parishId: activity.parishId,
+          parishName: activity.parishName,
+          initDate: activity.initDate,
+          finishDate: activity.finishDate,
+        ),
+    ]);
+  }
 
   Future<bool> isSurveyDownloaded(int surveyId) async {
     final categories = await _db.categoriesForSurvey(surveyId);
@@ -55,8 +96,6 @@ class SurveyRepository {
       CachedSurveysCompanion.insert(
         id: Value(survey['id'] as int),
         name: survey['name'] as String,
-        initDate: DateTime.parse(survey['init_date'] as String),
-        finishDate: DateTime.parse(survey['finish_date'] as String),
       ),
     ]);
 
@@ -106,15 +145,6 @@ class SurveyRepository {
   }
 
   Future<void> downloadCatalogs() async {
-    final parishesResponse = await _apiClient.dio.get('parish/show-all');
-    final parishes = (parishesResponse.data as List<dynamic>)
-        .map((p) => CachedParishesCompanion.insert(
-              id: Value((p as Map<String, dynamic>)['id'] as int),
-              name: p['name'] as String,
-            ))
-        .toList();
-    await _db.replaceParishes(parishes);
-
     final sexesResponse = await _apiClient.dio.get('sex/show-all');
     final sexes = (sexesResponse.data as List<dynamic>)
         .map((s) => CachedSexesCompanion.insert(

@@ -5,7 +5,7 @@
             v-if="message || isError ? true : false"
             :message="message"
             :is-error="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
 
         <div class="w-full text-center">
@@ -20,6 +20,15 @@
                 <span class="text-white">{{ survey.results_count }}</span>
             </div>
         </div>
+
+        <div
+            v-if="structureLocked"
+            class="mb-3 rounded-lg border border-yellow-500/50 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-200"
+        >
+            Esta encuesta ya tiene datos recolectados; su estructura
+            (categorías, preguntas y respuestas) no puede modificarse.
+        </div>
+
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <!-- CATEGORIAS -->
             <div
@@ -50,7 +59,8 @@
                                 editingCategoryId = 0;
                                 isModalOpen_categories = true;
                             "
-                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer"
+                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
+                            :disabled="structureLocked"
                         >
                             <Icon
                                 class="text-xl text-white"
@@ -65,6 +75,7 @@
                         item-key="id"
                         tag="ul"
                         class="space-y-1 text-blue-100"
+                        :disabled="structureLocked"
                         @end="onReorderCategories"
                     >
                         <template #item="{ element: category }">
@@ -89,6 +100,7 @@
                                     </template>
                                     <template v-else>
                                         <Icon
+                                            v-if="!structureLocked"
                                             @click.stop="
                                                 editCategory(category.id)
                                             "
@@ -97,6 +109,7 @@
                                             title="Editar"
                                         />
                                         <Icon
+                                            v-if="!structureLocked"
                                             @click.stop="
                                                 hideCategoryRow(category.id)
                                             "
@@ -146,7 +159,7 @@
                         <button
                             @click="newQuestions()"
                             class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
-                            :disabled="!categorySelected"
+                            :disabled="!categorySelected || structureLocked"
                         >
                             <Icon
                                 class="text-xl text-white"
@@ -200,6 +213,7 @@
                                 item-key="id"
                                 tag="tbody"
                                 class="divide-y divide-slate-700/50"
+                                :disabled="structureLocked"
                                 @end="onReorderQuestions"
                             >
                                 <template #item="{ element: question }">
@@ -238,6 +252,7 @@
                                                 </template>
                                                 <template v-else>
                                                     <Icon
+                                                        v-if="!structureLocked"
                                                         @click.stop="
                                                             getQuestionToEdit(
                                                                 question.id,
@@ -247,6 +262,7 @@
                                                         icon="ic:baseline-edit"
                                                     />
                                                     <Icon
+                                                        v-if="!structureLocked"
                                                         @click.stop="
                                                             deleteQuestion(
                                                                 question.id,
@@ -289,7 +305,7 @@
                     <button
                         @click="newAnswers()"
                         class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
-                        :disabled="!questionSelected"
+                        :disabled="!questionSelected || structureLocked"
                     >
                         <Icon
                             class="text-xl text-white"
@@ -337,6 +353,7 @@
                                 item-key="id"
                                 tag="tbody"
                                 class="divide-y divide-slate-700/50 text-slate-200"
+                                :disabled="structureLocked"
                                 @end="onReorderAnswers"
                             >
                                 <template #item="{ element: answer, index }">
@@ -357,6 +374,7 @@
                                                 class="flex items-center justify-center gap-x-2"
                                             >
                                                 <Icon
+                                                    v-if="!structureLocked"
                                                     @click="
                                                         getAnswerToEdit(
                                                             answer.id,
@@ -366,6 +384,7 @@
                                                     icon="ic:baseline-edit"
                                                 />
                                                 <Icon
+                                                    v-if="!structureLocked"
                                                     @click="
                                                         deleteAnswer(
                                                             answer.id,
@@ -399,7 +418,7 @@
             </div>
         </div>
 
-        <AssignPollstersPanel
+        <ActivitiesPanel
             v-if="canManageSurveys"
             :survey-id="page.props.id"
         />
@@ -587,9 +606,9 @@
 import { Icon } from '@iconify/vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import draggable from 'vuedraggable';
-import AssignPollstersPanel from '@/components/AssignPollstersPanel.vue';
+import ActivitiesPanel from '@/components/ActivitiesPanel.vue';
 import CategoryForm from '@/components/forms/category-form.vue';
 import Modal from '@/components/modal.vue';
 import NotificationBox from '@/components/notification-box.vue';
@@ -651,6 +670,7 @@ const surveySelected = ref(0);
 const questionSelected = ref(0);
 const answerSelectedId = ref(0);
 const answersByQuestion = ref([]);
+const structureLocked = computed(() => !!survey.value?.has_results);
 
 const formQuestion = ref([
     {
@@ -704,7 +724,11 @@ const refreshCategories = async () => {
 
 // Function to hide (soft-delete) a question
 const deleteQuestion = async (id) => {
-    if (!(await confirmDialog('¿Ocultar esta pregunta?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta pregunta? Dejará de estar disponible para responder en la app y no aparecerá en los demás apartados (categorías, reportes, etc.) hasta que la restaures.',
+        ))
+    ) {
         return;
     }
 
@@ -754,7 +778,11 @@ const editCategory = (id) => {
 };
 
 const hideCategoryRow = async (id) => {
-    if (!(await confirmDialog('¿Ocultar esta categoría?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta categoría? Se ocultarán también sus preguntas y respuestas: dejarán de estar disponibles en la app y en los demás apartados hasta que las restaures.',
+        ))
+    ) {
         return;
     }
 
@@ -1087,7 +1115,11 @@ const createManyAnswers = async () => {
 };
 
 const deleteAnswer = async (id, index) => {
-    if (!(await confirmDialog('¿Ocultar esta respuesta?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta respuesta? Dejará de estar disponible para seleccionar en la app y no aparecerá en los demás apartados hasta que la restaures.',
+        ))
+    ) {
         return;
     }
 

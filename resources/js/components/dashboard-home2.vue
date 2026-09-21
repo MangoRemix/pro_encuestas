@@ -43,7 +43,7 @@
                     >
                         <tr>
                             <th class="p-4">Nombre</th>
-                            <th class="p-4 text-nowrap">Fecha de inicio</th>
+                            <th class="p-4 text-nowrap">Creada</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700/50">
@@ -56,7 +56,7 @@
                                 {{ survey.name }}
                             </td>
                             <td class="p-4 text-xs md:text-[13px]">
-                                {{ formatedDate(survey.init_date) }}
+                                {{ formatedDate(survey.created_at) }}
                             </td>
                         </tr>
                     </tbody>

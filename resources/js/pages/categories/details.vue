@@ -6,7 +6,7 @@
             v-if="message || isError ? true : false"
             :message="message"
             :isError="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
 
         <div class="mx-auto min-h-100 w-170 py-10">
@@ -297,7 +297,11 @@ const createManyQuestions = async () => {
 };
 
 const deleteQuestion = async (id, index) => {
-    if (!(await confirmDialog('¿Ocultar esta pregunta?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta pregunta? Dejará de estar disponible para responder en la app y no aparecerá en los demás apartados (categorías, reportes, etc.) hasta que la restaures.',
+        ))
+    ) {
         return;
     }
 

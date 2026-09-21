@@ -3,7 +3,7 @@
         class="mt-5 max-h-120 rounded-xl border border-blue-700/30 bg-neutral-800 p-6"
     >
         <h3 class="mb-4 text-center text-lg font-semibold text-blue-400">
-            Encuestados por Sexo
+            Encuestados por Género
         </h3>
         <BarChart
             v-if="chartData"
@@ -39,6 +39,9 @@ import { getRespondentCountBySex } from '@/composables/api/reports';
 const props = defineProps({
     surveyId: Number,
     totalRespondent: Number,
+    activityId: { type: [Number, String], default: '' },
+    dateFrom: { type: String, default: '' },
+    dateTo: { type: String, default: '' },
 });
 const chartData = ref(null);
 
@@ -47,7 +50,11 @@ const loadData = async () => {
         return;
     }
 
-    const { data } = await getRespondentCountBySex(props.surveyId);
+    const { data } = await getRespondentCountBySex(props.surveyId, null, {
+        activityId: props.activityId,
+        dateFrom: props.dateFrom,
+        dateTo: props.dateTo,
+    });
 
     if (data) {
         chartData.value = {
@@ -75,7 +82,15 @@ const loadData = async () => {
     }
 };
 
-watch(() => [props.surveyId, props.totalRespondent], loadData, {
-    immediate: true,
-});
+watch(
+    () => [
+        props.surveyId,
+        props.totalRespondent,
+        props.activityId,
+        props.dateFrom,
+        props.dateTo,
+    ],
+    loadData,
+    { immediate: true },
+);
 </script>

@@ -75,20 +75,21 @@ class Person extends Authenticatable
 
     }
 
-    public function assignedSurveys(): BelongsToMany
+    public function assignedActivities(): BelongsToMany
     {
-        return $this->belongsToMany(Survey::class, 'survey_person')
-            ->using(SurveyPerson::class)
+        return $this->belongsToMany(Activity::class, 'activity_person')
+            ->using(ActivityPerson::class)
             ->withPivot(['assigned_by', 'assigned_at', 'unassigned_at', 'unassigned_by'])
             ->withTimestamps();
     }
 
     /**
-     * Solo las encuestas con una asignación activa (sin desasignar) a este
-     * encuestador — usado por la app móvil para saber qué puede descargar.
+     * Solo las actividades con una asignación activa (sin desasignar) a
+     * este encuestador — usado por la app móvil para saber qué puede
+     * descargar.
      */
-    public function activeAssignedSurveys(): BelongsToMany
+    public function activeAssignedActivities(): BelongsToMany
     {
-        return $this->assignedSurveys()->wherePivotNull('unassigned_at');
+        return $this->assignedActivities()->wherePivotNull('unassigned_at');
     }
 }

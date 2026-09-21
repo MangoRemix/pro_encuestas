@@ -19,6 +19,10 @@ class SexSeeder extends Seeder
             'abbreviation' => 'F',
             'description' => 'FEMALE',
         ],
+        [
+            'abbreviation' => 'O',
+            'description' => 'OTHER',
+        ],
     ];
 
     public function run(): void

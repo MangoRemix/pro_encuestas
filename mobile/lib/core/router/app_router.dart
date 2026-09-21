@@ -36,9 +36,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SurveyListScreen(),
       ),
       GoRoute(
-        path: '/respondent/:surveyId',
+        path: '/respondent/:activityId',
         builder: (context, state) => RespondentInfoScreen(
-          surveyId: int.parse(state.pathParameters['surveyId']!),
+          activityId: int.parse(state.pathParameters['activityId']!),
         ),
       ),
       GoRoute(

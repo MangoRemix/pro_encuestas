@@ -18,18 +18,14 @@ class ImportSurveyExcelJob implements ShouldQueue
 
     public function __construct(
         protected string $filePath,
-        protected string $batchId,
-        protected string $initDate,
-        protected string $finishDate
+        protected string $batchId
     ) {}
 
     public function handle(): void
     {
         try {
             (new SurveyImportController)->processExcelFile(
-                Storage::path($this->filePath),
-                $this->initDate,
-                $this->finishDate
+                Storage::path($this->filePath)
             );
             Cache::put("batch_status_{$this->batchId}", ['finished' => true, 'status' => 'success'], 3600);
         } catch (\Throwable $e) {

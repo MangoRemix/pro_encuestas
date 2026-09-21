@@ -24,9 +24,10 @@ ChartJS.register(
 const props = defineProps({
     surveyId: { type: [Number, String], required: true },
     totalRespondent: { type: Number, required: true },
+    activityId: { type: [Number, String], default: '' },
+    dateFrom: { type: String, default: '' },
+    dateTo: { type: String, default: '' },
 });
-
-console.log(props);
 
 const min = ref('');
 const max = ref('');
@@ -43,12 +44,16 @@ const fetchData = async () => {
         const response = await axios.get(
             `/api/result/age-range/${props.surveyId}`,
             {
-                params: { min: minVal, max: maxVal },
+                params: {
+                    min: minVal,
+                    max: maxVal,
+                    activity_id: props.activityId || undefined,
+                    from: props.dateFrom || undefined,
+                    to: props.dateTo || undefined,
+                },
             },
         );
-        console.log(response.data);
         count.value = response.data.count || 0;
-        console.log('count', count.value);
     } catch (error) {
         console.error('Error fetching data:', error);
     } finally {

@@ -25,10 +25,15 @@ class Question extends Model
         static::deleted(function ($question) {
             // Esto buscará todos los resultados asociados y aplicará softDelete
             $question->results()->delete();
+
+            // Ocultar en cadena: una pregunta oculta no debe dejar sus
+            // respuestas visibles/seleccionables.
+            $question->answers()->get()->each->delete();
         });
 
         static::restored(function ($question) {
-            // Opcional: Si restauras la respuesta, podrías restaurar los resultados
+            // Restaurar en cadena (simétrico al ocultado).
+            $question->answers()->withTrashed()->get()->each->restore();
             $question->results()->restore();
         });
     }

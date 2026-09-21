@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ActivityAssignmentController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\MobileLoginController;
@@ -12,7 +14,6 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\SexController;
-use App\Http\Controllers\SurveyAssignmentController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyImportController;
 use Illuminate\Support\Facades\Route;
@@ -77,10 +78,6 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             Route::post('import-excel', [SurveyImportController::class, 'importFromExcel']);
             Route::put('update/{id}', [SurveyController::class, 'update']);
             Route::patch('restore/{id}', [SurveyController::class, 'restore']);
-
-            Route::post('{survey}/assign', [SurveyAssignmentController::class, 'assign']);
-            Route::delete('{survey}/unassign/{person}', [SurveyAssignmentController::class, 'unassign']);
-            Route::get('{survey}/pollsters', [SurveyAssignmentController::class, 'pollsters']);
         });
 
         // Eliminación permanente: solo ADMIN
@@ -89,12 +86,25 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         });
     });
 
-    /** APP MÓVIL: encuestas asignadas al usuario autenticado + cierre de sesión (revoca el token) */
-    Route::get('mobile/surveys', [SurveyAssignmentController::class, 'assignedToMe']);
-    Route::post('mobile/logout', [MobileLoginController::class, 'destroy']);
+    /** ACTIVITIES RESOURCES (encuesta + parroquia + rango de fechas + encuestador(es)) */
+    Route::prefix('activity')->group(function () {
+        Route::get('show-all', [ActivityController::class, 'index']);
+        Route::get('show-one/{id}', [ActivityController::class, 'show']);
 
-    Route::get('person/{person}/assigned-surveys', [SurveyAssignmentController::class, 'assignedSurveys'])
-        ->middleware('manage-surveys');
+        Route::middleware('manage-surveys')->group(function () {
+            Route::post('create', [ActivityController::class, 'store']);
+            Route::put('update/{id}', [ActivityController::class, 'update']);
+            Route::delete('delete/{id}', [ActivityController::class, 'destroy']);
+
+            Route::post('{activity}/assign', [ActivityAssignmentController::class, 'assign']);
+            Route::delete('{activity}/unassign/{person}', [ActivityAssignmentController::class, 'unassign']);
+            Route::get('{activity}/pollsters', [ActivityAssignmentController::class, 'pollsters']);
+        });
+    });
+
+    /** APP MÓVIL: actividades asignadas al usuario autenticado + cierre de sesión (revoca el token) */
+    Route::get('mobile/activities', [ActivityAssignmentController::class, 'assignedToMe']);
+    Route::post('mobile/logout', [MobileLoginController::class, 'destroy']);
 
     /** CATEGORIES RESOURCES */
     Route::prefix('category')->group(function () {
@@ -184,6 +194,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             Route::get('newReportStructure/{id}', [ResultController::class, 'newReportStructure']);
             Route::get('parish/{surveyId}', [ResultController::class, 'getRespondentCountByParish']);
             Route::get('reports/top-pollsters', [ResultController::class, 'getTopPollsters']);
+            Route::get('activities/{surveyId}', [ResultController::class, 'getActivitiesForSurvey']);
         });
     });
 

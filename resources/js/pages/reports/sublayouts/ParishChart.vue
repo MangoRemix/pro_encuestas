@@ -39,6 +39,9 @@ import { getRespondentCountByParish } from '@/composables/api/reports';
 const props = defineProps({
     surveyId: Number,
     totalRespondent: Number,
+    activityId: { type: [Number, String], default: '' },
+    dateFrom: { type: String, default: '' },
+    dateTo: { type: String, default: '' },
 });
 const chartData = ref(null);
 
@@ -47,7 +50,11 @@ const loadData = async () => {
         return;
     }
 
-    const { data } = await getRespondentCountByParish(props.surveyId);
+    const { data } = await getRespondentCountByParish(props.surveyId, null, {
+        activityId: props.activityId,
+        dateFrom: props.dateFrom,
+        dateTo: props.dateTo,
+    });
 
     if (data) {
         const colors = [
@@ -80,7 +87,15 @@ const loadData = async () => {
     }
 };
 
-watch(() => [props.surveyId, props.totalRespondent], loadData, {
-    immediate: true,
-});
+watch(
+    () => [
+        props.surveyId,
+        props.totalRespondent,
+        props.activityId,
+        props.dateFrom,
+        props.dateTo,
+    ],
+    loadData,
+    { immediate: true },
+);
 </script>

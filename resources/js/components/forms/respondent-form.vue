@@ -8,10 +8,10 @@
         </h2>
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
-            <!-- Sexo -->
+            <!-- Género -->
             <div class="flex flex-col gap-1.5">
                 <label for="sex_id" class="text-sm font-semibold text-gray-700"
-                    >Sexo:</label
+                    >Género:</label
                 >
                 <select
                     id="sex_id"
@@ -80,7 +80,7 @@
             v-if="message"
             :message="message"
             :isError="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
     </div>
 </template>

@@ -62,6 +62,7 @@ class SyncService {
       final response = await _apiClient.dio.post('result/batch-instance', data: {
         'instance_uuid': instance.localUuid,
         'survey_id': instance.surveyId,
+        'activity_id': instance.activityId,
         'pollster_id': instance.pollsterPersonId,
         'respondent': {
           'sex_id': instance.respondentSexId,

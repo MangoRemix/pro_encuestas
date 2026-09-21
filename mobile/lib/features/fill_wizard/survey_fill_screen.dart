@@ -6,6 +6,16 @@ import 'package:go_router/go_router.dart';
 import '../../core/db/app_database.dart';
 import '../../core/providers.dart';
 
+/// Una pregunta concreta dentro de su categoría — la unidad de navegación
+/// del wizard (antes se navegaba por categoría completa; ahora se avanza
+/// de a una pregunta, sin importar en qué categoría caiga cada una).
+class _QuestionSlot {
+  _QuestionSlot({required this.category, required this.question});
+
+  final CachedCategory category;
+  final CachedQuestion question;
+}
+
 class SurveyFillScreen extends ConsumerStatefulWidget {
   const SurveyFillScreen({super.key, required this.instanceUuid});
 
@@ -17,12 +27,18 @@ class SurveyFillScreen extends ConsumerStatefulWidget {
 
 class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
   SurveyInstance? _instance;
-  List<CachedCategory> _categories = [];
-  final Map<int, List<CachedQuestion>> _questionsByCategory = {};
+  CachedSurvey? _survey;
+  List<_QuestionSlot> _slots = [];
   final Map<int, List<CachedAnswer>> _answersByQuestion = {};
   Set<int> _selectedAnswerIdsFlat = {};
-  int _categoryIndex = 0;
+  int _slotIndex = 0;
   bool _loading = true;
+
+  // Encuesta ya finalizada en este armado de la pantalla — se muestra una
+  // vista de cierre aparte en vez de navegar de inmediato, para que quede
+  // claro que sí se guardó.
+  bool _completed = false;
+  int _respondentCount = 0;
 
   AppDatabase get _db => ref.read(appDatabaseProvider);
 
@@ -41,28 +57,31 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
       return;
     }
 
+    final survey = await _db.surveyById(instance.surveyId);
     final categories = await _db.categoriesForSurvey(instance.surveyId);
+    final slots = <_QuestionSlot>[];
 
     for (final category in categories) {
       final questions = await _db.questionsForCategory(category.id);
-      _questionsByCategory[category.id] = questions;
 
       for (final question in questions) {
         _answersByQuestion[question.id] = await _db.answersForQuestion(question.id);
+        slots.add(_QuestionSlot(category: category, question: question));
       }
     }
 
-    final resumeIndex = instance.currentCategoryId == null
+    final resumeIndex = instance.currentQuestionId == null
         ? 0
-        : categories.indexWhere((c) => c.id == instance.currentCategoryId);
+        : slots.indexWhere((s) => s.question.id == instance.currentQuestionId);
 
     await _loadSelectedAnswers();
 
     if (mounted) {
       setState(() {
         _instance = instance;
-        _categories = categories;
-        _categoryIndex = resumeIndex < 0 ? 0 : resumeIndex;
+        _survey = survey;
+        _slots = slots;
+        _slotIndex = resumeIndex < 0 ? 0 : resumeIndex;
         _loading = false;
       });
     }
@@ -103,30 +122,26 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
     if (mounted) setState(() {});
   }
 
-  bool _categoryIsComplete(int categoryIndex) {
-    final questions = _questionsByCategory[_categories[categoryIndex].id] ?? [];
+  bool _isSlotAnswered(_QuestionSlot slot) =>
+      (_answersByQuestion[slot.question.id] ?? [])
+          .any((a) => _selectedAnswerIdsFlat.contains(a.id));
 
-    return questions.every((q) => (_answersByQuestion[q.id] ?? [])
-        .any((a) => _selectedAnswerIdsFlat.contains(a.id)));
-  }
-
-  bool get _allCategoriesComplete =>
-      List.generate(_categories.length, (i) => i).every(_categoryIsComplete);
-
-  Future<void> _goToCategory(int index) async {
-    setState(() => _categoryIndex = index);
+  /// Avanza/retrocede y guarda de inmediato en cuál pregunta quedó — si la
+  /// app se cierra o el teléfono falla, se retoma exactamente aquí.
+  Future<void> _goToSlot(int index) async {
+    setState(() => _slotIndex = index);
 
     await _db.upsertInstance(SurveyInstancesCompanion(
       localUuid: drift.Value(widget.instanceUuid),
       surveyId: drift.Value(_instance!.surveyId),
       pollsterPersonId: drift.Value(_instance!.pollsterPersonId),
-      currentCategoryId: drift.Value(_categories[index].id),
+      currentQuestionId: drift.Value(_slots[index].question.id),
       updatedAt: drift.Value(DateTime.now()),
     ));
   }
 
   Future<void> _finish() async {
-    if (!_allCategoriesComplete) {
+    if (!_slots.every(_isSlotAnswered)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Todas las preguntas deben tener al menos una respuesta.'),
       ));
@@ -145,10 +160,10 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
     final total = await _countRespondents(_instance!.surveyId);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Encuesta guardada. Encuestados en esta encuesta: $total'),
-      ));
-      context.replace('/respondent/${_instance!.surveyId}');
+      setState(() {
+        _completed = true;
+        _respondentCount = total;
+      });
     }
   }
 
@@ -162,69 +177,122 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
         .length;
   }
 
+  void _startNextRespondent() {
+    final activityId = _instance?.activityId;
+
+    if (activityId != null) {
+      context.go('/respondent/$activityId');
+    } else {
+      // Instancia sin actividad asociada (creada antes de que existiera la
+      // columna) — no hay a qué actividad volver, se manda al listado.
+      context.go('/surveys');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (_categories.isEmpty) {
-      return const Scaffold(
-        body: Center(child: Text('Esta encuesta no tiene categorías cargadas.')),
+    if (_completed) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 96),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Encuesta completada',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Encuestados en esta actividad: $_respondentCount',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _startNextRespondent,
+                      child: const Text('Encuestar a otra persona'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       );
     }
 
-    final category = _categories[_categoryIndex];
-    final questions = _questionsByCategory[category.id] ?? [];
-    final isLastCategory = _categoryIndex == _categories.length - 1;
+    if (_slots.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text('Esta encuesta no tiene preguntas cargadas.')),
+      );
+    }
+
+    final slot = _slots[_slotIndex];
+    final question = slot.question;
+    final isLastSlot = _slotIndex == _slots.length - 1;
+    final answered = _isSlotAnswered(slot);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(category.name),
+        title: Text(_survey?.name ?? ''),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
-            value: (_categoryIndex + 1) / _categories.length,
+            value: (_slotIndex + 1) / _slots.length,
           ),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          for (final question in questions) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 4),
-              child: Text(
-                question.name,
-                style: Theme.of(context).textTheme.titleMedium,
+          Text(
+            slot.category.name,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            question.name,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
+          if (question.allowsMultipleAnswers)
+            for (final answer in _answersByQuestion[question.id] ?? [])
+              CheckboxListTile(
+                title: Text(answer.name),
+                value: _isSelected(answer.id),
+                onChanged: (_) => _toggleAnswer(question, answer.id),
+              )
+          else
+            RadioGroup<int>(
+              groupValue: (_answersByQuestion[question.id] ?? [])
+                  .map((a) => a.id)
+                  .firstWhere(_isSelected, orElse: () => -1),
+              onChanged: (value) {
+                if (value != null) _toggleAnswer(question, value);
+              },
+              child: Column(
+                children: [
+                  for (final answer in _answersByQuestion[question.id] ?? [])
+                    RadioListTile<int>(
+                      title: Text(answer.name),
+                      value: answer.id,
+                    ),
+                ],
               ),
             ),
-            if (question.allowsMultipleAnswers)
-              for (final answer in _answersByQuestion[question.id] ?? [])
-                CheckboxListTile(
-                  title: Text(answer.name),
-                  value: _isSelected(answer.id),
-                  onChanged: (_) => _toggleAnswer(question, answer.id),
-                )
-            else
-              RadioGroup<int>(
-                groupValue: (_answersByQuestion[question.id] ?? [])
-                    .map((a) => a.id)
-                    .firstWhere(_isSelected, orElse: () => -1),
-                onChanged: (value) {
-                  if (value != null) _toggleAnswer(question, value);
-                },
-                child: Column(
-                  children: [
-                    for (final answer in _answersByQuestion[question.id] ?? [])
-                      RadioListTile<int>(
-                        title: Text(answer.name),
-                        value: answer.id,
-                      ),
-                  ],
-                ),
-              ),
-          ],
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -232,20 +300,22 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              if (_categoryIndex > 0)
+              if (_slotIndex > 0)
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => _goToCategory(_categoryIndex - 1),
+                    onPressed: () => _goToSlot(_slotIndex - 1),
                     child: const Text('Anterior'),
                   ),
                 ),
-              if (_categoryIndex > 0) const SizedBox(width: 12),
+              if (_slotIndex > 0) const SizedBox(width: 12),
               Expanded(
                 child: FilledButton(
-                  onPressed: isLastCategory
-                      ? _finish
-                      : () => _goToCategory(_categoryIndex + 1),
-                  child: Text(isLastCategory ? 'Finalizar' : 'Siguiente'),
+                  onPressed: !answered
+                      ? null
+                      : isLastSlot
+                          ? _finish
+                          : () => _goToSlot(_slotIndex + 1),
+                  child: Text(isLastSlot ? 'Finalizar' : 'Siguiente'),
                 ),
               ),
             ],

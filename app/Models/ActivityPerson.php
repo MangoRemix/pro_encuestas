@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class SurveyPerson extends Pivot
+class ActivityPerson extends Pivot
 {
-    protected $table = 'survey_person';
+    protected $table = 'activity_person';
 
     public $incrementing = true;
 
     protected $fillable = [
-        'survey_id',
+        'activity_id',
         'person_id',
         'assigned_by',
         'assigned_at',
@@ -25,9 +25,9 @@ class SurveyPerson extends Pivot
         'unassigned_at' => 'datetime',
     ];
 
-    public function survey(): BelongsTo
+    public function activity(): BelongsTo
     {
-        return $this->belongsTo(Survey::class);
+        return $this->belongsTo(Activity::class);
     }
 
     public function person(): BelongsTo

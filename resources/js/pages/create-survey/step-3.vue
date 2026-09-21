@@ -5,7 +5,7 @@
             v-if="message"
             :message="message"
             :is-error="isError"
-            class="absolute top-0 right-0 z-10 w-100"
+            class="absolute top-0 right-0 z-[1100] w-100"
         />
         <StepNavigation :items="steps" :current="current" />
         <div class="my-3 flex min-h-10 w-full flex-col md:w-100">
@@ -620,7 +620,11 @@ const newQuestions = () => {
 };
 
 const handleHideQuestion = async (id) => {
-    if (!(await confirmDialog('¿Ocultar esta pregunta?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta pregunta? Dejará de estar disponible para responder en la app y no aparecerá en los demás apartados (categorías, reportes, etc.) hasta que la restaures.',
+        ))
+    ) {
         return;
     }
 
@@ -708,7 +712,11 @@ const refreshAnswers = async () => {
 };
 
 const handleHideAnswer = async (id, index) => {
-    if (!(await confirmDialog('¿Ocultar esta respuesta?'))) {
+    if (
+        !(await confirmDialog(
+            '¿Ocultar esta respuesta? Dejará de estar disponible para seleccionar en la app y no aparecerá en los demás apartados hasta que la restaures.',
+        ))
+    ) {
         return;
     }
 
@@ -728,7 +736,16 @@ const handleHideAnswer = async (id, index) => {
 };
 
 const createManyAnswers_ = async (formData) => {
-    const { success } = await createManyAnswers(formData);
+    const { success, message: apiMessage } = await createManyAnswers(formData);
+
+    isError.value = !success;
+    message.value = success
+        ? 'Respuesta(s) guardada(s) exitosamente'
+        : apiMessage || 'Error al cargar respuesta(s)';
+
+    setTimeout(() => {
+        message.value = '';
+    }, 3000);
 
     if (success) {
         await refreshAnswers();

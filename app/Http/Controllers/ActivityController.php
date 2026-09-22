@@ -39,7 +39,12 @@ class ActivityController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Activity::query()->with(['survey', 'parish'])->orderByDesc('init_date');
+        // Trae los encuestadores activos de cada actividad en la misma
+        // consulta (evita que el frontend tenga que pedir
+        // activity/{id}/pollsters una vez POR actividad).
+        $query = Activity::query()
+            ->with(['survey', 'parish', 'activePollsters'])
+            ->orderByDesc('init_date');
 
         if ($request->filled('survey_id')) {
             $query->where('survey_id', $request->query('survey_id'));

@@ -117,6 +117,26 @@ class ActivityAssignmentAndRolesTest extends TestCase
         ])->assertStatus(409);
     }
 
+    public function test_activity_index_eager_loads_active_pollsters_to_avoid_n_plus_one(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $pollster = Person::factory()->create();
+        $activity = Activity::factory()->create();
+
+        $activity->assignedPollsters()->attach($pollster->id, [
+            'assigned_by' => $admin->id,
+            'assigned_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/activity/show-all');
+
+        $response->assertOk();
+        $found = collect($response->json())->firstWhere('id', $activity->id);
+        $this->assertNotNull($found);
+        $this->assertArrayHasKey('active_pollsters', $found);
+        $this->assertSame($pollster->id, $found['active_pollsters'][0]['id']);
+    }
+
     public function test_assigning_a_non_pollster_person_is_rejected(): void
     {
         $admin = Person::factory()->admin()->create();

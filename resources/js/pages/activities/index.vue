@@ -1,7 +1,7 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import {
     assignPollsterToActivity,
     createActivity,
@@ -27,6 +27,12 @@ const { parishes, fetchParishes } = useParishes();
 
 const surveys = ref([]);
 const filterSurveyId = ref(initialSurveyId ? Number(initialSurveyId) : '');
+// Estado/encuestador/fecha se filtran en el cliente sobre la lista ya
+// traída (que ya viene con sus encuestadores incluidos) — así no hace
+// falta pegarle al servidor de nuevo por cada cambio de filtro.
+const filterStatus = ref('');
+const filterPollsterId = ref('');
+const filterDate = ref('');
 const activities = ref([]);
 const allPollsters = ref([]);
 const pollstersByActivity = reactive({});
@@ -50,6 +56,47 @@ const isActive = (activity) => {
     );
 };
 
+const activityCoversDate = (activity, isoDate) => {
+    const day = new Date(`${isoDate}T00:00:00`);
+    const init = new Date(activity.init_date);
+    const finish = new Date(activity.finish_date);
+    const initDay = new Date(init.getFullYear(), init.getMonth(), init.getDate());
+    const finishDay = new Date(
+        finish.getFullYear(),
+        finish.getMonth(),
+        finish.getDate(),
+    );
+
+    return day >= initDay && day <= finishDay;
+};
+
+const filteredActivities = computed(() => {
+    return activities.value.filter((activity) => {
+        if (filterStatus.value === 'vigente' && !isActive(activity)) {
+            return false;
+        }
+
+        if (filterStatus.value === 'finalizada' && isActive(activity)) {
+            return false;
+        }
+
+        if (
+            filterPollsterId.value &&
+            !(pollstersByActivity[activity.id] || []).some(
+                (p) => p.id === filterPollsterId.value,
+            )
+        ) {
+            return false;
+        }
+
+        if (filterDate.value && !activityCoversDate(activity, filterDate.value)) {
+            return false;
+        }
+
+        return true;
+    });
+});
+
 const loadActivities = async () => {
     loading.value = true;
 
@@ -66,9 +113,12 @@ const loadActivities = async () => {
 
     activities.value = data || [];
 
-    await Promise.all(
-        activities.value.map((activity) => loadPollsters(activity.id)),
-    );
+    // Cada actividad ya trae sus encuestadores activos incluidos (eager
+    // load en el backend) — nada de pedir activity/{id}/pollsters una vez
+    // por actividad aquí.
+    for (const activity of activities.value) {
+        pollstersByActivity[activity.id] = activity.active_pollsters || [];
+    }
 
     loading.value = false;
 };
@@ -212,8 +262,8 @@ onMounted(async () => {
         </div>
 
         <div class="mx-auto my-6 w-full max-w-4xl">
-            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <div class="min-w-64 flex-1">
+            <div class="mb-4 flex flex-wrap items-end gap-3">
+                <div class="min-w-56 flex-1">
                     <label class="mb-1 block text-sm font-semibold text-slate-300">
                         Filtrar por encuesta
                     </label>
@@ -231,9 +281,50 @@ onMounted(async () => {
                         </option>
                     </select>
                 </div>
+                <div class="min-w-40 flex-1">
+                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                        Estado
+                    </label>
+                    <select
+                        v-model="filterStatus"
+                        class="inputs-form bg-white text-gray-900"
+                    >
+                        <option value="">Todas</option>
+                        <option value="vigente">Vigente</option>
+                        <option value="finalizada">Finalizada</option>
+                    </select>
+                </div>
+                <div class="min-w-56 flex-1">
+                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                        Encuestador
+                    </label>
+                    <select
+                        v-model="filterPollsterId"
+                        class="inputs-form bg-white text-gray-900"
+                    >
+                        <option value="">Todos</option>
+                        <option
+                            v-for="pollster in allPollsters"
+                            :key="pollster.id"
+                            :value="pollster.id"
+                        >
+                            {{ pollster.name }}
+                        </option>
+                    </select>
+                </div>
+                <div class="min-w-40">
+                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                        Fecha
+                    </label>
+                    <input
+                        type="date"
+                        v-model="filterDate"
+                        class="inputs-form bg-white text-gray-900"
+                    />
+                </div>
                 <button
                     type="button"
-                    class="yellow-button-app mt-6 w-auto cursor-pointer px-6"
+                    class="yellow-button-app w-auto cursor-pointer px-6"
                     @click="isCreating = !isCreating"
                 >
                     {{ isCreating ? 'Cancelar' : '+ Nueva actividad' }}
@@ -314,7 +405,13 @@ onMounted(async () => {
                     No hay actividades para mostrar.
                 </li>
                 <li
-                    v-for="activity in activities"
+                    v-else-if="filteredActivities.length === 0"
+                    class="text-sm text-slate-400 italic"
+                >
+                    Ninguna actividad coincide con los filtros elegidos.
+                </li>
+                <li
+                    v-for="activity in filteredActivities"
                     :key="activity.id"
                     class="rounded-lg border border-blue-700/30 bg-slate-700/50 p-4"
                 >

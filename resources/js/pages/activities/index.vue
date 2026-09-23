@@ -1,7 +1,8 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
+import Pagination from '@/components/pagination.vue';
 import {
     assignPollsterToActivity,
     createActivity,
@@ -27,13 +28,12 @@ const { parishes, fetchParishes } = useParishes();
 
 const surveys = ref([]);
 const filterSurveyId = ref(initialSurveyId ? Number(initialSurveyId) : '');
-// Estado/encuestador/fecha se filtran en el cliente sobre la lista ya
-// traída (que ya viene con sus encuestadores incluidos) — así no hace
-// falta pegarle al servidor de nuevo por cada cambio de filtro.
 const filterStatus = ref('');
 const filterPollsterId = ref('');
 const filterDate = ref('');
+
 const activities = ref([]);
+const pagination = ref(null);
 const allPollsters = ref([]);
 const pollstersByActivity = reactive({});
 const selectedPollsterByActivity = reactive({});
@@ -56,52 +56,21 @@ const isActive = (activity) => {
     );
 };
 
-const activityCoversDate = (activity, isoDate) => {
-    const day = new Date(`${isoDate}T00:00:00`);
-    const init = new Date(activity.init_date);
-    const finish = new Date(activity.finish_date);
-    const initDay = new Date(init.getFullYear(), init.getMonth(), init.getDate());
-    const finishDay = new Date(
-        finish.getFullYear(),
-        finish.getMonth(),
-        finish.getDate(),
-    );
-
-    return day >= initDay && day <= finishDay;
-};
-
-const filteredActivities = computed(() => {
-    return activities.value.filter((activity) => {
-        if (filterStatus.value === 'vigente' && !isActive(activity)) {
-            return false;
-        }
-
-        if (filterStatus.value === 'finalizada' && isActive(activity)) {
-            return false;
-        }
-
-        if (
-            filterPollsterId.value &&
-            !(pollstersByActivity[activity.id] || []).some(
-                (p) => p.id === filterPollsterId.value,
-            )
-        ) {
-            return false;
-        }
-
-        if (filterDate.value && !activityCoversDate(activity, filterDate.value)) {
-            return false;
-        }
-
-        return true;
-    });
-});
-
-const loadActivities = async () => {
+/**
+ * Todo el filtrado (encuesta, estado, encuestador, fecha) y la paginación
+ * se resuelven en el servidor, en una sola consulta — evita traer todas
+ * las actividades a la vez y evita pedir activity/{id}/pollsters una vez
+ * por fila (ya vienen incluidos en la respuesta).
+ */
+const loadActivities = async (page = 1) => {
     loading.value = true;
 
     const { data, errorFlag, responseMessage } = await getActivities({
+        page,
         surveyId: filterSurveyId.value || undefined,
+        status: filterStatus.value || undefined,
+        pollsterId: filterPollsterId.value || undefined,
+        date: filterDate.value || undefined,
     });
 
     if (errorFlag) {
@@ -111,11 +80,9 @@ const loadActivities = async () => {
         return;
     }
 
-    activities.value = data || [];
+    activities.value = data?.data || [];
+    pagination.value = data;
 
-    // Cada actividad ya trae sus encuestadores activos incluidos (eager
-    // load en el backend) — nada de pedir activity/{id}/pollsters una vez
-    // por actividad aquí.
     for (const activity of activities.value) {
         pollstersByActivity[activity.id] = activity.active_pollsters || [];
     }
@@ -225,7 +192,9 @@ const handleUnassign = async (activity, person) => {
     await loadPollsters(activity.id);
 };
 
-watch(filterSurveyId, loadActivities);
+watch([filterSurveyId, filterStatus, filterPollsterId, filterDate], () =>
+    loadActivities(1),
+);
 
 onMounted(async () => {
     await fetchParishes();
@@ -261,7 +230,7 @@ onMounted(async () => {
             </h2>
         </div>
 
-        <div class="mx-auto my-6 w-full max-w-4xl">
+        <div class="mx-auto my-6 w-full max-w-6xl">
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div class="min-w-56 flex-1">
                     <label class="mb-1 block text-sm font-semibold text-slate-300">
@@ -397,95 +366,136 @@ onMounted(async () => {
 
             <div v-if="loading" class="text-sm text-slate-300">Cargando...</div>
 
-            <ul v-else class="space-y-3">
-                <li
-                    v-if="activities.length === 0"
-                    class="text-sm text-slate-400 italic"
-                >
-                    No hay actividades para mostrar.
-                </li>
-                <li
-                    v-else-if="filteredActivities.length === 0"
-                    class="text-sm text-slate-400 italic"
-                >
-                    Ninguna actividad coincide con los filtros elegidos.
-                </li>
-                <li
-                    v-for="activity in filteredActivities"
-                    :key="activity.id"
-                    class="rounded-lg border border-blue-700/30 bg-slate-700/50 p-4"
-                >
-                    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-                        <div class="text-sm text-slate-100">
-                            <span class="font-bold text-white">{{ activity.survey?.name }}</span>
-                            <span class="mx-1 text-slate-400">·</span>
-                            <span>{{ activity.parish?.name }}</span>
-                            <span class="mx-1 text-slate-400">·</span>
-                            <span>
-                                {{ formatedDate(activity.init_date) }} —
-                                {{ formatedDate(activity.finish_date) }}
-                            </span>
-                        </div>
-                        <span
-                            class="rounded-full px-2 py-0.5 text-xs font-semibold"
-                            :class="
-                                isActive(activity)
-                                    ? 'bg-green-600/30 text-green-300'
-                                    : 'bg-slate-500/30 text-slate-300'
-                            "
-                        >
-                            {{ isActive(activity) ? 'Vigente' : 'Finalizada' }}
-                        </span>
-                    </div>
-
-                    <div class="mb-2 flex flex-wrap items-center gap-2">
-                        <select
-                            v-model="selectedPollsterByActivity[activity.id]"
-                            class="inputs-form min-w-48 bg-white text-sm text-gray-900"
-                        >
-                            <option value="">Selecciona un encuestador</option>
-                            <option
-                                v-for="pollster in unassignedPollstersFor(activity.id)"
-                                :key="pollster.id"
-                                :value="pollster.id"
+            <div
+                v-else
+                class="overflow-hidden rounded-lg border border-slate-700 bg-gray-500/30"
+            >
+                <div class="custom-scrollbar max-h-150 overflow-y-auto">
+                    <table class="w-full border-collapse text-left">
+                        <thead class="sticky top-0 z-10 bg-slate-900">
+                            <tr
+                                class="border-b border-slate-700 text-xs tracking-wider text-white uppercase"
                             >
-                                {{ pollster.name }}
-                            </option>
-                        </select>
-                        <button
-                            type="button"
-                            :disabled="!selectedPollsterByActivity[activity.id]"
-                            class="yellow-button-app cursor-pointer text-sm disabled:opacity-50"
-                            @click="handleAssign(activity.id)"
-                        >
-                            Asignar
-                        </button>
-                    </div>
-
-                    <ul class="space-y-1">
-                        <li
-                            v-if="(pollstersByActivity[activity.id] || []).length === 0"
-                            class="text-xs text-slate-400 italic"
-                        >
-                            Ningún encuestador asignado.
-                        </li>
-                        <li
-                            v-for="pollster in pollstersByActivity[activity.id]"
-                            :key="pollster.id"
-                            class="flex items-center justify-between rounded bg-slate-800/50 px-2 py-1 text-sm text-slate-100"
-                        >
-                            <span>{{ pollster.name }}</span>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs text-red-400 hover:text-red-300"
-                                @click="handleUnassign(activity, pollster)"
+                                <th class="p-4">Encuesta</th>
+                                <th class="p-4">Parroquia</th>
+                                <th class="p-4">Del — al</th>
+                                <th class="p-4 text-center">Estado</th>
+                                <th class="p-4">Encuestadores</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/50">
+                            <tr v-if="activities.length === 0">
+                                <td
+                                    colspan="5"
+                                    class="p-6 text-center text-sm text-slate-400 italic"
+                                >
+                                    No hay actividades para mostrar.
+                                </td>
+                            </tr>
+                            <tr
+                                v-for="activity in activities"
+                                :key="activity.id"
+                                class="align-top text-slate-200"
                             >
-                                Desasignar
-                            </button>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+                                <td class="p-4 font-medium text-white">
+                                    {{ activity.survey?.name }}
+                                </td>
+                                <td class="p-4">{{ activity.parish?.name }}</td>
+                                <td class="p-4 text-nowrap">
+                                    {{ formatedDate(activity.init_date) }} —
+                                    {{ formatedDate(activity.finish_date) }}
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span
+                                        class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                                        :class="
+                                            isActive(activity)
+                                                ? 'bg-green-600/30 text-green-300'
+                                                : 'bg-slate-500/30 text-slate-300'
+                                        "
+                                    >
+                                        {{ isActive(activity) ? 'Vigente' : 'Finalizada' }}
+                                    </span>
+                                </td>
+                                <td class="min-w-64 p-4">
+                                    <div class="mb-2 flex flex-wrap items-center gap-2">
+                                        <select
+                                            v-model="selectedPollsterByActivity[activity.id]"
+                                            class="inputs-form min-w-40 bg-white text-sm text-gray-900"
+                                        >
+                                            <option value="">Selecciona un encuestador</option>
+                                            <option
+                                                v-for="pollster in unassignedPollstersFor(activity.id)"
+                                                :key="pollster.id"
+                                                :value="pollster.id"
+                                            >
+                                                {{ pollster.name }}
+                                            </option>
+                                        </select>
+                                        <button
+                                            type="button"
+                                            :disabled="!selectedPollsterByActivity[activity.id]"
+                                            class="yellow-button-app cursor-pointer text-sm disabled:opacity-50"
+                                            @click="handleAssign(activity.id)"
+                                        >
+                                            Asignar
+                                        </button>
+                                    </div>
+
+                                    <ul class="space-y-1">
+                                        <li
+                                            v-if="(pollstersByActivity[activity.id] || []).length === 0"
+                                            class="text-xs text-slate-400 italic"
+                                        >
+                                            Ningún encuestador asignado.
+                                        </li>
+                                        <li
+                                            v-for="pollster in pollstersByActivity[activity.id]"
+                                            :key="pollster.id"
+                                            class="flex items-center justify-between gap-2 rounded bg-slate-800/50 px-2 py-1 text-sm"
+                                        >
+                                            <span>{{ pollster.name }}</span>
+                                            <button
+                                                type="button"
+                                                class="cursor-pointer text-xs text-red-400 hover:text-red-300"
+                                                @click="handleUnassign(activity, pollster)"
+                                            >
+                                                Desasignar
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <Pagination
+                v-if="pagination && pagination.total > 0"
+                :current-page="pagination.current_page"
+                :last-page="pagination.last_page"
+                :total="pagination.total"
+                :from="pagination.from"
+                :to="pagination.to"
+                @page-change="loadActivities"
+            />
         </div>
     </MainLayout>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+</style>

@@ -34,14 +34,15 @@ class ActivityController extends Controller
     }
 
     /**
-     * Listar actividades, opcionalmente filtradas por encuesta, parroquia,
-     * encuestador o rango de fechas.
+     * Listar actividades, paginadas, opcionalmente filtradas por encuesta,
+     * parroquia, encuestador, estado (vigente/finalizada) o fechas. Todo en
+     * una sola consulta: los encuestadores activos de cada actividad ya
+     * vienen incluidos (evita que el frontend tenga que pedir
+     * activity/{id}/pollsters una vez POR actividad), y el resultado ya
+     * viene paginado (evita traer todas las actividades de una sola vez).
      */
     public function index(Request $request): JsonResponse
     {
-        // Trae los encuestadores activos de cada actividad en la misma
-        // consulta (evita que el frontend tenga que pedir
-        // activity/{id}/pollsters una vez POR actividad).
         $query = Activity::query()
             ->with(['survey', 'parish', 'activePollsters'])
             ->orderByDesc('init_date');
@@ -59,6 +60,17 @@ class ActivityController extends Controller
             $query->whereHas('activePollsters', fn ($q) => $q->where('persons.id', $pollsterId));
         }
 
+        if ($request->query('status') === 'vigente') {
+            $query->active();
+        } elseif ($request->query('status') === 'finalizada') {
+            $query->where(fn ($q) => $q->where('finish_date', '<', now())->orWhere('init_date', '>', now()));
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('init_date', '<=', $request->query('date'))
+                ->whereDate('finish_date', '>=', $request->query('date'));
+        }
+
         if ($request->filled('from')) {
             $query->whereDate('init_date', '>=', $request->query('from'));
         }
@@ -67,7 +79,9 @@ class ActivityController extends Controller
             $query->whereDate('finish_date', '<=', $request->query('to'));
         }
 
-        return response()->json($query->get(), 200);
+        $perPage = $request->query('per_page', 15);
+
+        return response()->json($query->paginate($perPage), 200);
     }
 
     public function show(int $id): JsonResponse

@@ -9,15 +9,31 @@ const createResponse = () => ({
 });
 
 /**
- * Lista actividades, opcionalmente filtradas por encuesta. Sin surveyId
- * trae las de todas las encuestas (vista de gestión de actividades).
+ * Lista actividades paginadas, opcionalmente filtradas por encuesta,
+ * estado (vigente/finalizada), encuestador o fecha. Todo se resuelve en el
+ * servidor en una sola consulta (incluye los encuestadores de cada
+ * actividad) para no tener que pedir nada adicional por fila.
  */
-export async function getActivities({ surveyId } = {}) {
+export async function getActivities({
+    page = 1,
+    perPage = 10,
+    surveyId,
+    status,
+    pollsterId,
+    date,
+} = {}) {
     const response = createResponse();
 
     try {
         const { data } = await axios.get(`${apiHost}activity/show-all`, {
-            params: surveyId ? { survey_id: surveyId } : {},
+            params: {
+                page,
+                per_page: perPage,
+                survey_id: surveyId || undefined,
+                status: status || undefined,
+                pollster_id: pollsterId || undefined,
+                date: date || undefined,
+            },
         });
         response.data = data;
     } catch (error) {

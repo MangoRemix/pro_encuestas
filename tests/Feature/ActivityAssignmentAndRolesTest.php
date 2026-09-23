@@ -131,10 +131,46 @@ class ActivityAssignmentAndRolesTest extends TestCase
         $response = $this->actingAs($admin)->getJson('/api/activity/show-all');
 
         $response->assertOk();
-        $found = collect($response->json())->firstWhere('id', $activity->id);
+        $found = collect($response->json('data'))->firstWhere('id', $activity->id);
         $this->assertNotNull($found);
         $this->assertArrayHasKey('active_pollsters', $found);
         $this->assertSame($pollster->id, $found['active_pollsters'][0]['id']);
+    }
+
+    public function test_activity_index_is_paginated(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        Activity::factory()->count(3)->create();
+
+        $response = $this->actingAs($admin)->getJson('/api/activity/show-all?per_page=2');
+
+        $response->assertOk();
+        $response->assertJsonStructure(['data', 'current_page', 'last_page', 'total']);
+        $this->assertCount(2, $response->json('data'));
+        $this->assertSame(2, $response->json('last_page'));
+    }
+
+    public function test_activity_index_filters_by_status(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $active = Activity::factory()->create([
+            'init_date' => now()->subDay(),
+            'finish_date' => now()->addDay(),
+        ]);
+        $closed = Activity::factory()->create([
+            'init_date' => now()->subMonth(),
+            'finish_date' => now()->subDay(),
+        ]);
+
+        $vigente = $this->actingAs($admin)->getJson('/api/activity/show-all?status=vigente');
+        $ids = collect($vigente->json('data'))->pluck('id');
+        $this->assertTrue($ids->contains($active->id));
+        $this->assertFalse($ids->contains($closed->id));
+
+        $finalizada = $this->actingAs($admin)->getJson('/api/activity/show-all?status=finalizada');
+        $ids = collect($finalizada->json('data'))->pluck('id');
+        $this->assertFalse($ids->contains($active->id));
+        $this->assertTrue($ids->contains($closed->id));
     }
 
     public function test_assigning_a_non_pollster_person_is_rejected(): void

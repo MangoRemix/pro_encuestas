@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Activity;
 use App\Models\Answer;
+use App\Models\Parish;
 use App\Models\Person;
 use App\Models\Question;
 use App\Models\Result;
@@ -159,7 +160,7 @@ class MobileApiTest extends TestCase
         $question = Question::factory()->create();
         $answer = Answer::factory()->create(['question_id' => $question->id]);
 
-        $otherParish = \App\Models\Parish::factory()->create();
+        $otherParish = Parish::factory()->create();
 
         $response = $this->actingAs($pollster)->postJson('/api/result/batch-instance', [
             'instance_uuid' => 'uuid-parish',

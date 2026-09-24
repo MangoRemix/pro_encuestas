@@ -13,7 +13,6 @@ build/
 # Android
 android/.gradle/
 android/local.properties
-android/**/gradle-wrapper.jar
 android/key.properties
 
 # iOS

@@ -26,7 +26,11 @@ export const getReportStructure = async (id, filters = {}) => {
     }
 };
 
-export const getRespondentCountBySex = async (surveyId, sexId = null, filters = {}) => {
+export const getRespondentCountBySex = async (
+    surveyId,
+    sexId = null,
+    filters = {},
+) => {
     try {
         const params = withFilters(sexId ? { sex_id: sexId } : {}, filters);
 
@@ -38,9 +42,16 @@ export const getRespondentCountBySex = async (surveyId, sexId = null, filters = 
     }
 };
 
-export const getRespondentCountByParish = async (surveyId, parishId = null, filters = {}) => {
+export const getRespondentCountByParish = async (
+    surveyId,
+    parishId = null,
+    filters = {},
+) => {
     try {
-        const params = withFilters(parishId ? { parish_id: parishId } : {}, filters);
+        const params = withFilters(
+            parishId ? { parish_id: parishId } : {},
+            filters,
+        );
 
         return await axios.get(`/api/result/parish/${surveyId}`, { params });
     } catch (e) {

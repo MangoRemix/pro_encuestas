@@ -78,8 +78,10 @@
                         :key="activity.id"
                         :value="activity.id"
                     >
-                        {{ activity.parish?.name }} ({{ formatedDate(activity.init_date) }} -
-                        {{ formatedDate(activity.finish_date) }})
+                        {{ activity.parish?.name }} ({{
+                            formatedDate(activity.init_date)
+                        }}
+                        - {{ formatedDate(activity.finish_date) }})
                     </option>
                 </select>
             </div>

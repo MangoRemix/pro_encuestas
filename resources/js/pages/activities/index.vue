@@ -118,7 +118,10 @@ const handleCreateActivity = async () => {
         !newActivity.init_date ||
         !newActivity.finish_date
     ) {
-        notify('Completa encuesta, parroquia, fecha de inicio y fecha de fin', true);
+        notify(
+            'Completa encuesta, parroquia, fecha de inicio y fecha de fin',
+            true,
+        );
 
         return;
     }
@@ -207,9 +210,12 @@ onMounted(async () => {
     }
 
     try {
-        const { data } = await axios.get(`${apiHost}person/pollster-admin/list`, {
-            params: { per_page: 1000 },
-        });
+        const { data } = await axios.get(
+            `${apiHost}person/pollster-admin/list`,
+            {
+                params: { per_page: 1000 },
+            },
+        );
         allPollsters.value = (data?.data || []).filter(
             (person) => person.rol?.name === 'POLLSTER',
         );
@@ -233,7 +239,9 @@ onMounted(async () => {
         <div class="mx-auto my-6 w-full max-w-6xl">
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div class="min-w-56 flex-1">
-                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-300"
+                    >
                         Filtrar por encuesta
                     </label>
                     <select
@@ -251,7 +259,9 @@ onMounted(async () => {
                     </select>
                 </div>
                 <div class="min-w-40 flex-1">
-                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-300"
+                    >
                         Estado
                     </label>
                     <select
@@ -264,7 +274,9 @@ onMounted(async () => {
                     </select>
                 </div>
                 <div class="min-w-56 flex-1">
-                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-300"
+                    >
                         Encuestador
                     </label>
                     <select
@@ -282,7 +294,9 @@ onMounted(async () => {
                     </select>
                 </div>
                 <div class="min-w-40">
-                    <label class="mb-1 block text-sm font-semibold text-slate-300">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-300"
+                    >
                         Fecha
                     </label>
                     <input
@@ -306,7 +320,9 @@ onMounted(async () => {
             >
                 <div class="flex flex-wrap items-end gap-3">
                     <div class="flex min-w-56 flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300">Encuesta</label>
+                        <label class="text-xs font-semibold text-slate-300"
+                            >Encuesta</label
+                        >
                         <select
                             v-model="newActivity.survey_id"
                             class="inputs-form bg-white text-gray-900"
@@ -322,7 +338,9 @@ onMounted(async () => {
                         </select>
                     </div>
                     <div class="flex min-w-48 flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300">Parroquia</label>
+                        <label class="text-xs font-semibold text-slate-300"
+                            >Parroquia</label
+                        >
                         <select
                             v-model="newActivity.parish_id"
                             class="inputs-form bg-white text-gray-900"
@@ -338,7 +356,9 @@ onMounted(async () => {
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300">Fecha de inicio</label>
+                        <label class="text-xs font-semibold text-slate-300"
+                            >Fecha de inicio</label
+                        >
                         <input
                             type="date"
                             v-model="newActivity.init_date"
@@ -346,7 +366,9 @@ onMounted(async () => {
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300">Fecha de fin</label>
+                        <label class="text-xs font-semibold text-slate-300"
+                            >Fecha de fin</label
+                        >
                         <input
                             type="date"
                             v-model="newActivity.finish_date"
@@ -414,18 +436,32 @@ onMounted(async () => {
                                                 : 'bg-slate-500/30 text-slate-300'
                                         "
                                     >
-                                        {{ isActive(activity) ? 'Vigente' : 'Finalizada' }}
+                                        {{
+                                            isActive(activity)
+                                                ? 'Vigente'
+                                                : 'Finalizada'
+                                        }}
                                     </span>
                                 </td>
                                 <td class="min-w-64 p-4">
-                                    <div class="mb-2 flex flex-wrap items-center gap-2">
+                                    <div
+                                        class="mb-2 flex flex-wrap items-center gap-2"
+                                    >
                                         <select
-                                            v-model="selectedPollsterByActivity[activity.id]"
+                                            v-model="
+                                                selectedPollsterByActivity[
+                                                    activity.id
+                                                ]
+                                            "
                                             class="inputs-form min-w-40 bg-white text-sm text-gray-900"
                                         >
-                                            <option value="">Selecciona un encuestador</option>
+                                            <option value="">
+                                                Selecciona un encuestador
+                                            </option>
                                             <option
-                                                v-for="pollster in unassignedPollstersFor(activity.id)"
+                                                v-for="pollster in unassignedPollstersFor(
+                                                    activity.id,
+                                                )"
                                                 :key="pollster.id"
                                                 :value="pollster.id"
                                             >
@@ -434,7 +470,11 @@ onMounted(async () => {
                                         </select>
                                         <button
                                             type="button"
-                                            :disabled="!selectedPollsterByActivity[activity.id]"
+                                            :disabled="
+                                                !selectedPollsterByActivity[
+                                                    activity.id
+                                                ]
+                                            "
                                             class="yellow-button-app cursor-pointer text-sm disabled:opacity-50"
                                             @click="handleAssign(activity.id)"
                                         >
@@ -444,13 +484,21 @@ onMounted(async () => {
 
                                     <ul class="space-y-1">
                                         <li
-                                            v-if="(pollstersByActivity[activity.id] || []).length === 0"
+                                            v-if="
+                                                (
+                                                    pollstersByActivity[
+                                                        activity.id
+                                                    ] || []
+                                                ).length === 0
+                                            "
                                             class="text-xs text-slate-400 italic"
                                         >
                                             Ningún encuestador asignado.
                                         </li>
                                         <li
-                                            v-for="pollster in pollstersByActivity[activity.id]"
+                                            v-for="pollster in pollstersByActivity[
+                                                activity.id
+                                            ]"
                                             :key="pollster.id"
                                             class="flex items-center justify-between gap-2 rounded bg-slate-800/50 px-2 py-1 text-sm"
                                         >
@@ -458,7 +506,12 @@ onMounted(async () => {
                                             <button
                                                 type="button"
                                                 class="cursor-pointer text-xs text-red-400 hover:text-red-300"
-                                                @click="handleUnassign(activity, pollster)"
+                                                @click="
+                                                    handleUnassign(
+                                                        activity,
+                                                        pollster,
+                                                    )
+                                                "
                                             >
                                                 Desasignar
                                             </button>

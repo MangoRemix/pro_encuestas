@@ -102,7 +102,10 @@ const handleSubmit = async () => {
         if (!surveyId) {
             response = await axios.post(`${apiHost}survey/create`, form);
         } else {
-            response = await axios.put(`${apiHost}survey/update/${surveyId}`, form);
+            response = await axios.put(
+                `${apiHost}survey/update/${surveyId}`,
+                form,
+            );
         }
 
         message.value = surveyId

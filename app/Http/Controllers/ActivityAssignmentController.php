@@ -63,11 +63,18 @@ class ActivityAssignmentController extends Controller
     }
 
     /**
-     * Desasigna (nunca borra la fila — queda como historial).
+     * Desasigna (nunca borra la fila — queda como historial). Bloqueado si
+     * la actividad ya finalizó: quitar personal de una actividad cerrada
+     * falsearía quién estuvo realmente asignado mientras se recolectaban
+     * los datos.
      */
     public function unassign(Activity $activity, Person $person): JsonResponse
     {
         try {
+            if ($activity->isClosed()) {
+                throw new Exception('Esta actividad ya finalizó; no se puede desasignar personal.', 409);
+            }
+
             $pivot = $activity->assignedPollsters()
                 ->wherePivotNull('unassigned_at')
                 ->where('persons.id', $person->id)
@@ -110,7 +117,7 @@ class ActivityAssignmentController extends Controller
     {
         $activities = $request->user()
             ->activeAssignedActivities()
-            ->with(['survey', 'parish'])
+            ->with(['survey', 'parishes'])
             ->active()
             ->get();
 

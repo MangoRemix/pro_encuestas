@@ -176,10 +176,16 @@ class ResultController extends Controller
                 throw new Exception('El encuestador no está asignado a esta actividad', 403);
             }
 
-            // La parroquia del encuestado es siempre la de la actividad
-            // asignada (el servidor es la fuente de verdad, no lo que
-            // reporte el cliente).
-            $validated['respondent']['parish_id'] = $activity->parish_id;
+            // La parroquia del encuestado tiene que ser una de las que
+            // tiene asignadas la actividad (una actividad puede cubrir
+            // varias parroquias a la vez) — el cliente elige entre esas,
+            // pero el servidor valida que no reporte una parroquia ajena a
+            // la actividad.
+            $allowedParishIds = $activity->parishes()->pluck('parishes.id')->all();
+
+            if (! in_array($validated['respondent']['parish_id'], $allowedParishIds, true)) {
+                throw new Exception('La parroquia del encuestado no pertenece a esta actividad', 422);
+            }
 
             $person = DB::transaction(function () use ($validated, $activity) {
                 $person = Person::create([
@@ -314,6 +320,8 @@ class ResultController extends Controller
             $minVal,
             $maxVal,
             $request->query('activity_id'),
+            $request->query('parish_id'),
+            $request->query('pollster_id'),
             $request->query('from'),
             $request->query('to')
         );
@@ -328,6 +336,8 @@ class ResultController extends Controller
                 $surveyId,
                 $request->query('category_id'),
                 $request->query('activity_id'),
+                $request->query('parish_id'),
+                $request->query('pollster_id'),
                 $request->query('from'),
                 $request->query('to')
             );
@@ -345,6 +355,8 @@ class ResultController extends Controller
             $survey = $this->reportService->getSurveyReportStructure(
                 $id,
                 $request->query('activity_id'),
+                $request->query('parish_id'),
+                $request->query('pollster_id'),
                 $request->query('from'),
                 $request->query('to')
             );
@@ -383,6 +395,8 @@ class ResultController extends Controller
                 $surveyId,
                 $request->query('sex_id'),
                 $request->query('activity_id'),
+                $request->query('parish_id'),
+                $request->query('pollster_id'),
                 $request->query('from'),
                 $request->query('to')
             );
@@ -403,6 +417,7 @@ class ResultController extends Controller
                 $surveyId,
                 $request->query('parish_id'),
                 $request->query('activity_id'),
+                $request->query('pollster_id'),
                 $request->query('from'),
                 $request->query('to')
             );
@@ -411,6 +426,25 @@ class ResultController extends Controller
         } catch (Throwable $th) {
             return response()->json([
                 'error' => 'No se pudo obtener el conteo de encuestados por parroquia.',
+                'details' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Para una actividad específica: cuántas encuestas subió cada
+     * encuestador asignado a ella (incluye los que aún no subieron
+     * ninguna). Consumido por Reportes cuando se elige una actividad.
+     */
+    public function getPollsterCountsForActivity(int $activityId)
+    {
+        try {
+            $results = $this->reportService->getPollsterCountsForActivity($activityId);
+
+            return response()->json($results, 200);
+        } catch (Throwable $th) {
+            return response()->json([
+                'error' => 'No se pudo obtener el conteo de encuestas por encuestador.',
                 'details' => $th->getMessage(),
             ], 500);
         }

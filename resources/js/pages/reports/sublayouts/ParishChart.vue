@@ -40,6 +40,10 @@ const props = defineProps({
     surveyId: Number,
     totalRespondent: Number,
     activityId: { type: [Number, String], default: '' },
+    parishId: { type: [Number, String], default: '' },
+    pollsterId: { type: [Number, String], default: '' },
+    dateFrom: { type: String, default: '' },
+    dateTo: { type: String, default: '' },
 });
 const chartData = ref(null);
 
@@ -48,9 +52,16 @@ const loadData = async () => {
         return;
     }
 
-    const { data } = await getRespondentCountByParish(props.surveyId, null, {
-        activityId: props.activityId,
-    });
+    const { data } = await getRespondentCountByParish(
+        props.surveyId,
+        props.parishId || null,
+        {
+            activityId: props.activityId,
+            pollsterId: props.pollsterId,
+            dateFrom: props.dateFrom,
+            dateTo: props.dateTo,
+        },
+    );
 
     if (data) {
         const colors = [
@@ -84,7 +95,15 @@ const loadData = async () => {
 };
 
 watch(
-    () => [props.surveyId, props.totalRespondent, props.activityId],
+    () => [
+        props.surveyId,
+        props.totalRespondent,
+        props.activityId,
+        props.parishId,
+        props.pollsterId,
+        props.dateFrom,
+        props.dateTo,
+    ],
     loadData,
     { immediate: true },
 );

@@ -177,17 +177,22 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
         .length;
   }
 
+  // pushReplacement (no go): go() vacía toda la pila de navegación, lo que
+  // dejaba sin nada a qué volver — el botón atrás del teléfono terminaba
+  // cerrando la app en vez de regresar a "Actividades asignadas".
   void _startNextRespondent() {
     final activityId = _instance?.activityId;
 
     if (activityId != null) {
-      context.go('/respondent/$activityId');
+      context.pushReplacement('/respondent/$activityId');
     } else {
       // Instancia sin actividad asociada (creada antes de que existiera la
       // columna) — no hay a qué actividad volver, se manda al listado.
-      context.go('/surveys');
+      context.pushReplacement('/surveys');
     }
   }
+
+  void _goHome() => context.go('/surveys');
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +202,7 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
 
     if (_completed) {
       return Scaffold(
+        appBar: AppBar(title: const Text('Encuesta completada')),
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -222,6 +228,14 @@ class _SurveyFillScreenState extends ConsumerState<SurveyFillScreen> {
                     child: FilledButton(
                       onPressed: _startNextRespondent,
                       child: const Text('Encuestar a otra persona'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _goHome,
+                      child: const Text('Volver al inicio'),
                     ),
                   ),
                 ],

@@ -61,7 +61,7 @@ class ActivityAssignmentAndRolesTest extends TestCase
 
         $this->actingAs($pollster)->postJson('/api/activity/create', [
             'survey_id' => $activity->survey_id,
-            'parish_id' => $activity->parish_id,
+            'parish_ids' => $activity->parishes()->pluck('parishes.id')->all(),
             'init_date' => now()->toDateString(),
             'finish_date' => now()->addMonth()->toDateString(),
         ])->assertStatus(403);
@@ -255,7 +255,7 @@ class ActivityAssignmentAndRolesTest extends TestCase
         $newParish = Parish::factory()->create();
 
         $this->actingAs($admin)->putJson("/api/activity/update/{$activity->id}", [
-            'parish_id' => $newParish->id,
+            'parish_ids' => [$newParish->id],
         ])->assertStatus(409);
     }
 
@@ -268,19 +268,63 @@ class ActivityAssignmentAndRolesTest extends TestCase
 
         $this->actingAs($admin)->postJson('/api/activity/create', [
             'survey_id' => $survey->id,
-            'parish_id' => $parishA->id,
+            'parish_ids' => [$parishA->id],
             'init_date' => now()->toDateString(),
             'finish_date' => now()->addDay()->toDateString(),
         ])->assertStatus(201);
 
         $this->actingAs($admin)->postJson('/api/activity/create', [
             'survey_id' => $survey->id,
-            'parish_id' => $parishB->id,
+            'parish_ids' => [$parishB->id],
             'init_date' => now()->addDays(2)->toDateString(),
             'finish_date' => now()->addDays(3)->toDateString(),
         ])->assertStatus(201);
 
         $this->assertDatabaseCount('activities', 2);
         $this->assertSame(2, $survey->activities()->count());
+    }
+
+    public function test_an_activity_can_cover_several_parishes_at_once(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $survey = Survey::factory()->create();
+        $parishA = Parish::factory()->create();
+        $parishB = Parish::factory()->create();
+        $parishC = Parish::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson('/api/activity/create', [
+            'survey_id' => $survey->id,
+            'parish_ids' => [$parishA->id, $parishB->id, $parishC->id],
+            'init_date' => now()->toDateString(),
+            'finish_date' => now()->addDay()->toDateString(),
+        ]);
+
+        $response->assertStatus(201);
+        $activityId = $response->json('data.id');
+
+        $this->assertDatabaseCount('activity_parish', 3);
+        $this->assertSame(3, Activity::find($activityId)->parishes()->count());
+    }
+
+    public function test_cannot_unassign_a_pollster_from_a_closed_activity(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $pollster = Person::factory()->create();
+        $activity = Activity::factory()->create();
+
+        $this->actingAs($admin)->postJson("/api/activity/{$activity->id}/assign", [
+            'person_id' => $pollster->id,
+        ])->assertStatus(201);
+
+        $activity->update(['finish_date' => now()->subDay()]);
+
+        $this->actingAs($admin)->deleteJson("/api/activity/{$activity->id}/unassign/{$pollster->id}")
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('activity_person', [
+            'activity_id' => $activity->id,
+            'person_id' => $pollster->id,
+            'unassigned_at' => null,
+        ]);
     }
 }

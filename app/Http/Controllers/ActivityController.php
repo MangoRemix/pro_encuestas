@@ -18,7 +18,8 @@ class ActivityController extends Controller
     {
         return [
             'survey_id' => 'required|integer|exists:surveys,id',
-            'parish_id' => 'required|integer|exists:parishes,id',
+            'parish_ids' => 'required|array|min:1',
+            'parish_ids.*' => 'integer|exists:parishes,id',
             'init_date' => 'required|date',
             'finish_date' => 'required|date|after_or_equal:init_date',
         ];
@@ -27,7 +28,8 @@ class ActivityController extends Controller
     public static function updateRules($id = null): array
     {
         return [
-            'parish_id' => 'integer|exists:parishes,id',
+            'parish_ids' => 'array|min:1',
+            'parish_ids.*' => 'integer|exists:parishes,id',
             'init_date' => 'date',
             'finish_date' => 'date|after_or_equal:init_date',
         ];
@@ -44,7 +46,7 @@ class ActivityController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Activity::query()
-            ->with(['survey', 'parish', 'activePollsters'])
+            ->with(['survey', 'parishes', 'activePollsters'])
             ->orderByDesc('init_date');
 
         if ($request->filled('survey_id')) {
@@ -52,7 +54,8 @@ class ActivityController extends Controller
         }
 
         if ($request->filled('parish_id')) {
-            $query->where('parish_id', $request->query('parish_id'));
+            $parishId = $request->query('parish_id');
+            $query->whereHas('parishes', fn ($q) => $q->where('parishes.id', $parishId));
         }
 
         if ($request->filled('pollster_id')) {
@@ -87,7 +90,7 @@ class ActivityController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $activity = Activity::with(['survey', 'parish'])->find($id);
+            $activity = Activity::with(['survey', 'parishes'])->find($id);
 
             if (! $activity) {
                 throw new Exception('Not found register', 404);
@@ -109,13 +112,16 @@ class ActivityController extends Controller
             }
 
             $validated = $validator->validated();
+            $parishIds = $validated['parish_ids'];
+            unset($validated['parish_ids']);
             $validated['created_by'] = $request->user()?->id;
 
             $activity = Activity::create($validated);
+            $activity->parishes()->attach($parishIds);
 
             return response()->json([
                 'message' => 'Actividad creada con éxito',
-                'data' => $activity,
+                'data' => $activity->load('parishes'),
             ], 201);
         } catch (Throwable $th) {
             return $this->errorResponse($th);
@@ -150,7 +156,14 @@ class ActivityController extends Controller
                 throw new Exception('Esta actividad ya finalizó; no puede modificarse.', 409);
             }
 
-            $activity->update($validator->validated());
+            $validated = $validator->validated();
+
+            if (array_key_exists('parish_ids', $validated)) {
+                $activity->parishes()->sync($validated['parish_ids']);
+                unset($validated['parish_ids']);
+            }
+
+            $activity->update($validated);
 
             return response()->json(['message' => 'Actividad actualizada con éxito'], 200);
         } catch (Throwable $th) {

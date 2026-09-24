@@ -40,6 +40,10 @@ const props = defineProps({
     surveyId: Number,
     totalRespondent: Number,
     activityId: { type: [Number, String], default: '' },
+    parishId: { type: [Number, String], default: '' },
+    pollsterId: { type: [Number, String], default: '' },
+    dateFrom: { type: String, default: '' },
+    dateTo: { type: String, default: '' },
 });
 const chartData = ref(null);
 
@@ -50,6 +54,10 @@ const loadData = async () => {
 
     const { data } = await getRespondentCountBySex(props.surveyId, null, {
         activityId: props.activityId,
+        parishId: props.parishId,
+        pollsterId: props.pollsterId,
+        dateFrom: props.dateFrom,
+        dateTo: props.dateTo,
     });
 
     if (data) {
@@ -79,7 +87,15 @@ const loadData = async () => {
 };
 
 watch(
-    () => [props.surveyId, props.totalRespondent, props.activityId],
+    () => [
+        props.surveyId,
+        props.totalRespondent,
+        props.activityId,
+        props.parishId,
+        props.pollsterId,
+        props.dateFrom,
+        props.dateTo,
+    ],
     loadData,
     { immediate: true },
 );

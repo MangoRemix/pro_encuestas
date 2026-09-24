@@ -14,8 +14,9 @@ import '../auth/auth_state.dart';
 /// siempre se vuelve después de terminar una encuesta, para encuestar de
 /// inmediato a la siguiente persona.
 ///
-/// La parroquia del encuestado ya no la elige el encuestador aquí: viene
-/// fija por la actividad asignada (encuesta+parroquia+fechas).
+/// La parroquia del encuestado se autocompleta cuando la actividad cubre
+/// una sola parroquia; si cubre varias, el encuestador elige entre esas
+/// (nunca una ajena a la actividad).
 class RespondentInfoScreen extends ConsumerStatefulWidget {
   const RespondentInfoScreen({super.key, required this.activityId});
 
@@ -30,6 +31,7 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
   final _formKey = GlobalKey<FormState>();
   final _ageController = TextEditingController();
   int? _sexId;
+  int? _respondentParishId;
   bool _creating = false;
   CachedActivity? _activity;
 
@@ -44,7 +46,14 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
     final activity = await db.activityById(widget.activityId);
 
     if (mounted) {
-      setState(() => _activity = activity);
+      setState(() {
+        _activity = activity;
+        // Autocompletar solo cuando no hay ambigüedad; con varias
+        // parroquias, que elija el encuestador.
+        if (activity != null && activity.parishIds.length == 1) {
+          _respondentParishId = activity.parishIds.first;
+        }
+      });
     }
   }
 
@@ -57,7 +66,10 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
   Future<void> _startSurvey() async {
     final activity = _activity;
 
-    if (!_formKey.currentState!.validate() || _sexId == null || activity == null) {
+    if (!_formKey.currentState!.validate() ||
+        _sexId == null ||
+        _respondentParishId == null ||
+        activity == null) {
       return;
     }
 
@@ -79,7 +91,7 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
       pollsterPersonId: pollsterId,
       respondentSexId: Value(_sexId),
       respondentAge: Value(int.parse(_ageController.text)),
-      respondentParishId: Value(activity.parishId),
+      respondentParishId: Value(_respondentParishId),
       currentCategoryId: Value(firstCategoryId),
     ));
 
@@ -107,10 +119,29 @@ class _RespondentInfoScreenState extends ConsumerState<RespondentInfoScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
-                        '${activity.surveyName} · ${activity.parishName}',
+                        '${activity.surveyName} · ${activity.parishLabel}',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
+                    if (activity.parishIds.length > 1) ...[
+                      DropdownButtonFormField<int>(
+                        initialValue: _respondentParishId,
+                        decoration:
+                            const InputDecoration(labelText: 'Parroquia'),
+                        items: [
+                          for (var i = 0; i < activity.parishIds.length; i++)
+                            DropdownMenuItem(
+                              value: activity.parishIds[i],
+                              child: Text(activity.parishNames[i]),
+                            ),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _respondentParishId = value),
+                        validator: (value) =>
+                            value == null ? 'Selecciona la parroquia' : null,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     FutureBuilder<List<CachedSex>>(
                       future: db.allSexes(),
                       builder: (context, snapshot) {

@@ -37,22 +37,39 @@ class CachedSurveys extends Table {
 }
 
 /// Actividades asignadas al encuestador autenticado: una encuesta aplicada
-/// en UNA parroquia durante un rango de fechas. Reemplaza lo que antes
-/// vivía directamente en CachedSurveys (parish_id/init_date/finish_date) —
-/// ahora la encuesta puede tener varias de estas actividades.
+/// en una o varias parroquias durante un rango de fechas. Reemplaza lo que
+/// antes vivía directamente en CachedSurveys (parish_id/init_date/finish_date)
+/// — ahora la encuesta puede tener varias de estas actividades.
+///
+/// Las parroquias se guardan como listas separadas por coma (misma cantidad
+/// y orden en ambas columnas) en vez de una tabla aparte — esta tabla es
+/// solo caché redescargable, no hace falta más estructura.
 @DataClassName('CachedActivity')
 class CachedActivities extends Table {
   IntColumn get id => integer()(); // id de la actividad en el servidor
   IntColumn get surveyId => integer()();
   TextColumn get surveyName => text()();
-  IntColumn get parishId => integer()();
-  TextColumn get parishName => text()();
+  TextColumn get parishIdsCsv => text()();
+  TextColumn get parishNamesCsv => text()();
   DateTimeColumn get initDate => dateTime()();
   DateTimeColumn get finishDate => dateTime()();
   DateTimeColumn get downloadedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+extension CachedActivityParishes on CachedActivity {
+  List<int> get parishIds => parishIdsCsv
+      .split(',')
+      .where((s) => s.isNotEmpty)
+      .map(int.parse)
+      .toList();
+
+  List<String> get parishNames =>
+      parishNamesCsv.split(',').where((s) => s.isNotEmpty).toList();
+
+  String get parishLabel => parishNames.join(', ');
 }
 
 @DataClassName('CachedCategory')
@@ -173,7 +190,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -198,6 +215,14 @@ class AppDatabase extends _$AppDatabase {
             // El llenado ahora avanza de a una pregunta (no por categoría) —
             // hace falta guardar en cuál se quedó para poder reanudar.
             await m.addColumn(surveyInstances, surveyInstances.currentQuestionId);
+          }
+
+          if (from < 4) {
+            // Una actividad ahora puede cubrir varias parroquias a la vez
+            // (parishId/parishName singulares -> parishIdsCsv/parishNamesCsv).
+            // Es solo caché redescargable — se recrea en vez de migrar.
+            await m.deleteTable('cached_activities');
+            await m.createTable(cachedActivities);
           }
         },
       );

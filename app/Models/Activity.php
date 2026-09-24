@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
-#[Fillable(['survey_id', 'parish_id', 'init_date', 'finish_date', 'created_by'])]
+#[Fillable(['survey_id', 'init_date', 'finish_date', 'created_by'])]
 
 class Activity extends Model
 {
@@ -27,9 +27,14 @@ class Activity extends Model
         return $this->belongsTo(Survey::class);
     }
 
-    public function parish(): BelongsTo
+    /**
+     * Una actividad puede aplicarse en varias parroquias a la vez (o en
+     * todas — ver ActivityController::rules(), "seleccionar todas" es solo
+     * enviar el id de cada parroquia existente).
+     */
+    public function parishes(): BelongsToMany
     {
-        return $this->belongsTo(Parish::class);
+        return $this->belongsToMany(Parish::class, 'activity_parish')->withTimestamps();
     }
 
     public function assignedPollsters(): BelongsToMany

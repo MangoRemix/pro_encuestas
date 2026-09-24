@@ -25,10 +25,10 @@ class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
   DateTime? _dateFilter;
 
   List<String> get _availableParishes =>
-      _activities.map((a) => a.parishName).toSet().toList()..sort();
+      _activities.expand((a) => a.parishNames).toSet().toList()..sort();
 
   List<CachedActivity> get _filteredActivities => _activities.where((a) {
-        if (_parishFilter != null && a.parishName != _parishFilter) {
+        if (_parishFilter != null && !a.parishNames.contains(_parishFilter)) {
           return false;
         }
 
@@ -245,7 +245,7 @@ class _SurveyListScreenState extends ConsumerState<SurveyListScreen> {
                           : const Icon(Icons.assignment_outlined),
                       title: Text(activity.surveyName),
                       subtitle: Text(
-                        '${activity.parishName} · Del ${_formatDate(activity.initDate)} '
+                        '${activity.parishLabel} · Del ${_formatDate(activity.initDate)} '
                         'al ${_formatDate(activity.finishDate)}',
                       ),
                       onTap: _downloadingActivityId == null

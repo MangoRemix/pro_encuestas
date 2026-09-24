@@ -5,15 +5,26 @@ import '../../core/db/app_database.dart';
 import '../../core/network/api_client.dart';
 import '../../core/providers.dart';
 
-/// Una actividad asignada al encuestador: una encuesta aplicada en una
-/// parroquia concreta, dentro de un rango de fechas concreto.
+class RemoteParish {
+  const RemoteParish({required this.id, required this.name});
+
+  final int id;
+  final String name;
+
+  factory RemoteParish.fromJson(Map<String, dynamic> json) => RemoteParish(
+        id: json['id'] as int,
+        name: json['name'] as String,
+      );
+}
+
+/// Una actividad asignada al encuestador: una encuesta aplicada en una o
+/// varias parroquias, dentro de un rango de fechas concreto.
 class RemoteActivitySummary {
   RemoteActivitySummary({
     required this.id,
     required this.surveyId,
     required this.surveyName,
-    required this.parishId,
-    required this.parishName,
+    required this.parishes,
     required this.initDate,
     required this.finishDate,
   });
@@ -21,21 +32,21 @@ class RemoteActivitySummary {
   final int id;
   final int surveyId;
   final String surveyName;
-  final int parishId;
-  final String parishName;
+  final List<RemoteParish> parishes;
   final DateTime initDate;
   final DateTime finishDate;
 
   factory RemoteActivitySummary.fromJson(Map<String, dynamic> json) {
     final survey = json['survey'] as Map<String, dynamic>?;
-    final parish = json['parish'] as Map<String, dynamic>?;
+    final parishes = (json['parishes'] as List<dynamic>? ?? [])
+        .map((p) => RemoteParish.fromJson(p as Map<String, dynamic>))
+        .toList();
 
     return RemoteActivitySummary(
       id: json['id'] as int,
       surveyId: json['survey_id'] as int,
       surveyName: (survey?['name'] as String?) ?? '',
-      parishId: json['parish_id'] as int,
-      parishName: (parish?['name'] as String?) ?? '',
+      parishes: parishes,
       initDate: DateTime.parse(json['init_date'] as String),
       finishDate: DateTime.parse(json['finish_date'] as String),
     );
@@ -71,8 +82,8 @@ class SurveyRepository {
           id: Value(activity.id),
           surveyId: activity.surveyId,
           surveyName: activity.surveyName,
-          parishId: activity.parishId,
-          parishName: activity.parishName,
+          parishIdsCsv: activity.parishes.map((p) => p.id).join(','),
+          parishNamesCsv: activity.parishes.map((p) => p.name).join(','),
           initDate: activity.initDate,
           finishDate: activity.finishDate,
         ),

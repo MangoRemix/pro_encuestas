@@ -2,6 +2,7 @@
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, reactive, ref, watch } from 'vue';
+import MultiSelect from '@/components/multi-select.vue';
 import Pagination from '@/components/pagination.vue';
 import {
     assignPollsterToActivity,
@@ -42,10 +43,24 @@ const isCreating = ref(false);
 
 const newActivity = reactive({
     survey_id: '',
-    parish_id: '',
+    parish_ids: [],
     init_date: '',
     finish_date: '',
 });
+
+const parishesLabel = (activity) => {
+    const names = (activity.parishes || []).map((parish) => parish.name);
+
+    if (names.length === 0) {
+        return '—';
+    }
+
+    if (parishes.value.length > 0 && names.length === parishes.value.length) {
+        return 'Todas';
+    }
+
+    return names.join(', ');
+};
 
 const isActive = (activity) => {
     const now = Date.now();
@@ -114,12 +129,12 @@ const unassignedPollstersFor = (activityId) => {
 const handleCreateActivity = async () => {
     if (
         !newActivity.survey_id ||
-        !newActivity.parish_id ||
+        newActivity.parish_ids.length === 0 ||
         !newActivity.init_date ||
         !newActivity.finish_date
     ) {
         notify(
-            'Completa encuesta, parroquia, fecha de inicio y fecha de fin',
+            'Completa encuesta, parroquia(s), fecha de inicio y fecha de fin',
             true,
         );
 
@@ -128,7 +143,7 @@ const handleCreateActivity = async () => {
 
     const { errorFlag, responseMessage } = await createActivity({
         survey_id: newActivity.survey_id,
-        parish_id: newActivity.parish_id,
+        parish_ids: newActivity.parish_ids,
         init_date: newActivity.init_date,
         finish_date: newActivity.finish_date,
     });
@@ -141,7 +156,7 @@ const handleCreateActivity = async () => {
 
     notify('Actividad creada con éxito');
     newActivity.survey_id = '';
-    newActivity.parish_id = '';
+    newActivity.parish_ids = [];
     newActivity.init_date = '';
     newActivity.finish_date = '';
     isCreating.value = false;
@@ -339,21 +354,13 @@ onMounted(async () => {
                     </div>
                     <div class="flex min-w-48 flex-col gap-1">
                         <label class="text-xs font-semibold text-slate-300"
-                            >Parroquia</label
+                            >Parroquia(s)</label
                         >
-                        <select
-                            v-model="newActivity.parish_id"
-                            class="inputs-form bg-white text-gray-900"
-                        >
-                            <option value="">Selecciona una parroquia</option>
-                            <option
-                                v-for="parish in parishes"
-                                :key="parish.id"
-                                :value="parish.id"
-                            >
-                                {{ parish.name }}
-                            </option>
-                        </select>
+                        <MultiSelect
+                            v-model="newActivity.parish_ids"
+                            :options="parishes"
+                            placeholder="Selecciona una o más parroquias"
+                        />
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-xs font-semibold text-slate-300"
@@ -422,7 +429,9 @@ onMounted(async () => {
                                 <td class="p-4 font-medium text-white">
                                     {{ activity.survey?.name }}
                                 </td>
-                                <td class="p-4">{{ activity.parish?.name }}</td>
+                                <td class="p-4">
+                                    {{ parishesLabel(activity) }}
+                                </td>
                                 <td class="p-4 text-nowrap">
                                     {{ formatedDate(activity.init_date) }} —
                                     {{ formatedDate(activity.finish_date) }}
@@ -505,7 +514,13 @@ onMounted(async () => {
                                             <span>{{ pollster.name }}</span>
                                             <button
                                                 type="button"
-                                                class="cursor-pointer text-xs text-red-400 hover:text-red-300"
+                                                :disabled="!isActive(activity)"
+                                                :title="
+                                                    !isActive(activity)
+                                                        ? 'Esta actividad ya finalizó; no se puede desasignar personal'
+                                                        : ''
+                                                "
+                                                class="cursor-pointer text-xs text-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:text-slate-500"
                                                 @click="
                                                     handleUnassign(
                                                         activity,

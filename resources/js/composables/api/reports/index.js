@@ -1,6 +1,17 @@
-const withFilters = (params, { activityId, dateFrom, dateTo } = {}) => {
+const withFilters = (
+    params,
+    { activityId, parishId, pollsterId, dateFrom, dateTo } = {},
+) => {
     if (activityId) {
         params.activity_id = activityId;
+    }
+
+    if (parishId) {
+        params.parish_id = parishId;
+    }
+
+    if (pollsterId) {
+        params.pollster_id = pollsterId;
     }
 
     if (dateFrom) {
@@ -64,6 +75,18 @@ export const getRespondentCountByParish = async (
 export const getActivitiesForSurveyReport = async (surveyId) => {
     try {
         return await axios.get(`/api/result/activities/${surveyId}`);
+    } catch (e) {
+        console.error(e);
+
+        return { data: null };
+    }
+};
+
+export const getPollsterCountsForActivity = async (activityId) => {
+    try {
+        return await axios.get(
+            `/api/result/reports/pollster-counts/${activityId}`,
+        );
     } catch (e) {
         console.error(e);
 

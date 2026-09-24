@@ -63,27 +63,99 @@
 
             <div
                 v-if="selectedSurvey"
-                class="mt-3 border-t border-slate-200 pt-3"
+                class="mt-3 flex flex-wrap items-end gap-4 border-t border-slate-200 pt-3"
             >
-                <label class="mb-1 block text-sm font-semibold text-slate-600">
-                    Actividad:
-                </label>
-                <select
-                    v-model="selectedActivity"
-                    class="w-full max-w-md rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
-                >
-                    <option value="">Todas las actividades</option>
-                    <option
-                        v-for="activity in activities"
-                        :key="activity.id"
-                        :value="activity.id"
+                <div class="min-w-64 flex-1">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-600"
                     >
-                        {{ activity.parish?.name }} ({{
-                            formatedDate(activity.init_date)
-                        }}
-                        - {{ formatedDate(activity.finish_date) }})
-                    </option>
-                </select>
+                        Actividad:
+                    </label>
+                    <select
+                        v-model="selectedActivity"
+                        class="w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                    >
+                        <option value="">Todas las actividades</option>
+                        <option
+                            v-for="activity in activities"
+                            :key="activity.id"
+                            :value="activity.id"
+                        >
+                            {{
+                                (activity.parishes || [])
+                                    .map((parish) => parish.name)
+                                    .join(', ')
+                            }}
+                            ({{ formatedDate(activity.init_date) }} -
+                            {{ formatedDate(activity.finish_date) }})
+                        </option>
+                    </select>
+                </div>
+
+                <div class="min-w-48 flex-1">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-600"
+                    >
+                        Parroquia:
+                    </label>
+                    <select
+                        v-model="selectedParish"
+                        class="w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                    >
+                        <option value="">Todas las parroquias</option>
+                        <option
+                            v-for="parish in parishes"
+                            :key="parish.id"
+                            :value="parish.id"
+                        >
+                            {{ parish.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="min-w-48 flex-1">
+                    <label
+                        class="mb-1 block text-sm font-semibold text-slate-600"
+                    >
+                        Encuestador:
+                    </label>
+                    <select
+                        v-model="selectedPollster"
+                        class="w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                    >
+                        <option value="">Todos los encuestadores</option>
+                        <option
+                            v-for="pollster in pollsters"
+                            :key="pollster.id"
+                            :value="pollster.id"
+                        >
+                            {{ pollster.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-semibold text-slate-600"
+                        >Desde:</label
+                    >
+                    <input
+                        type="date"
+                        v-model="dateFrom"
+                        :max="dateTo || undefined"
+                        class="rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-semibold text-slate-600"
+                        >Hasta:</label
+                    >
+                    <input
+                        type="date"
+                        v-model="dateTo"
+                        :min="dateFrom || undefined"
+                        class="rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                    />
+                </div>
             </div>
         </div>
         <!-- <h2 class="text-2xl lg:text-4xl text-white font-extrabold mt-8 mb-6 text-center">{{ survey_selected?.name }} </h2> -->
@@ -105,6 +177,39 @@
                 <span class="text-sm font-semibold opacity-75"
                     >Total encuestados: {{ reportData.total_respondent }}</span
                 >
+            </div>
+
+            <!-- Cuántas encuestas subió cada encuestador en la actividad
+                 elegida — solo tiene sentido cuando hay una actividad
+                 puntual seleccionada (no "todas las actividades"). -->
+            <div
+                v-if="selectedActivity && pollsterCounts.length > 0"
+                class="mx-auto mb-6 w-11/12 overflow-hidden rounded-xl bg-white shadow-sm"
+            >
+                <h3 class="p-4 pb-2 text-sm font-semibold text-slate-600">
+                    Encuestas subidas por encuestador en esta actividad
+                </h3>
+                <table class="w-full border-collapse text-left text-slate-800">
+                    <thead>
+                        <tr
+                            class="border-b border-slate-200 text-xs text-slate-500 uppercase"
+                        >
+                            <th class="p-3">Encuestador</th>
+                            <th class="p-3 text-right">Encuestas subidas</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr
+                            v-for="row in pollsterCounts"
+                            :key="row.pollster_id"
+                        >
+                            <td class="p-3">{{ row.pollster_name }}</td>
+                            <td class="p-3 text-right font-semibold">
+                                {{ row.total_surveys_conducted }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div
@@ -152,6 +257,10 @@
                             :survey-id="survey_selected.id"
                             :total-respondent="reportData.total_respondent"
                             :activity-id="selectedActivity"
+                            :parish-id="selectedParish"
+                            :pollster-id="selectedPollster"
+                            :date-from="dateFrom"
+                            :date-to="dateTo"
                         />
                     </template>
                     <template
@@ -161,6 +270,10 @@
                             :survey-id="survey_selected.id"
                             :total-respondent="reportData.total_respondent"
                             :activity-id="selectedActivity"
+                            :parish-id="selectedParish"
+                            :pollster-id="selectedPollster"
+                            :date-from="dateFrom"
+                            :date-to="dateTo"
                         />
                     </template>
                 </div>
@@ -176,6 +289,10 @@
                         :survey-id="survey_selected.id"
                         :total-respondent="reportData.total_respondent"
                         :activity-id="selectedActivity"
+                        :parish-id="selectedParish"
+                        :pollster-id="selectedPollster"
+                        :date-from="dateFrom"
+                        :date-to="dateTo"
                     />
                 </template>
             </div>
@@ -185,15 +302,19 @@
 
 <script setup>
 import { Head } from '@inertiajs/vue3';
+import axios from 'axios';
 import { ref, onMounted, watch, computed } from 'vue';
 import CategoryFilter from '@/components/CategoryFilter.vue';
+import { useParishes } from '@/composables/api/parishes';
 import {
     getActivitiesForSurveyReport,
+    getPollsterCountsForActivity,
     getReportStructure,
 } from '@/composables/api/reports';
 import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
 import { formatedDate } from '@/composables/shared.js';
 import MainLayout from '@/layouts/main-layout.vue';
+import { apiHost } from '@/store/store';
 import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
 import Graphics from './sublayouts/graphics.vue';
 import ParishChart from './sublayouts/ParishChart.vue';
@@ -209,6 +330,15 @@ const selected_radio = ref('table');
 
 const activities = ref([]);
 const selectedActivity = ref('');
+
+const { parishes, fetchParishes } = useParishes();
+const pollsters = ref([]);
+const selectedParish = ref('');
+const selectedPollster = ref('');
+const dateFrom = ref('');
+const dateTo = ref('');
+
+const pollsterCounts = ref([]);
 
 const reportData = ref([]);
 
@@ -239,6 +369,8 @@ const graphicOptions = [
 const selected_graphic = ref('all');
 
 onMounted(async () => {
+    await fetchParishes();
+
     try {
         const { data } = await getSurveys({ all: true });
 
@@ -249,6 +381,28 @@ onMounted(async () => {
     } catch (e) {
         console.error('Error cargando reporte:', e);
     }
+
+    try {
+        const { data } = await axios.get(
+            `${apiHost}person/pollster-admin/list`,
+            {
+                params: { per_page: 1000 },
+            },
+        );
+        pollsters.value = (data?.data || []).filter(
+            (person) => person.rol?.name === 'POLLSTER',
+        );
+    } catch (e) {
+        console.error('Error cargando encuestadores:', e);
+    }
+});
+
+const currentFilters = () => ({
+    activityId: selectedActivity.value,
+    parishId: selectedParish.value,
+    pollsterId: selectedPollster.value,
+    dateFrom: dateFrom.value,
+    dateTo: dateTo.value,
 });
 
 const loadReport = async () => {
@@ -267,9 +421,10 @@ const loadReport = async () => {
             categories.value = data;
         }
 
-        const report = await getReportStructure(selectedSurvey.value, {
-            activityId: selectedActivity.value,
-        });
+        const report = await getReportStructure(
+            selectedSurvey.value,
+            currentFilters(),
+        );
 
         if (report.data) {
             reportData.value = report.data;
@@ -277,8 +432,23 @@ const loadReport = async () => {
     }
 };
 
+const loadPollsterCounts = async () => {
+    if (!selectedActivity.value) {
+        pollsterCounts.value = [];
+
+        return;
+    }
+
+    const { data } = await getPollsterCountsForActivity(selectedActivity.value);
+    pollsterCounts.value = data || [];
+};
+
 watch(selectedSurvey, async (surveyId) => {
     selectedActivity.value = '';
+    selectedParish.value = '';
+    selectedPollster.value = '';
+    dateFrom.value = '';
+    dateTo.value = '';
     activities.value = [];
 
     if (!surveyId) {
@@ -292,7 +462,12 @@ watch(selectedSurvey, async (surveyId) => {
     }
 });
 
-watch(selectedActivity, loadReport);
+watch(selectedActivity, () => {
+    loadReport();
+    loadPollsterCounts();
+});
+
+watch([selectedParish, selectedPollster, dateFrom, dateTo], loadReport);
 
 watch(selectedSurvey, loadReport, { immediate: true });
 </script>

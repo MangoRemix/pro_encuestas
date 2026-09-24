@@ -194,6 +194,7 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             Route::get('newReportStructure/{id}', [ResultController::class, 'newReportStructure']);
             Route::get('parish/{surveyId}', [ResultController::class, 'getRespondentCountByParish']);
             Route::get('reports/top-pollsters', [ResultController::class, 'getTopPollsters']);
+            Route::get('reports/pollster-counts/{activityId}', [ResultController::class, 'getPollsterCountsForActivity']);
             Route::get('activities/{surveyId}', [ResultController::class, 'getActivitiesForSurvey']);
         });
     });

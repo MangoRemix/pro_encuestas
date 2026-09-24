@@ -22,10 +22,25 @@ class ActivityFactory extends Factory
         // futura, vencida) pasan sus propias init_date/finish_date.
         return [
             'survey_id' => Survey::factory(),
-            'parish_id' => fn () => Parish::query()->firstOrCreate(['name' => 'ALTAGRACIA'])->id,
             'init_date' => now()->subDay(),
             'finish_date' => now()->addMonth(),
             'created_by' => null,
         ];
+    }
+
+    /**
+     * La parroquia ya no es una columna (una actividad puede tener varias)
+     * — se le adjunta una por defecto acá para que Activity::factory()
+     * ->create() siga dando, sin más, una actividad usable de punta a
+     * punta como antes.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Activity $activity) {
+            if ($activity->parishes()->count() === 0) {
+                $parish = Parish::query()->firstOrCreate(['name' => 'ALTAGRACIA']);
+                $activity->parishes()->attach($parish->id);
+            }
+        });
     }
 }

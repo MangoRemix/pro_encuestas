@@ -160,7 +160,7 @@ class MobileApiTest extends TestCase
         $question = Question::factory()->create();
         $answer = Answer::factory()->create(['question_id' => $question->id]);
 
-        $otherParish = Parish::factory()->create();
+        $ownParish = $activity->parishes()->first();
 
         $response = $this->actingAs($pollster)->postJson('/api/result/batch-instance', [
             'instance_uuid' => 'uuid-parish',
@@ -170,9 +170,7 @@ class MobileApiTest extends TestCase
             'respondent' => [
                 'sex_id' => $pollster->sex_id,
                 'age' => 30,
-                // Intencionalmente distinto al de la actividad: el servidor
-                // debe ignorarlo y usar el de la actividad.
-                'parish_id' => $otherParish->id,
+                'parish_id' => $ownParish->id,
             ],
             'answers' => [
                 ['question_id' => $question->id, 'answer_id' => $answer->id],
@@ -183,7 +181,68 @@ class MobileApiTest extends TestCase
 
         $this->assertDatabaseHas('persons', [
             'id' => $response->json('server_person_id'),
-            'parish_id' => $activity->parish_id,
+            'parish_id' => $ownParish->id,
+        ]);
+    }
+
+    public function test_batch_instance_rejects_a_parish_outside_the_activity(): void
+    {
+        $pollster = Person::factory()->create();
+        $survey = Survey::factory()->create();
+        $activity = $this->activeActivityFor($survey, $pollster);
+        $question = Question::factory()->create();
+        $answer = Answer::factory()->create(['question_id' => $question->id]);
+
+        $foreignParish = Parish::factory()->create();
+
+        $response = $this->actingAs($pollster)->postJson('/api/result/batch-instance', [
+            'instance_uuid' => 'uuid-foreign-parish',
+            'survey_id' => $survey->id,
+            'activity_id' => $activity->id,
+            'pollster_id' => $pollster->id,
+            'respondent' => [
+                'sex_id' => $pollster->sex_id,
+                'age' => 30,
+                'parish_id' => $foreignParish->id,
+            ],
+            'answers' => [
+                ['question_id' => $question->id, 'answer_id' => $answer->id],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseMissing('results', ['client_instance_uuid' => 'uuid-foreign-parish']);
+    }
+
+    public function test_batch_instance_accepts_any_parish_covered_by_a_multi_parish_activity(): void
+    {
+        $pollster = Person::factory()->create();
+        $survey = Survey::factory()->create();
+        $activity = $this->activeActivityFor($survey, $pollster);
+        $secondParish = Parish::factory()->create();
+        $activity->parishes()->attach($secondParish->id);
+        $question = Question::factory()->create();
+        $answer = Answer::factory()->create(['question_id' => $question->id]);
+
+        $response = $this->actingAs($pollster)->postJson('/api/result/batch-instance', [
+            'instance_uuid' => 'uuid-second-parish',
+            'survey_id' => $survey->id,
+            'activity_id' => $activity->id,
+            'pollster_id' => $pollster->id,
+            'respondent' => [
+                'sex_id' => $pollster->sex_id,
+                'age' => 30,
+                'parish_id' => $secondParish->id,
+            ],
+            'answers' => [
+                ['question_id' => $question->id, 'answer_id' => $answer->id],
+            ],
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('persons', [
+            'id' => $response->json('server_person_id'),
+            'parish_id' => $secondParish->id,
         ]);
     }
 

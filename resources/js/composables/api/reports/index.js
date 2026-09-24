@@ -25,52 +25,53 @@ const withFilters = (
     return params;
 };
 
-export const getReportStructure = async (id, filters = {}) => {
+/**
+ * El backend responde 404 + no_relation:true cuando la parroquia y/o el
+ * encuestador filtrados no tienen relación alguna con la actividad
+ * elegida (en vez de simplemente devolver todo en cero). Se distingue de
+ * un error real para que el frontend pueda mostrar un mensaje claro.
+ */
+const runReportRequest = async (request) => {
     try {
-        return await axios.get(`/api/result/newReportStructure/${id}`, {
+        return await request();
+    } catch (e) {
+        if (e.response?.status === 404 && e.response?.data?.no_relation) {
+            return { data: null, noRelation: true };
+        }
+
+        console.error(e);
+
+        return { data: null };
+    }
+};
+
+export const getReportStructure = (id, filters = {}) =>
+    runReportRequest(() =>
+        axios.get(`/api/result/newReportStructure/${id}`, {
             params: withFilters({}, filters),
-        });
-    } catch (e) {
-        console.error(e);
+        }),
+    );
 
-        return { data: null };
-    }
-};
+export const getRespondentCountBySex = (surveyId, sexId = null, filters = {}) =>
+    runReportRequest(() =>
+        axios.get(`/api/result/sex/${surveyId}`, {
+            params: withFilters(sexId ? { sex_id: sexId } : {}, filters),
+        }),
+    );
 
-export const getRespondentCountBySex = async (
-    surveyId,
-    sexId = null,
-    filters = {},
-) => {
-    try {
-        const params = withFilters(sexId ? { sex_id: sexId } : {}, filters);
-
-        return await axios.get(`/api/result/sex/${surveyId}`, { params });
-    } catch (e) {
-        console.error(e);
-
-        return { data: null };
-    }
-};
-
-export const getRespondentCountByParish = async (
+export const getRespondentCountByParish = (
     surveyId,
     parishId = null,
     filters = {},
-) => {
-    try {
-        const params = withFilters(
-            parishId ? { parish_id: parishId } : {},
-            filters,
-        );
-
-        return await axios.get(`/api/result/parish/${surveyId}`, { params });
-    } catch (e) {
-        console.error(e);
-
-        return { data: null };
-    }
-};
+) =>
+    runReportRequest(() =>
+        axios.get(`/api/result/parish/${surveyId}`, {
+            params: withFilters(
+                parishId ? { parish_id: parishId } : {},
+                filters,
+            ),
+        }),
+    );
 
 export const getActivitiesForSurveyReport = async (surveyId) => {
     try {

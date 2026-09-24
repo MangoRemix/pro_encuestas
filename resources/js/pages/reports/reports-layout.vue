@@ -169,6 +169,17 @@
             </p>
         </div>
 
+        <template v-else-if="filtersUnrelated">
+            <div class="mx-auto w-11/12">
+                <p
+                    class="mt-10 rounded-xl border border-dashed border-amber-400 bg-amber-50 py-14 text-center text-lg font-semibold text-amber-700"
+                >
+                    No se encontraron resultados: la parroquia o el encuestador
+                    elegidos no tienen relación con la actividad seleccionada.
+                </p>
+            </div>
+        </template>
+
         <template v-else>
             <!-- Dropdown de selección de gráficas -->
             <div
@@ -341,6 +352,7 @@ const dateTo = ref('');
 const pollsterCounts = ref([]);
 
 const reportData = ref([]);
+const filtersUnrelated = ref(false);
 
 const reportTypes = [
     { label: 'Tabla', value: 'table' },
@@ -425,6 +437,15 @@ const loadReport = async () => {
             selectedSurvey.value,
             currentFilters(),
         );
+
+        if (report.noRelation) {
+            filtersUnrelated.value = true;
+            reportData.value = [];
+
+            return;
+        }
+
+        filtersUnrelated.value = false;
 
         if (report.data) {
             reportData.value = report.data;

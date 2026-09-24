@@ -39,6 +39,38 @@ class ResultReportService
         return $query;
     }
 
+    /**
+     * Antes de correr cualquier consulta de reporte: si se filtra por una
+     * actividad puntual Y además por parroquia y/o encuestador, esos
+     * filtros tienen que pertenecer realmente a esa actividad. Sin este
+     * chequeo, una combinación sin relación alguna (ej. una parroquia que
+     * la actividad nunca cubrió) simplemente devuelve todo en cero — se ve
+     * igual que "no hubo encuestados", cuando en realidad el filtro no
+     * tiene sentido para esa actividad.
+     */
+    public function activityFiltersAreRelated(?int $activityId, ?int $parishId, ?int $pollsterId): bool
+    {
+        if (! $activityId) {
+            return true;
+        }
+
+        $activity = Activity::find($activityId);
+
+        if (! $activity) {
+            return true;
+        }
+
+        if ($parishId && ! $activity->parishes()->where('parishes.id', $parishId)->exists()) {
+            return false;
+        }
+
+        if ($pollsterId && ! $activity->assignedPollsters()->where('persons.id', $pollsterId)->exists()) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getActivitiesForSurvey(int $surveyId)
     {
         return Activity::query()

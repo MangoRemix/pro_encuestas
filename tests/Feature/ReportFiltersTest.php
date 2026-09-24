@@ -135,4 +135,64 @@ class ReportFiltersTest extends TestCase
             "/api/result/reports/pollster-counts/{$activity->id}"
         )->assertStatus(403);
     }
+
+    public function test_report_structure_flags_a_parish_unrelated_to_the_selected_activity(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $survey = Survey::factory()->create();
+        $activity = Activity::factory()->create(['survey_id' => $survey->id]);
+        $unrelatedParish = Parish::factory()->create();
+
+        $response = $this->actingAs($admin)->getJson(
+            "/api/result/newReportStructure/{$survey->id}?activity_id={$activity->id}&parish_id={$unrelatedParish->id}"
+        );
+
+        $response->assertStatus(404);
+        $this->assertTrue($response->json('no_relation'));
+    }
+
+    public function test_report_structure_flags_a_pollster_unrelated_to_the_selected_activity(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $survey = Survey::factory()->create();
+        $activity = Activity::factory()->create(['survey_id' => $survey->id]);
+        $unrelatedPollster = Person::factory()->create();
+
+        $response = $this->actingAs($admin)->getJson(
+            "/api/result/newReportStructure/{$survey->id}?activity_id={$activity->id}&pollster_id={$unrelatedPollster->id}"
+        );
+
+        $response->assertStatus(404);
+        $this->assertTrue($response->json('no_relation'));
+    }
+
+    public function test_report_structure_allows_a_parish_that_is_actually_covered_by_the_activity(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $survey = Survey::factory()->create();
+        $activity = Activity::factory()->create(['survey_id' => $survey->id]);
+        $ownParish = $activity->parishes()->first();
+
+        $response = $this->actingAs($admin)->getJson(
+            "/api/result/newReportStructure/{$survey->id}?activity_id={$activity->id}&parish_id={$ownParish->id}"
+        );
+
+        $response->assertOk();
+    }
+
+    public function test_sex_and_parish_reports_also_flag_unrelated_filters(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $survey = Survey::factory()->create();
+        $activity = Activity::factory()->create(['survey_id' => $survey->id]);
+        $unrelatedParish = Parish::factory()->create();
+
+        $this->actingAs($admin)->getJson(
+            "/api/result/sex/{$survey->id}?activity_id={$activity->id}&parish_id={$unrelatedParish->id}"
+        )->assertStatus(404);
+
+        $this->actingAs($admin)->getJson(
+            "/api/result/parish/{$survey->id}?activity_id={$activity->id}&parish_id={$unrelatedParish->id}"
+        )->assertStatus(404);
+    }
 }

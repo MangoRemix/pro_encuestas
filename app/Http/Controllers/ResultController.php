@@ -307,8 +307,30 @@ class ResultController extends Controller
         return response()->json(['report' => $report, 'finished' => ! is_null($report)]);
     }
 
+    /**
+     * Respuesta uniforme cuando la parroquia y/o el encuestador filtrados
+     * no tienen relación alguna con la actividad puntual seleccionada —
+     * distinta de "0 resultados" para que el frontend pueda mostrar un
+     * mensaje claro en vez de una tabla/gráfica vacía.
+     */
+    private function unrelatedFiltersResponse(): JsonResponse
+    {
+        return response()->json([
+            'no_relation' => true,
+            'message' => 'No se encontraron resultados: la parroquia o el encuestador seleccionados no tienen relación con esta actividad.',
+        ], 404);
+    }
+
     public function getRespondentCountByAgeRange(Request $request, int $surveyId)
     {
+        if (! $this->reportService->activityFiltersAreRelated(
+            $request->query('activity_id'),
+            $request->query('parish_id'),
+            $request->query('pollster_id')
+        )) {
+            return $this->unrelatedFiltersResponse();
+        }
+
         $min = $request->query('min');
         $max = $request->query('max');
 
@@ -331,6 +353,14 @@ class ResultController extends Controller
 
     public function reportCountAnswersByQuestion(Request $request, int $surveyId)
     {
+        if (! $this->reportService->activityFiltersAreRelated(
+            $request->query('activity_id'),
+            $request->query('parish_id'),
+            $request->query('pollster_id')
+        )) {
+            return $this->unrelatedFiltersResponse();
+        }
+
         try {
             $results = $this->reportService->reportCountAnswersByQuestion(
                 $surveyId,
@@ -350,6 +380,13 @@ class ResultController extends Controller
 
     public function newReportStructure(Request $request, $id)
     {
+        if (! $this->reportService->activityFiltersAreRelated(
+            $request->query('activity_id'),
+            $request->query('parish_id'),
+            $request->query('pollster_id')
+        )) {
+            return $this->unrelatedFiltersResponse();
+        }
 
         try {
             $survey = $this->reportService->getSurveyReportStructure(
@@ -390,6 +427,14 @@ class ResultController extends Controller
 
     public function getRespondentCountBySex(Request $request, int $surveyId)
     {
+        if (! $this->reportService->activityFiltersAreRelated(
+            $request->query('activity_id'),
+            $request->query('parish_id'),
+            $request->query('pollster_id')
+        )) {
+            return $this->unrelatedFiltersResponse();
+        }
+
         try {
             $results = $this->reportService->getRespondentCountBySex(
                 $surveyId,
@@ -412,6 +457,14 @@ class ResultController extends Controller
 
     public function getRespondentCountByParish(Request $request, int $surveyId)
     {
+        if (! $this->reportService->activityFiltersAreRelated(
+            $request->query('activity_id'),
+            $request->query('parish_id'),
+            $request->query('pollster_id')
+        )) {
+            return $this->unrelatedFiltersResponse();
+        }
+
         try {
             $results = $this->reportService->getRespondentCountByParish(
                 $surveyId,

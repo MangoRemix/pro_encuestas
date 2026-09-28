@@ -8,11 +8,12 @@ export function useAnswers() {
     const error = ref(null);
     const message = ref(null);
 
-    const getAnswersByQuestion = async (questionId) => {
+    const getAnswersByQuestion = async (questionId, withTrashed = false) => {
         try {
             loading.value = true;
             const { data } = await axios.get(
                 `${apiHost}answer/show-by-question/${questionId}`,
+                { params: withTrashed ? { with_trashed: 1 } : {} },
             );
 
             return {
@@ -124,6 +125,19 @@ export async function createManyAnswers(payload) {
 export async function hideAnswer(id) {
     try {
         const { data } = await axios.delete(`${apiHost}answer/delete/${id}`);
+
+        return { success: true, data };
+    } catch (error) {
+        return {
+            success: false,
+            message: extractErrorMessage(error),
+        };
+    }
+}
+
+export async function restoreAnswer(id) {
+    try {
+        const { data } = await axios.patch(`${apiHost}answer/restore/${id}`);
 
         return { success: true, data };
     } catch (error) {

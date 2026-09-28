@@ -331,7 +331,6 @@
                             </label>
                             <input
                                 required
-                                minlength="5"
                                 v-model="formRow.name"
                                 type="text"
                                 class="inputs-form w-full"

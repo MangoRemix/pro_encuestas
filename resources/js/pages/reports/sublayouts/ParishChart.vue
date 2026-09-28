@@ -7,6 +7,7 @@
         </h3>
         <BarChart
             v-if="chartData"
+            :chart-type="style.chartType"
             title-color="#ffffff"
             legend-color="#ffffff"
             x-scale-color="#ffffff"
@@ -15,6 +16,7 @@
             :chart-options="{
                 maintainAspectRatio: false,
                 responsive: true,
+                indexAxis: style.indexAxis,
                 animation: {
                     duration: 750,
                     easing: 'easeInOutQuart',
@@ -32,9 +34,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import BarChart from '@/components/Charts/BarChart.vue';
 import { getRespondentCountByParish } from '@/composables/api/reports';
+import { resolveChartStyle } from '@/composables/useChartStyle';
 
 const props = defineProps({
     surveyId: Number,
@@ -44,8 +47,10 @@ const props = defineProps({
     pollsterId: { type: [Number, String], default: '' },
     dateFrom: { type: String, default: '' },
     dateTo: { type: String, default: '' },
+    chartStyle: { type: String, default: 'default' },
 });
 const chartData = ref(null);
+const style = computed(() => resolveChartStyle(props.chartStyle, 'bar', 'x'));
 
 const loadData = async () => {
     if (!props.surveyId || !props.totalRespondent) {
@@ -84,6 +89,7 @@ const loadData = async () => {
                             100
                         ).toFixed(2),
                     ),
+                    rawCounts: data.map((item) => item.total_respondents),
                     backgroundColor: data.map(
                         (_, index) => colors[index % colors.length],
                     ),

@@ -298,20 +298,38 @@
             <div
                 class="flex h-150 flex-col rounded-xl border border-blue-700/50 bg-slate-600/50 p-4 shadow-lg backdrop-blur-md lg:col-span-4"
             >
-                <div class="mb-3 flex items-center justify-between">
+                <div class="mb-3 flex items-center justify-between gap-2">
                     <h3 class="text-lg font-extrabold text-white">
                         Respuestas
                     </h3>
-                    <button
-                        @click="newAnswers()"
-                        class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
-                        :disabled="!questionSelected || structureLocked"
-                    >
-                        <Icon
-                            class="text-xl text-white"
-                            icon="ic:outline-plus"
-                        />
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            v-if="isAdmin"
+                            @click="
+                                showHiddenAnswers = !showHiddenAnswers;
+                                refreshAnswers();
+                            "
+                            class="cursor-pointer rounded-full border border-slate-500 px-2 py-1 text-xs text-slate-200 transition-colors hover:bg-slate-700/50"
+                            :class="{ 'bg-slate-700/70': showHiddenAnswers }"
+                            :disabled="!questionSelected"
+                        >
+                            {{
+                                showHiddenAnswers
+                                    ? 'Ocultar vistas'
+                                    : 'Ver ocultas'
+                            }}
+                        </button>
+                        <button
+                            @click="newAnswers()"
+                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
+                            :disabled="!questionSelected || structureLocked"
+                        >
+                            <Icon
+                                class="text-xl text-white"
+                                icon="ic:outline-plus"
+                            />
+                        </button>
+                    </div>
                 </div>
 
                 <div
@@ -358,7 +376,7 @@
                             >
                                 <template #item="{ element: answer, index }">
                                     <tr
-                                        class="transition-colors hover:bg-slate-600/30"
+                                        :class="`transition-colors hover:bg-slate-600/30 ${answer.deleted_at ? 'italic opacity-50' : ''}`"
                                     >
                                         <td class="p-3 font-medium">
                                             {{ answer.order }}
@@ -373,28 +391,43 @@
                                             <div
                                                 class="flex items-center justify-center gap-x-2"
                                             >
-                                                <Icon
-                                                    v-if="!structureLocked"
-                                                    @click="
-                                                        getAnswerToEdit(
-                                                            answer.id,
-                                                        )
-                                                    "
-                                                    class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
-                                                    icon="ic:baseline-edit"
-                                                />
-                                                <Icon
-                                                    v-if="!structureLocked"
-                                                    @click="
-                                                        deleteAnswer(
-                                                            answer.id,
-                                                            index,
-                                                        )
-                                                    "
-                                                    class="cursor-pointer text-lg text-red-500 hover:text-red-400"
-                                                    icon="ic:round-visibility-off"
-                                                    title="Ocultar"
-                                                />
+                                                <template
+                                                    v-if="answer.deleted_at"
+                                                >
+                                                    <Icon
+                                                        @click="
+                                                            restoreAnswerRow(
+                                                                answer.id,
+                                                            )
+                                                        "
+                                                        class="cursor-pointer text-lg text-green-400 hover:text-green-300"
+                                                        icon="ic:baseline-restore"
+                                                        title="Restaurar"
+                                                    />
+                                                </template>
+                                                <template v-else>
+                                                    <Icon
+                                                        v-if="!structureLocked"
+                                                        @click="
+                                                            getAnswerToEdit(
+                                                                answer.id,
+                                                            )
+                                                        "
+                                                        class="cursor-pointer text-lg text-yellow-500 hover:text-yellow-400"
+                                                        icon="ic:baseline-edit"
+                                                    />
+                                                    <Icon
+                                                        v-if="!structureLocked"
+                                                        @click="
+                                                            deleteAnswer(
+                                                                answer.id,
+                                                            )
+                                                        "
+                                                        class="cursor-pointer text-lg text-red-500 hover:text-red-400"
+                                                        icon="ic:round-visibility-off"
+                                                        title="Ocultar"
+                                                    />
+                                                </template>
                                                 <Icon
                                                     v-if="isAdmin"
                                                     @click="
@@ -577,7 +610,6 @@
                                 >
                                 <input
                                     required
-                                    minlength="5"
                                     v-model="formRow.name"
                                     type="text"
                                     class="inputs-form"
@@ -619,6 +651,7 @@ import NotificationBox from '@/components/notification-box.vue';
 import {
     useAnswers,
     forceDeleteAnswer,
+    restoreAnswer,
     reorderAnswers,
 } from '@/composables/api/answers';
 import {
@@ -663,6 +696,7 @@ const isModalOpen_categories = ref(false);
 const editingCategoryId = ref(0);
 const showHiddenCategories = ref(false);
 const showHiddenQuestions = ref(false);
+const showHiddenAnswers = ref(false);
 const hiddenQuestionsCount = ref(0);
 const questions = ref([]);
 const categories = ref([]);
@@ -712,6 +746,20 @@ const refreshQuestions = async () => {
     } else {
         hiddenQuestionsCount.value = 0;
     }
+};
+
+const refreshAnswers = async () => {
+    if (!questionSelected.value) {
+        answersByQuestion.value = [];
+
+        return;
+    }
+
+    const { data } = await getAnswersByQuestionApi(
+        questionSelected.value,
+        showHiddenAnswers.value,
+    );
+    answersByQuestion.value = data;
 };
 
 const refreshCategories = async () => {
@@ -1065,10 +1113,7 @@ watch(questionSelected, async (value) => {
         },
     );
 
-    if (value) {
-        const { data } = await getAnswersByQuestionApi(value);
-        answersByQuestion.value = data;
-    }
+    await refreshAnswers();
 });
 
 //ANSWERS METHODS
@@ -1101,8 +1146,7 @@ const createManyAnswers = async () => {
     const { success } = await createManyAnswersApi(formAnswer.value);
 
     if (success) {
-        const { data } = await getAnswersByQuestionApi(questionSelected.value);
-        answersByQuestion.value = data;
+        await refreshAnswers();
         formAnswer.value = [
             {
                 name: '',
@@ -1117,7 +1161,7 @@ const createManyAnswers = async () => {
     }
 };
 
-const deleteAnswer = async (id, index) => {
+const deleteAnswer = async (id) => {
     if (
         !(await confirmDialog(
             '¿Ocultar esta respuesta? Dejará de estar disponible para seleccionar en la app y no aparecerá en los demás apartados hasta que la restaures.',
@@ -1129,10 +1173,21 @@ const deleteAnswer = async (id, index) => {
     const success = await deleteAnswerApi(id);
 
     if (success) {
-        answersByQuestion.value.splice(index, 1);
-        notify('Respuesta eliminada');
+        await refreshAnswers();
+        notify('Respuesta ocultada correctamente');
     } else {
-        notify('Error al eliminar', true);
+        notify('Error al ocultar', true);
+    }
+};
+
+const restoreAnswerRow = async (id) => {
+    const { success, message: apiMessage } = await restoreAnswer(id);
+
+    if (success) {
+        await refreshAnswers();
+        notify('Respuesta restaurada correctamente');
+    } else {
+        notify(apiMessage, true);
     }
 };
 
@@ -1160,8 +1215,7 @@ const updateAnswer = async (id) => {
     if (success) {
         notify('Respuesta actualizada');
 
-        const { data } = await getAnswersByQuestionApi(questionSelected.value);
-        answersByQuestion.value = data;
+        await refreshAnswers();
         isModalOpen_answers.value = false;
     } else {
         notify('Error al actualizar', true);

@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\ApiResponds;
 use App\Http\Controllers\Concerns\GuardsSurveyStructure;
 use App\Models\Answer;
 use App\Models\Question;
+use App\Models\Rol;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class AnswerController extends Controller
     public static function updateRules($id = null)
     {
         return [
-            'name' => 'required|string|max:350|min:5',
+            'name' => 'required|string|max:350',
             'order' => 'required|integer|min:1',
             'question_id' => 'integer|min:1|exists:questions,id',
         ];
@@ -128,11 +129,17 @@ class AnswerController extends Controller
         }
     }
 
-    public function showByQuestion(int $id)
+    public function showByQuestion(int $id, Request $request)
     {
         try {
             // code...
-            $answers = Answer::query()->where('question_id', $id)->get();
+            $query = Answer::query()->where('question_id', $id);
+
+            if ($request->boolean('with_trashed') && $request->user()?->rol?->name === Rol::ADMIN) {
+                $query->withTrashed();
+            }
+
+            $answers = $query->orderBy('order', 'asc')->get();
 
             return response()->json(['answers' => $answers ? $answers : []], 200);
         } catch (Throwable $th) {

@@ -5,23 +5,36 @@ import {
     Tooltip,
     Legend,
     BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
     CategoryScale,
     LinearScale,
 } from 'chart.js';
 import { computed } from 'vue';
-import { Bar } from 'vue-chartjs';
+import { Bar, Pie, Line } from 'vue-chartjs';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
     CategoryScale,
     LinearScale,
     BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
     Title,
     Tooltip,
     Legend,
 );
 
 const props = defineProps({
+    // 'bar' | 'pie' | 'line' — el mismo componente sirve para los 3 tipos
+    // de gráfica para que quien lo use no tenga que decidir entre 3
+    // componentes distintos, solo cambiar este prop.
+    chartType: {
+        type: String,
+        default: 'bar',
+    },
     chartData: {
         type: Object,
         required: true,
@@ -51,6 +64,28 @@ const props = defineProps({
     },
 });
 
+const chartComponent = computed(
+    () => ({ bar: Bar, pie: Pie, line: Line })[props.chartType] || Bar,
+);
+
+/**
+ * Todas las gráficas muestran el % del total, pero el tooltip también
+ * necesita la cantidad cruda (cuántos encuestados representa ese %) para
+ * que se entienda la magnitud real detrás del porcentaje. Cada chart data
+ * le agrega un array paralelo `rawCounts` al dataset con esa cantidad.
+ */
+const defaultTooltipLabel = (context) => {
+    const raw = context.dataset.rawCounts?.[context.dataIndex];
+    const value =
+        typeof context.parsed === 'object'
+            ? (context.parsed.y ?? context.parsed.x ?? context.parsed.r)
+            : context.parsed;
+    const pct = typeof value === 'number' ? value.toFixed(2) : value;
+    const label = context.dataset.label ? `${context.dataset.label}: ` : '';
+
+    return raw !== undefined ? `${label}${pct}% (${raw})` : `${label}${pct}%`;
+};
+
 // Unimos las opciones por defecto con las que envíe el padre
 const mergedOptions = computed(() => {
     const options = {
@@ -77,8 +112,20 @@ const mergedOptions = computed(() => {
                 color: props.titleColor,
                 ...props.chartOptions?.plugins?.title,
             },
+            tooltip: {
+                ...props.chartOptions?.plugins?.tooltip,
+                callbacks: {
+                    label: defaultTooltipLabel,
+                    ...props.chartOptions?.plugins?.tooltip?.callbacks,
+                },
+            },
         },
-        scales: {
+    };
+
+    // La torta no usa ejes cartesianos — pasarle "scales" no rompe nada,
+    // pero no tiene sentido y por eso se omite.
+    if (props.chartType !== 'pie') {
+        options.scales = {
             ...props.chartOptions?.scales,
             x: {
                 ...props.chartOptions?.scales?.x,
@@ -102,13 +149,17 @@ const mergedOptions = computed(() => {
                     ...props.chartOptions?.scales?.y?.grid,
                 },
             },
-        },
-    };
+        };
+    }
 
     return options;
 });
 </script>
 
 <template>
-    <Bar :data="chartData" :options="mergedOptions" />
+    <component
+        :is="chartComponent"
+        :data="chartData"
+        :options="mergedOptions"
+    />
 </template>

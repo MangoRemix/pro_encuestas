@@ -20,14 +20,20 @@
                     :key="question.id"
                     class="mt-5 min-h-120 overflow-y-scroll rounded-xl border border-blue-700/30 bg-neutral-800 p-6"
                 >
+                    <h4
+                        class="mb-3 text-center text-base font-medium text-slate-200"
+                    >
+                        {{ question.name }}
+                    </h4>
                     <BarChart
+                        :chart-type="style.chartType"
                         title-color="#ffffff"
                         legend-color="#ffffff"
                         x-scale-color="#ffffff"
                         y-scale-color="#ffffff"
                         :chart-data="getChartData(question)"
                         :chart-options="{
-                            indexAxis: 'y',
+                            indexAxis: style.indexAxis,
                             maintainAspectRatio: false,
                             responsive: true,
                             animation: {
@@ -73,8 +79,9 @@
 </template>
 
 <script setup>
-import { watch } from 'vue';
+import { computed } from 'vue';
 import BarChart from '@/components/Charts/BarChart.vue';
+import { resolveChartStyle } from '@/composables/useChartStyle';
 
 const props = defineProps({
     categories: {
@@ -85,15 +92,13 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    chartStyle: {
+        type: String,
+        default: 'default',
+    },
 });
 
-watch(
-    () => props.categories,
-    (newVal) => {
-        console.log('GraphicsCopy recibió categorías:', newVal);
-    },
-    { immediate: true },
-);
+const style = computed(() => resolveChartStyle(props.chartStyle, 'bar', 'y'));
 
 const getChartData = (question) => {
     return {
@@ -109,6 +114,7 @@ const getChartData = (question) => {
                           ).toFixed(2)
                         : 0,
                 ),
+                rawCounts: question.answers.map((a) => a.total_votes),
                 backgroundColor: ['#3b82f6', '#3b15f6', '#3b8218', '#E582f6'],
                 borderRadius: 4,
             },

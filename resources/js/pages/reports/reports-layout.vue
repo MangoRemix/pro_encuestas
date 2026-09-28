@@ -15,7 +15,7 @@
                     <select
                         id="report-survey-select"
                         v-model="selectedSurvey"
-                        class="w-9/12 rounded-lg border-slate-200 text-slate-700 focus:border-indigo-600 focus:ring-blue-600"
+                        class="inputs-form w-9/12 bg-white text-slate-700"
                     >
                         <option value="">Seleccione una encuesta</option>
                         <option
@@ -56,6 +56,26 @@
                             :value="option.component"
                         >
                             {{ option.name }}
+                        </option>
+                    </select>
+                </div>
+                <div
+                    v-if="['graphics', 'both'].includes(selected_radio)"
+                    class="flex items-center gap-x-2"
+                >
+                    <span class="text-sm font-semibold opacity-75"
+                        >Estilo:</span
+                    >
+                    <select
+                        v-model="chartStyle"
+                        class="border-none text-slate-700 focus:ring-0"
+                    >
+                        <option
+                            v-for="option in CHART_STYLE_OPTIONS"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
                         </option>
                     </select>
                 </div>
@@ -253,6 +273,7 @@
                         <Graphics
                             :categories="filteredCategories"
                             :total-respondent="reportData.total_respondent"
+                            :chart-style="chartStyle"
                         />
                     </template>
                 </Transition>
@@ -272,6 +293,7 @@
                             :pollster-id="selectedPollster"
                             :date-from="dateFrom"
                             :date-to="dateTo"
+                            :chart-style="chartStyle"
                         />
                     </template>
                     <template
@@ -285,6 +307,7 @@
                             :pollster-id="selectedPollster"
                             :date-from="dateFrom"
                             :date-to="dateTo"
+                            :chart-style="chartStyle"
                         />
                     </template>
                 </div>
@@ -324,6 +347,7 @@ import {
 } from '@/composables/api/reports';
 import { getCategoriesBySurvey, getSurveys } from '@/composables/api/surveys';
 import { formatedDate } from '@/composables/shared.js';
+import { CHART_STYLE_OPTIONS } from '@/composables/useChartStyle';
 import MainLayout from '@/layouts/main-layout.vue';
 import { apiHost } from '@/store/store';
 import AgeRangeFilter from './sublayouts/AgeRangeFilter.vue';
@@ -379,6 +403,7 @@ const graphicOptions = [
 ];
 
 const selected_graphic = ref('all');
+const chartStyle = ref('default');
 
 onMounted(async () => {
     await fetchParishes();

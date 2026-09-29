@@ -30,7 +30,9 @@ trait FiltersAndSorts
 
     /**
      * Aplica orden solo sobre columnas permitidas en $sortable, para evitar
-     * inyectar nombres de columna arbitrarios desde la query string.
+     * inyectar nombres de columna arbitrarios desde la query string. Siempre
+     * desempata por la clave primaria: registros con el mismo created_at
+     * (creados en lote, en el mismo segundo) si no salen en orden arbitrario.
      */
     protected function applySort(Builder $query, Request $request, array $sortable, string $defaultSort, string $defaultDir = 'desc'): Builder
     {
@@ -40,6 +42,7 @@ trait FiltersAndSorts
         $direction = strtolower((string) $request->query('direction'));
         $direction = in_array($direction, ['asc', 'desc'], true) ? $direction : $defaultDir;
 
-        return $query->orderBy($sort, $direction);
+        return $query->orderBy($sort, $direction)
+            ->orderBy($query->getModel()->getQualifiedKeyName(), $direction);
     }
 }

@@ -43,6 +43,7 @@ class SurveyController extends Controller
         if ($request->query('all') == 'true') {
             $surveys = Survey::query()
                 ->orderBy('created_at', 'DESC')
+                ->orderBy('id', 'DESC')
                 ->get();
         } else {
             $query = Survey::query();
@@ -244,6 +245,7 @@ class SurveyController extends Controller
         try {
             $surveys = Survey::query()
                 ->orderBy('created_at', 'DESC')
+                ->orderBy('id', 'DESC')
                 ->limit(5)
                 ->get();
 

@@ -31,7 +31,7 @@
                     class="custom-scrollbar block max-h-150 divide-y divide-slate-700/50 overflow-y-scroll"
                 >
                     <tr
-                        v-for="(survey, index) in pendingSurveys"
+                        v-for="(survey, index) in displayedSurveys"
                         :key="index"
                         class="flex text-slate-200 transition-colors hover:bg-slate-600/30"
                     >
@@ -93,11 +93,14 @@
 <script setup>
 import { Icon } from '@iconify/vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import NotificationBox from '@/components/notification-box.vue';
 import { useBatchProcessor } from '@/composables/useBatchProcessor';
 import MainLayout from '@/layouts/main-layout.vue';
 const pendingSurveys = ref([]);
+// Se guardan en orden de llegada (el procesamiento por lotes depende de ese
+// orden); solo la vista se invierte para mostrar la más reciente primero.
+const displayedSurveys = computed(() => [...pendingSurveys.value].reverse());
 const { isProcessing, processBatch } = useBatchProcessor();
 const notification = ref({ message: '', isError: false });
 

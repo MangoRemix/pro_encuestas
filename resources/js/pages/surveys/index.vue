@@ -229,8 +229,9 @@ const pagination = ref(null);
 
 const idSurveyToEdit = ref(0);
 const searchQuery = ref('');
-const sortField = ref('name');
-const sortDirection = ref('asc');
+// Sin campo elegido, el backend ordena por más recientes primero.
+const sortField = ref('');
+const sortDirection = ref('desc');
 const withTrashed = ref(false);
 const sortableFields = [
     { key: 'name', label: 'Nombre' },

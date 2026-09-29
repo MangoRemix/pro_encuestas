@@ -47,7 +47,8 @@ class ActivityController extends Controller
     {
         $query = Activity::query()
             ->with(['survey', 'parishes', 'activePollsters'])
-            ->orderByDesc('init_date');
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         if ($request->filled('survey_id')) {
             $query->where('survey_id', $request->query('survey_id'));

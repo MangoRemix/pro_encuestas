@@ -10,7 +10,7 @@ class ParishController extends Controller
 {
     public function index()
     {
-        return response()->json(Parish::all(), 200);
+        return response()->json(Parish::query()->orderByDesc('id')->get(), 200);
     }
 
     public function store(Request $request)

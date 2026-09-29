@@ -1130,13 +1130,18 @@ watch(questionSelected, async (value) => {
 //         console.log(error)
 //     }
 // }
+// Máximo + 1, no "cantidad + 1": si hay una respuesta oculta o eliminada en
+// medio de la numeración, contar choca con un orden ya ocupado (422).
+const nextAnswerOrder = () =>
+    Math.max(0, ...answersByQuestion.value.map((a) => a.order)) + 1;
+
 const newAnswers = () => {
     isModalOpen_answers.value = true;
     operation_name.value = 'Crear';
     formAnswer.value = [
         {
             name: '',
-            order: answersByQuestion.value.length + 1,
+            order: nextAnswerOrder(),
             question_id: questionSelected.value,
         },
     ];
@@ -1224,7 +1229,7 @@ const updateAnswer = async (id) => {
 const incrementFormRow_answer = () => {
     formAnswer.value.push({
         name: '',
-        order: answersByQuestion.value.length + formAnswer.value.length + 1,
+        order: nextAnswerOrder() + formAnswer.value.length,
         question_id: questionSelected.value,
     });
 };

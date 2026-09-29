@@ -62,6 +62,10 @@ const props = defineProps({
         type: String,
         default: '#666',
     },
+    height: {
+        type: String,
+        default: '22rem',
+    },
 });
 
 const chartComponent = computed(
@@ -88,10 +92,16 @@ const defaultTooltipLabel = (context) => {
 
 // Unimos las opciones por defecto con las que envíe el padre
 const mergedOptions = computed(() => {
+    const callerOptions = { ...props.chartOptions };
+
+    if (props.chartType === 'pie') {
+        delete callerOptions.scales;
+    }
+
     const options = {
         responsive: true,
         maintainAspectRatio: false, // Force false globally to allow flexible containers
-        ...props.chartOptions,
+        ...callerOptions,
         animation: {
             duration: 750,
             easing: 'easeInOutQuart',
@@ -122,8 +132,8 @@ const mergedOptions = computed(() => {
         },
     };
 
-    // La torta no usa ejes cartesianos — pasarle "scales" no rompe nada,
-    // pero no tiene sentido y por eso se omite.
+    // La torta no usa ejes cartesianos: si recibe "scales", Chart.js dibuja
+    // ejes y grilla detrás de la torta.
     if (props.chartType !== 'pie') {
         options.scales = {
             ...props.chartOptions?.scales,
@@ -150,6 +160,15 @@ const mergedOptions = computed(() => {
                 },
             },
         };
+
+        // Todas las gráficas son porcentajes: el eje de valores va de 0 a
+        // 100 sin importar la orientación que se elija en "Estilo".
+        const valueAxis = options.indexAxis === 'y' ? 'x' : 'y';
+        options.scales[valueAxis] = {
+            beginAtZero: true,
+            max: 100,
+            ...options.scales[valueAxis],
+        };
     }
 
     return options;
@@ -157,9 +176,16 @@ const mergedOptions = computed(() => {
 </script>
 
 <template>
-    <component
-        :is="chartComponent"
-        :data="chartData"
-        :options="mergedOptions"
-    />
+    <!-- Chart.js (responsive, sin aspect ratio) toma el tamaño del padre del
+         canvas: si ese padre tiene más contenido o altura automática, el
+         canvas lo agranda, el padre crece y se repite sin fin. Por eso el
+         canvas siempre vive en un contenedor propio de altura fija. -->
+    <div class="relative w-full" :style="{ height }">
+        <component
+            :is="chartComponent"
+            :key="chartType"
+            :data="chartData"
+            :options="mergedOptions"
+        />
+    </div>
 </template>

@@ -27,6 +27,7 @@
                     </h4>
                     <BarChart
                         :chart-type="style.chartType"
+                        height="24rem"
                         title-color="#ffffff"
                         legend-color="#ffffff"
                         x-scale-color="#ffffff"

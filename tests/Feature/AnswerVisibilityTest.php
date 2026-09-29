@@ -80,6 +80,22 @@ class AnswerVisibilityTest extends TestCase
         $this->assertNotSoftDeleted($answer->fresh());
     }
 
+    public function test_creating_short_answers_like_si_and_no_is_allowed(): void
+    {
+        $admin = Person::factory()->admin()->create();
+        $question = Question::factory()->create();
+
+        $this->actingAs($admin)->postJson('/api/answer/create-many', [
+            ['name' => 'si', 'order' => 1, 'question_id' => $question->id],
+            ['name' => 'no', 'order' => 2, 'question_id' => $question->id],
+        ])->assertStatus(201);
+
+        $this->assertSame(
+            ['SI', 'NO'],
+            Answer::where('question_id', $question->id)->orderBy('order')->pluck('name')->all(),
+        );
+    }
+
     public function test_updating_an_answer_no_longer_requires_a_minimum_name_length(): void
     {
         $admin = Person::factory()->admin()->create();

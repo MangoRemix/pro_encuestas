@@ -491,13 +491,18 @@ watch(categorySelected, async (value) => {
     nextStepFlag.value = !(await validateQuestionsAnswers());
 });
 
+// Máximo + 1, no "cantidad + 1": si hay una respuesta oculta o eliminada en
+// medio de la numeración, contar choca con un orden ya ocupado (422).
+const nextAnswerOrder = () =>
+    Math.max(0, ...(answers.value || []).map((a) => a.order)) + 1;
+
 watch(questionSelected, async (value) => {
     if (value?.id) {
         const { data } = await getAnswersByQuestion(value.id);
         answers.value = data;
         formAnswer.value = [
             {
-                order: answers.value.length + 1,
+                order: nextAnswerOrder(),
                 name: '',
                 question_id: value.id,
             },
@@ -541,7 +546,7 @@ function incrementFormRow(type) {
     } else {
         formAnswer.value.push({
             name: '',
-            order: answers.value.length + formAnswer.value.length + 1,
+            order: nextAnswerOrder() + formAnswer.value.length,
             question_id: parseInt(questionSelected.value?.id),
         });
     }
@@ -692,7 +697,7 @@ const newAnswers = () => {
     formAnswer.value = [
         {
             name: '',
-            order: (answers.value?.length || 0) + 1,
+            order: nextAnswerOrder(),
             question_id: parseInt(questionSelected.value?.id),
         },
     ];

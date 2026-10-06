@@ -3,7 +3,7 @@
     <MainLayout>
         <div class="mx-auto w-11/12 space-y-6">
             <div
-                class="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-3 shadow-sm"
+                class="flex flex-wrap items-end gap-4 rounded-2xl bg-white p-3 shadow-sm"
             >
                 <div class="min-w-62.5 flex-1">
                     <label
@@ -17,7 +17,7 @@
                         v-model="selectedSurvey"
                         class="inputs-form w-9/12 bg-white text-slate-700"
                     >
-                        <option value="">Seleccione una encuesta</option>
+                        <option :value="0">Seleccione una encuesta</option>
                         <option
                             v-for="survey in surveys"
                             :key="survey.id"
@@ -93,7 +93,7 @@
                     </label>
                     <select
                         v-model="selectedActivity"
-                        class="w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                        class="inputs-form w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
                     >
                         <option value="">Todas las actividades</option>
                         <option
@@ -120,7 +120,7 @@
                     </label>
                     <select
                         v-model="selectedParish"
-                        class="w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                        class="inputs-form w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
                     >
                         <option value="">Todas las parroquias</option>
                         <option
@@ -141,7 +141,7 @@
                     </label>
                     <select
                         v-model="selectedPollster"
-                        class="w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                        class="inputs-form w-full rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
                     >
                         <option value="">Todos los encuestadores</option>
                         <option
@@ -162,7 +162,7 @@
                         type="date"
                         v-model="dateFrom"
                         :max="dateTo || undefined"
-                        class="rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                        class="inputs-form rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
                     />
                 </div>
                 <div class="flex flex-col gap-1">
@@ -173,7 +173,7 @@
                         type="date"
                         v-model="dateTo"
                         :min="dateFrom || undefined"
-                        class="rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
+                        class="inputs-form rounded-lg border-slate-300 bg-white text-gray-900 focus:border-indigo-600 focus:ring-blue-600"
                     />
                 </div>
             </div>
@@ -356,7 +356,7 @@ import ParishChart from './sublayouts/ParishChart.vue';
 import SexChart from './sublayouts/SexChart.vue';
 import Table from './sublayouts/table.vue';
 
-const selectedSurvey = ref(null);
+const selectedSurvey = ref(0);
 const surveys = ref([]);
 const categories = ref([]);
 const category_selected = ref(null);

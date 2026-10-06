@@ -1,4 +1,5 @@
 <script setup>
+import { Icon } from '@iconify/vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { onMounted, reactive, ref, watch } from 'vue';
@@ -320,13 +321,21 @@ onMounted(async () => {
                         class="inputs-form bg-white text-gray-900"
                     />
                 </div>
-                <button
-                    type="button"
-                    class="yellow-button-app w-auto cursor-pointer px-6"
-                    @click="isCreating = !isCreating"
-                >
-                    {{ isCreating ? 'Cancelar' : '+ Nueva actividad' }}
-                </button>
+                <div class="w-fit">
+
+                    <button
+                        type="button"
+                        class="yellow-button-app flex items-center justify-center cursor-pointer "
+                        @click="isCreating = !isCreating"
+                    >
+                        <Icon
+                            v-if="!isCreating"
+                            class="h-6 w-6"
+                            icon="ic:outline-plus"
+                        />  
+                        {{ isCreating ? 'Cancelar' :  'Nueva actividad' }}
+                    </button>
+                </div>
             </div>
 
             <div

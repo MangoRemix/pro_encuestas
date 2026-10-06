@@ -19,27 +19,29 @@
                 />
                 <button
                     @click="handleSearch"
-                    class="shrink-0 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700"
+                    class="shrink-0 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700 cursor-pointer"
                 >
                     Buscar
                 </button>
             </div>
             <div class="flex w-full flex-wrap gap-2 md:w-auto">
-                <button
-                    v-if="isAdmin"
-                    @click="toggleWithTrashed"
-                    class="flex items-center justify-center gap-x-2 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700"
-                    :class="withTrashed ? 'border-blue-500 text-blue-300' : ''"
-                >
-                    {{ withTrashed ? 'Ocultar ocultas' : 'Mostrar ocultas' }}
-                </button>
-                <div class="flex w-50 items-center">
+                <div>
+
+                    <button
+                        v-if="isAdmin"
+                        @click="toggleWithTrashed"
+                        class="cursor-pointer"
+                        :class="withTrashed ? 'yellow-button-app' : 'primary-button-app'"
+                    >
+                        {{ withTrashed ? 'Ocultar' : 'Mostrar ocultas' }}
+                    </button>
+                </div>
+                <div class="flex w-fit items-center">
                     <Link
                         href="/surveys/create-survey/step-1"
                         class="green-button-app flex items-center justify-center gap-x-2"
                     >
-                        <Icon class="text-2xl" icon="ic:outline-plus" /> Nueva
-                        encuesta
+                        <Icon class="text-2xl" icon="ic:outline-plus" /> Nueva encuesta
                     </Link>
                 </div>
             </div>

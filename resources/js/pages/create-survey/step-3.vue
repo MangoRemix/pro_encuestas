@@ -34,7 +34,7 @@
                 <button
                     type="button"
                     @click="newQuestions()"
-                    class="yellow-button-app flex w-full cursor-pointer items-center justify-center gap-x-2 font-bold text-white"
+                    class="yellow-button-app flex w-full cursor-pointer items-center justify-center gap-x-2 font-bold"
                     :disabled="!categorySelected"
                 >
                     <Icon class="text-2xl" icon="ic:outline-plus" />
@@ -47,7 +47,7 @@
                     :disabled="!questionSelected"
                     type="button"
                     @click="newAnswers()"
-                    class="yellow-button-app flex w-full cursor-pointer items-center justify-center gap-x-2 font-bold text-white"
+                    class="yellow-button-app flex w-full cursor-pointer items-center justify-center gap-x-2 font-bold"
                 >
                     <Icon class="text-2xl" icon="ic:outline-plus" />
                     Asociar respuestas
@@ -216,11 +216,11 @@
                 <div class="mb-3 flex items-center justify-end space-x-3">
                     <button
                         @click.prevent="incrementFormRow('question')"
-                        class=""
+                        class="btn-circle-yellow rounded-full cursor-pointer"
                         v-if="operation_name != 'Editar'"
                     >
                         <Icon
-                            class="h-8 w-8 cursor-pointer rounded-full bg-yellow-400 p-1 text-white hover:bg-yellow-300"
+                            class="h-8 w-8"
                             icon="ic:outline-plus"
                         />
                     </button>
@@ -291,10 +291,11 @@
                 <div class="mb-3 flex items-center justify-end space-x-3">
                     <button
                         @click.prevent="incrementFormRow('answer')"
+                        class="btn-circle-yellow rounded-full cursor-pointer"
                         v-if="operation_name != 'Editar'"
                     >
                         <Icon
-                            class="h-8 w-8 cursor-pointer rounded-full bg-yellow-400 p-1 text-white hover:bg-yellow-300"
+                            class="h-8 w-8"
                             icon="ic:outline-plus"
                         />
                     </button>

@@ -5,7 +5,7 @@
             v-if="message || isError ? true : false"
             :message="message"
             :is-error="isError"
-            class="absolute top-0 right-0 z-[1100] w-100"
+            class="absolute top-0 right-0 z-1100 w-100"
         />
 
         <div class="w-full text-center">
@@ -59,11 +59,11 @@
                                 editingCategoryId = 0;
                                 isModalOpen_categories = true;
                             "
-                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
+                            class="btn-circle-yellow rounded-full cursor-pointer"
                             :disabled="structureLocked"
                         >
                             <Icon
-                                class="text-xl text-white"
+                                class="h-6 w-6"
                                 icon="ic:outline-plus"
                             />
                         </button>
@@ -158,11 +158,11 @@
                         </button>
                         <button
                             @click="newQuestions()"
-                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
+                            class="btn-circle-yellow rounded-full cursor-pointer"
                             :disabled="!categorySelected || structureLocked"
                         >
                             <Icon
-                                class="text-xl text-white"
+                                class="h-6 w-6"
                                 icon="ic:outline-plus"
                             />
                         </button>
@@ -321,11 +321,11 @@
                         </button>
                         <button
                             @click="newAnswers()"
-                            class="btn-circle btn-circle-yellow h-8 w-8 cursor-pointer disabled:opacity-50"
+                            class="btn-circle-yellow rounded-full cursor-pointer"
                             :disabled="!questionSelected || structureLocked"
                         >
                             <Icon
-                                class="text-xl text-white"
+                                class="h-6 w-6"
                                 icon="ic:outline-plus"
                             />
                         </button>
@@ -451,10 +451,10 @@
             </div>
         </div>
 
-        <div v-if="canManageSurveys" class="mt-4 flex justify-center">
+        <div v-if="canManageSurveys" class="mt-4 flex w-fit justify-center">
             <Link
                 :href="`/activities?surveyId=${page.props.id}`"
-                class="yellow-button-app w-auto cursor-pointer px-6"
+                class="yellow-button-app cursor-pointer text-center"
             >
                 Gestionar actividades de esta encuesta
             </Link>

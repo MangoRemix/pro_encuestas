@@ -1,8 +1,9 @@
 <template>
+    <!-- bg-[#0B1E36] color original de background -->
     <div
         id="main"
         :class="[
-            'relative flex min-h-screen w-full bg-[#0B1E36]',
+            'relative flex min-h-screen w-full bg-[#f8fafc]',
             isMenuOpen && !isLargeScreen ? 'h-screen overflow-hidden' : '',
         ]"
     >
@@ -34,13 +35,13 @@
             class="flex min-w-0 flex-1 flex-col transition-all duration-300"
             :class="user && isMenuOpen ? 'lg:ml-80' : 'ml-0'"
         >
-            <div class="mx-auto w-full max-w-7xl px-4 pt-7">
+            <!-- <div class="mx-auto w-full max-w-7xl px-4 pt-7">
                 <img
                     src="/images/logoAlcaldia.png"
                     class="mx-auto h-30 w-30 rounded-full border-2 border-white bg-white object-cover"
                     alt="Logo"
                 />
-            </div>
+            </div> -->
 
             <div class="mx-auto mt-4 w-full max-w-7xl px-4 pb-10 2xl:max-w-500">
                 <slot />

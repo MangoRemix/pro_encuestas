@@ -56,18 +56,18 @@
         </div>
         <div class="flex flex-col gap-y-4 md:flex-row md:space-x-2 md:gap-y-0">
             <div
-                class="h-125 w-full overflow-hidden rounded-lg border border-slate-700 bg-gray-500/50 md:w-1/2"
+                class="h-125 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm md:w-1/2"
             >
                 <h3
-                    class="mt-3 mb-3 text-center text-xl font-extrabold text-white"
+                    class="mt-3 mb-3 text-center text-xl font-extrabold text-slate-900"
                 >
                     Listado de preguntas
                 </h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse text-left">
+                    <table class="w-full border-collapse text-left text-slate-800">
                         <thead>
                             <tr
-                                class="border-b border-slate-700 bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                                class="border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase font-semibold"
                             >
                                 <th class="w-12 p-2 sm:w-20 sm:p-4">Orden</th>
                                 <th class="w-full p-2 sm:p-4">Nombre</th>
@@ -78,7 +78,7 @@
                             v-model="questions"
                             item-key="id"
                             tag="tbody"
-                            class="custom-scrollbar max-h-90 divide-y divide-slate-700/50 overflow-y-scroll"
+                            class="custom-scrollbar max-h-90 divide-y divide-slate-100 overflow-y-scroll"
                             @end="onReorderQuestions"
                         >
                             <template #item="{ element: question, index }">
@@ -86,17 +86,17 @@
                                     :id="`question-${index}`"
                                     @click="questionSelected = question"
                                     :class="[
-                                        'w-full cursor-pointer text-slate-200 transition-colors',
+                                        'w-full cursor-pointer transition-colors',
                                         questionSelected?.id === question.id
-                                            ? 'bg-blue-600/30 font-semibold text-white'
-                                            : 'hover:bg-slate-600/30',
+                                            ? 'bg-blue-50 font-semibold text-blue-900'
+                                            : 'hover:bg-slate-50 text-slate-800',
                                     ]"
                                 >
-                                    <td class="w-12 p-2 sm:w-20 sm:p-4">
+                                    <td class="w-12 p-2 sm:w-20 sm:p-4 text-slate-700">
                                         {{ question.order }}
                                     </td>
                                     <td
-                                        class="w-full p-2 wrap-break-word sm:p-4"
+                                        class="w-full p-2 wrap-break-word sm:p-4 text-slate-900 font-medium"
                                     >
                                         {{ question.name }}
                                     </td>
@@ -110,7 +110,7 @@
                                                         question.id,
                                                     )
                                                 "
-                                                class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                                class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-600"
                                                 icon="ic:baseline-edit"
                                             />
                                             <Icon
@@ -119,7 +119,7 @@
                                                         question.id,
                                                     )
                                                 "
-                                                class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                                class="cursor-pointer text-xl text-red-600 hover:text-red-700"
                                                 icon="ic:round-visibility-off"
                                                 title="Ocultar"
                                             />
@@ -133,21 +133,19 @@
             </div>
 
             <div
-                class="h-125 w-full overflow-hidden rounded-lg border border-slate-700 bg-gray-500/50 md:w-1/2"
+                class="h-125 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm md:w-1/2"
                 v-if="questionSelected"
             >
-                <!-- <h3 v-if="questionSelected" class="text-xl text-center text-white font-extrabold mb-3 mt-3">{{ questionSelected.name }}</h3> -->
-                <!--<h3 v-if="!questionSelected" class="text-xl text-center text-white font-extrabold mb-3 mt-3 underline">No ha seleccionado una pregunta.</h3>-->
                 <h4
-                    class="mt-3 mb-3 text-center text-xl font-extrabold text-white"
+                    class="mt-3 mb-3 text-center text-xl font-extrabold text-slate-900"
                 >
                     Respuestas asociadas
                 </h4>
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse text-left">
+                    <table class="w-full border-collapse text-left text-slate-800">
                         <thead>
                             <tr
-                                class="border-b border-slate-700 bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                                class="border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase font-semibold"
                             >
                                 <th class="w-12 p-2 sm:w-20 sm:p-4">Orden</th>
                                 <th class="w-full p-2 sm:p-4">Nombre</th>
@@ -155,18 +153,18 @@
                             </tr>
                         </thead>
                         <tbody
-                            class="custom-scrollbar max-h-90 divide-y divide-slate-700/50 overflow-y-scroll"
+                            class="custom-scrollbar max-h-90 divide-y divide-slate-100 overflow-y-scroll"
                         >
                             <tr
                                 :id="`answer-${index}`"
                                 v-for="(answer, index) in answers"
                                 :key="answer.id"
-                                class="w-full text-slate-200 transition-colors hover:bg-slate-600/30"
+                                class="w-full text-slate-800 transition-colors hover:bg-slate-50"
                             >
-                                <td class="w-12 p-2 sm:w-20 sm:p-4">
+                                <td class="w-12 p-2 sm:w-20 sm:p-4 text-slate-700">
                                     {{ answer.order }}
                                 </td>
-                                <td class="w-full p-2 wrap-break-word sm:p-4">
+                                <td class="w-full p-2 wrap-break-word sm:p-4 text-slate-900 font-medium">
                                     {{ answer.name }}
                                 </td>
                                 <td class="p-2 sm:p-4">
@@ -175,7 +173,7 @@
                                     >
                                         <Icon
                                             @click="getAnswerToEdit(answer)"
-                                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-600"
                                             icon="ic:baseline-edit"
                                         />
                                         <Icon
@@ -185,7 +183,7 @@
                                                     index,
                                                 )
                                             "
-                                            class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                            class="cursor-pointer text-xl text-red-600 hover:text-red-700"
                                             icon="ic:round-visibility-off"
                                             title="Ocultar"
                                         />
@@ -342,7 +340,7 @@
             </form>
         </Modal>
 
-        <div class="text-white">
+        <div class="text-slate-700">
             <b>Nota:</b> <span>Para finalizar la carga: </span>
 
             <ol class="ml-10 list-decimal">

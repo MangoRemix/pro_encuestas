@@ -9,18 +9,18 @@
         </div>
 
         <div class="text-center">
-            <h2 class="mt-8 text-3xl font-bold text-white underline">
+            <h2 class="mt-8 text-3xl font-bold text-slate-900">
                 Encuestas Pendientes
             </h2>
         </div>
 
         <div
-            class="mt-6 overflow-hidden rounded-lg border border-slate-700 bg-gray-500/50"
+            class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
         >
-            <table class="flex w-full border-collapse flex-col text-left">
+            <table class="flex w-full border-collapse flex-col text-left text-slate-800">
                 <thead>
                     <tr
-                        class="flex border-b border-slate-700 bg-slate-900 text-xs tracking-wider text-white uppercase"
+                        class="flex border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase font-semibold"
                     >
                         <th class="w-1/3 p-4">Fecha</th>
                         <th class="w-1/2 p-4">Encuesta</th>
@@ -28,17 +28,17 @@
                     </tr>
                 </thead>
                 <tbody
-                    class="custom-scrollbar block max-h-150 divide-y divide-slate-700/50 overflow-y-scroll"
+                    class="custom-scrollbar block max-h-150 divide-y divide-slate-100 overflow-y-scroll"
                 >
                     <tr
                         v-for="(survey, index) in displayedSurveys"
                         :key="index"
-                        class="flex text-slate-200 transition-colors hover:bg-slate-600/30"
+                        class="flex text-slate-800 transition-colors hover:bg-slate-50"
                     >
-                        <td class="w-1/3 p-4 text-xs md:text-sm">
+                        <td class="w-1/3 p-4 text-xs text-slate-600 md:text-sm">
                             {{ new Date(survey.created_at).toLocaleString() }}
                         </td>
-                        <td class="w-1/2 p-4 text-xs md:text-sm">
+                        <td class="w-1/2 p-4 text-xs font-medium text-slate-900 md:text-sm">
                             {{ survey?.survey?.name }}
                         </td>
                         <td
@@ -166,13 +166,13 @@ const clearSavedSurveys = () => {
     width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(30, 41, 59, 0.5);
+    background: #f1f5f9;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #475569;
+    background: #cbd5e1;
     border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
+    background: #94a3b8;
 }
 </style>

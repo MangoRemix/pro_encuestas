@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-4 flex items-center justify-center gap-4 text-white">
+    <div class="mt-4 flex items-center justify-center gap-4 ">
         <button
             :disabled="currentPage === 1"
             @click="$emit('page-change', currentPage - 1)"

@@ -2,7 +2,7 @@
     <Head title="Encuestas: detalles" />
     <MainLayout>
         <div class="text-center">
-            <h2 class="mt-8 text-3xl font-bold text-white underline">
+            <h2 class="mt-8 text-3xl font-bold text-slate-900">
                 Encuestas
             </h2>
         </div>
@@ -15,11 +15,11 @@
                     type="text"
                     placeholder="Buscar encuesta..."
                     @keyup.enter="handleSearch"
-                    class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none md:w-80"
+                    class="w-full rounded border border-slate-300 bg-white px-4 py-2 text-slate-800 placeholder-slate-400 transition-all focus:ring-1 focus:ring-blue-500 focus:outline-none md:w-80 shadow-sm"
                 />
                 <button
                     @click="handleSearch"
-                    class="shrink-0 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700 cursor-pointer"
+                    class="shrink-0 rounded border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition-colors hover:bg-slate-50 cursor-pointer shadow-sm"
                 >
                     Buscar
                 </button>
@@ -39,7 +39,7 @@
                 <div class="flex w-fit items-center">
                     <Link
                         href="/surveys/create-survey/step-1"
-                        class="green-button-app flex items-center justify-center gap-x-2"
+                        class="primary-button-app flex items-center justify-center gap-x-2"
                     >
                         <Icon class="text-2xl" icon="ic:outline-plus" /> Nueva encuesta
                     </Link>
@@ -56,8 +56,8 @@
                 class="rounded-full border px-3 py-1 text-xs font-medium transition-colors"
                 :class="
                     sortField === field.key
-                        ? 'border-blue-500 bg-blue-600 text-white'
-                        : 'border-slate-700 bg-slate-800 text-slate-400'
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 "
             >
                 {{ field.label }}
@@ -70,20 +70,20 @@
             <div
                 v-for="survey in surveys"
                 :key="survey.id"
-                class="rounded-lg border border-slate-700 bg-slate-800 p-4 shadow-sm"
+                class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
             >
                 <div class="mb-3 flex items-start justify-between">
-                    <h3 class="text-lg font-bold text-white">
+                    <h3 class="text-lg font-bold text-slate-900">
                         {{ survey.name }}
                     </h3>
                     <span
-                        class="rounded-full bg-slate-700 px-2 py-1 text-xs font-semibold text-nowrap text-slate-300"
+                        class="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-nowrap text-slate-700"
                     >
                         {{ survey.results_count }} respuestas
                     </span>
                 </div>
                 <div
-                    class="flex justify-end gap-2 border-t border-slate-700 pt-3"
+                    class="flex justify-end gap-2 border-t border-slate-100 pt-3"
                 >
                     <RowActions
                         :is-admin="isAdmin"
@@ -103,13 +103,13 @@
 
         <!-- Vista Escritorio: Tabla -->
         <div
-            class="hidden overflow-hidden rounded-lg border border-slate-700 bg-gray-500/30 md:block"
+            class="hidden overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm md:block"
         >
             <div class="custom-scrollbar max-h-150 overflow-y-auto">
-                <table class="w-full border-collapse text-left">
-                    <thead class="sticky top-0 z-10 bg-slate-900">
+                <table class="w-full border-collapse text-left text-slate-800">
+                    <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
                         <tr
-                            class="border-b border-slate-700 text-xs tracking-wider text-white uppercase"
+                            class="text-xs tracking-wider text-slate-500 uppercase font-semibold"
                         >
                             <th
                                 class="cursor-pointer p-4 select-none"
@@ -142,14 +142,14 @@
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50">
+                    <tbody class="divide-y divide-slate-100">
                         <tr
                             v-for="survey in surveys"
                             :key="survey.id"
-                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                            class="transition-colors hover:bg-slate-50"
                         >
-                            <td class="p-4 font-medium">{{ survey.name }}</td>
-                            <td class="p-4 text-center">
+                            <td class="p-4 font-medium text-slate-900">{{ survey.name }}</td>
+                            <td class="p-4 text-center text-slate-700">
                                 {{ survey.results_count }}
                             </td>
                             <td class="p-4">

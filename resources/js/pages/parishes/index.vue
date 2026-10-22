@@ -54,7 +54,7 @@ const remove = async (id) => {
     <Head title="Gestión de Parroquias" />
     <MainLayout>
         <div class="text-center">
-            <h2 class="mt-8 text-3xl font-bold text-white underline">
+            <h2 class="mt-8 text-3xl font-bold text-slate-900">
                 Gestión de Parroquias
             </h2>
         </div>
@@ -63,7 +63,7 @@ const remove = async (id) => {
             <div class="w-full sm:w-fit">
                 <button
                     @click="openModal()"
-                    class="green-button-app flex cursor-pointer items-center justify-center gap-x-2"
+                    class="primary-button-app flex cursor-pointer items-center justify-center gap-x-2"
                 >
                     <Icon class="text-2xl" icon="ic:outline-plus" />
                     Nueva Parroquia
@@ -72,25 +72,25 @@ const remove = async (id) => {
         </div>
 
         <div
-            class="overflow-hidden rounded-lg border border-slate-700 bg-gray-500/30"
+            class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
         >
             <div class="custom-scrollbar max-h-110 overflow-y-auto">
-                <table class="w-full border-collapse text-left">
+                <table class="w-full border-collapse text-left text-slate-800">
                     <thead>
                         <tr
-                            class="sticky top-0 z-10 border-b border-slate-700 bg-slate-900 text-xs tracking-wider text-white uppercase"
+                            class="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase font-semibold"
                         >
                             <th class="p-4">Nombre</th>
                             <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50">
+                    <tbody class="divide-y divide-slate-100">
                         <tr
                             v-for="p in parishes"
                             :key="p.id"
-                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                            class="transition-colors hover:bg-slate-50"
                         >
-                            <td class="p-4 font-medium">{{ p.name }}</td>
+                            <td class="p-4 font-medium text-slate-900">{{ p.name }}</td>
                             <td class="p-4">
                                 <div class="flex justify-center gap-3">
                                     <Icon

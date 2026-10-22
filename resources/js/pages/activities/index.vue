@@ -247,7 +247,7 @@ onMounted(async () => {
     <Head title="Actividades" />
     <MainLayout>
         <div class="text-center">
-            <h2 class="mt-8 text-3xl font-bold text-white underline">
+            <h2 class="mt-8 text-3xl font-bold text-slate-900">
                 Actividades
             </h2>
         </div>
@@ -256,7 +256,7 @@ onMounted(async () => {
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div class="min-w-56 flex-1">
                     <label
-                        class="mb-1 block text-sm font-semibold text-slate-300"
+                        class="mb-1 block text-sm font-semibold text-slate-700"
                     >
                         Filtrar por encuesta
                     </label>
@@ -276,7 +276,7 @@ onMounted(async () => {
                 </div>
                 <div class="min-w-40 flex-1">
                     <label
-                        class="mb-1 block text-sm font-semibold text-slate-300"
+                        class="mb-1 block text-sm font-semibold text-slate-700"
                     >
                         Estado
                     </label>
@@ -291,7 +291,7 @@ onMounted(async () => {
                 </div>
                 <div class="min-w-56 flex-1">
                     <label
-                        class="mb-1 block text-sm font-semibold text-slate-300"
+                        class="mb-1 block text-sm font-semibold text-slate-700"
                     >
                         Encuestador
                     </label>
@@ -311,7 +311,7 @@ onMounted(async () => {
                 </div>
                 <div class="min-w-40">
                     <label
-                        class="mb-1 block text-sm font-semibold text-slate-300"
+                        class="mb-1 block text-sm font-semibold text-slate-700"
                     >
                         Fecha
                     </label>
@@ -325,7 +325,7 @@ onMounted(async () => {
 
                     <button
                         type="button"
-                        class="yellow-button-app flex items-center justify-center cursor-pointer "
+                        class="primary-button-app flex items-center justify-center cursor-pointer "
                         @click="isCreating = !isCreating"
                     >
                         <Icon
@@ -340,11 +340,11 @@ onMounted(async () => {
 
             <div
                 v-if="isCreating"
-                class="mb-6 rounded-xl border border-blue-700/50 bg-slate-600/50 p-4 shadow-lg backdrop-blur-md"
+                class="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
             >
                 <div class="flex flex-wrap items-end gap-3">
                     <div class="flex min-w-56 flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300"
+                        <label class="text-xs font-semibold text-slate-700"
                             >Encuesta</label
                         >
                         <select
@@ -362,7 +362,7 @@ onMounted(async () => {
                         </select>
                     </div>
                     <div class="flex min-w-48 flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300"
+                        <label class="text-xs font-semibold text-slate-700"
                             >Parroquia(s)</label
                         >
                         <MultiSelect
@@ -372,7 +372,7 @@ onMounted(async () => {
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300"
+                        <label class="text-xs font-semibold text-slate-700"
                             >Fecha de inicio</label
                         >
                         <input
@@ -382,7 +382,7 @@ onMounted(async () => {
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-slate-300"
+                        <label class="text-xs font-semibold text-slate-700"
                             >Fecha de fin</label
                         >
                         <input
@@ -402,17 +402,17 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <div v-if="loading" class="text-sm text-slate-300">Cargando...</div>
+            <div v-if="loading" class="text-sm text-slate-600">Cargando...</div>
 
             <div
                 v-else
-                class="overflow-hidden rounded-lg border border-slate-700 bg-gray-500/30"
+                class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
             >
                 <div class="custom-scrollbar max-h-150 overflow-y-auto">
-                    <table class="w-full border-collapse text-left">
-                        <thead class="sticky top-0 z-10 bg-slate-900">
+                    <table class="w-full border-collapse text-left text-slate-800">
+                        <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
                             <tr
-                                class="border-b border-slate-700 text-xs tracking-wider text-white uppercase"
+                                class="text-xs tracking-wider text-slate-500 uppercase font-semibold"
                             >
                                 <th class="p-4">Encuesta</th>
                                 <th class="p-4">Parroquia</th>
@@ -421,11 +421,11 @@ onMounted(async () => {
                                 <th class="p-4">Encuestadores</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-700/50">
+                        <tbody class="divide-y divide-slate-100">
                             <tr v-if="activities.length === 0">
                                 <td
                                     colspan="5"
-                                    class="p-6 text-center text-sm text-slate-400 italic"
+                                    class="p-6 text-center text-sm text-slate-500 italic"
                                 >
                                     No hay actividades para mostrar.
                                 </td>
@@ -433,15 +433,15 @@ onMounted(async () => {
                             <tr
                                 v-for="activity in activities"
                                 :key="activity.id"
-                                class="align-top text-slate-200"
+                                class="align-top text-slate-800 transition-colors hover:bg-slate-50"
                             >
-                                <td class="p-4 font-medium text-white">
+                                <td class="p-4 font-medium text-slate-900">
                                     {{ activity.survey?.name }}
                                 </td>
-                                <td class="p-4">
+                                <td class="p-4 text-slate-700">
                                     {{ parishesLabel(activity) }}
                                 </td>
-                                <td class="p-4 text-nowrap">
+                                <td class="p-4 text-nowrap text-slate-600">
                                     {{ formatedDate(activity.init_date) }} —
                                     {{ formatedDate(activity.finish_date) }}
                                 </td>
@@ -450,8 +450,8 @@ onMounted(async () => {
                                         class="rounded-full px-2 py-0.5 text-xs font-semibold"
                                         :class="
                                             isActive(activity)
-                                                ? 'bg-green-600/30 text-green-300'
-                                                : 'bg-slate-500/30 text-slate-300'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-slate-100 text-slate-600'
                                         "
                                     >
                                         {{
@@ -518,7 +518,7 @@ onMounted(async () => {
                                                 activity.id
                                             ]"
                                             :key="pollster.id"
-                                            class="flex items-center justify-between gap-2 rounded bg-slate-800/50 px-2 py-1 text-sm"
+                                            class="flex items-center justify-between gap-2 rounded bg-slate-50 border border-slate-200 px-2 py-1 text-sm text-slate-800"
                                         >
                                             <span>{{ pollster.name }}</span>
                                             <button
@@ -529,7 +529,7 @@ onMounted(async () => {
                                                         ? 'Esta actividad ya finalizó; no se puede desasignar personal'
                                                         : ''
                                                 "
-                                                class="cursor-pointer text-xs text-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:text-slate-500 disabled:hover:text-slate-500"
+                                                class="cursor-pointer text-xs text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:text-slate-400"
                                                 @click="
                                                     handleUnassign(
                                                         activity,
@@ -560,7 +560,7 @@ onMounted(async () => {
         </div>
     </MainLayout>
 </template>
-
+<!--  -->
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

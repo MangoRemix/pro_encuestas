@@ -3,7 +3,7 @@
     <MainLayout>
         <div class="mx-auto max-w-7xl p-0 md:p-6">
             <h1
-                class="mb-6 text-center text-2xl font-bold text-slate-100 md:text-3xl"
+                class="mb-6 text-center text-2xl font-bold text-slate-900 md:text-3xl"
             >
                 Gestión de Personal
             </h1>
@@ -16,11 +16,11 @@
                         type="text"
                         placeholder="Buscar por nombre, email o rol..."
                         @keyup.enter="handleSearch"
-                        class="w-full rounded border border-slate-700 bg-slate-900 px-4 py-2 text-slate-200 placeholder-slate-500 transition-all focus:ring-1 focus:ring-slate-500 focus:outline-none"
+                        class="w-full rounded border border-slate-300 bg-white px-4 py-2 text-slate-800 placeholder-slate-400 transition-all focus:ring-1 focus:ring-blue-500 focus:outline-none shadow-sm"
                     />
                     <button
                         @click="handleSearch"
-                        class="shrink-0 rounded border border-slate-700 bg-slate-800 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-slate-700"
+                        class="shrink-0 rounded border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition-colors hover:bg-slate-50 shadow-sm"
                     >
                         Buscar
                     </button>
@@ -28,7 +28,7 @@
                 <div class="w-50">
                     <button
                         @click="openCreateModal"
-                        class="green-button-app flex cursor-pointer items-center justify-center gap-x-2 rounded px-4 py-2 font-medium transition-colors"
+                        class="primary-button-app flex cursor-pointer items-center justify-center gap-x-2 rounded px-4 py-2 font-medium transition-colors"
                     >
                         <Icon class="text-2xl" icon="ic:outline-plus" />
                         Crear usuario
@@ -38,22 +38,22 @@
 
             <!-- Vista Móvil: Tarjetas -->
             <div class="space-y-4 md:hidden">
-                <div v-if="isLoading" class="py-8 text-center text-slate-400">
+                <div v-if="isLoading" class="py-8 text-center text-slate-500">
                     Cargando...
                 </div>
                 <div
                     v-else-if="errorMessage"
-                    class="py-8 text-center text-red-400"
+                    class="py-8 text-center text-red-600"
                 >
                     {{ errorMessage }}
                 </div>
                 <div
                     v-for="user in staffData.data"
                     :key="user.id"
-                    class="rounded-lg border border-slate-700 bg-slate-800 p-3 shadow-sm"
+                    class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
                 >
                     <div class="mb-3 flex items-start justify-between">
-                        <h3 class="text-lg font-bold text-white">
+                        <h3 class="text-lg font-bold text-slate-900">
                             {{ user.name }}
                         </h3>
                         <span
@@ -62,32 +62,32 @@
                             {{ getRoleName(user) }}
                         </span>
                     </div>
-                    <div class="mb-4 space-y-1 text-sm text-slate-400">
+                    <div class="mb-4 space-y-1 text-sm text-slate-600">
                         <p>Email: {{ user.email }}</p>
                         <p>Sexo: {{ user.sex_id === 1 ? 'M' : 'F' }}</p>
-                        <p v-if="user.disabled_at" class="text-red-400">
+                        <p v-if="user.disabled_at" class="text-red-600 font-medium">
                             Deshabilitado
                         </p>
                     </div>
                     <div
-                        class="flex justify-end gap-2 border-t border-slate-700 pt-3"
+                        class="flex justify-end gap-2 border-t border-slate-100 pt-3"
                     >
                         <Icon
                             @click="editUser(user)"
-                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-600"
                             icon="ic:baseline-edit"
                         />
                         <Icon
                             v-if="user.disabled_at"
                             @click="handleEnableUser(user.id)"
-                            class="cursor-pointer text-xl text-green-500 hover:text-green-400"
+                            class="cursor-pointer text-xl text-green-600 hover:text-green-700"
                             icon="ic:baseline-restore"
                             title="Habilitar"
                         />
                         <Icon
                             v-else
                             @click="confirmDisable(user.id)"
-                            class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                            class="cursor-pointer text-xl text-red-600 hover:text-red-700"
                             icon="ic:baseline-restore-from-trash"
                             title="Deshabilitar"
                         />
@@ -97,25 +97,25 @@
 
             <!-- Tabla con estilo Dashboard (Vista Escritorio) -->
             <div
-                class="custom-scrollbar hidden max-h-150 overflow-hidden overflow-y-auto rounded-lg border border-slate-700 bg-gray-500/30 md:block"
+                class="custom-scrollbar hidden max-h-150 overflow-hidden overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-sm md:block"
             >
-                <table class="w-full border-collapse text-left">
-                    <thead class="sticky top-0 z-10 bg-slate-900">
+                <table class="w-full border-collapse text-left text-slate-800">
+                    <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
                         <tr
-                            class="border-b border-slate-700 text-xs tracking-wider text-white uppercase"
+                            class="text-xs tracking-wider text-slate-500 uppercase font-semibold"
                         >
                             <th class="p-4">Nombre</th>
                             <th class="p-4">Email</th>
                             <th class="p-4">Sexo</th>
                             <th class="p-4">Rol</th>
-                            <th class="p-4">Acciones</th>
+                            <th class="p-4 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50">
+                    <tbody class="divide-y divide-slate-100">
                         <tr v-if="isLoading">
                             <td
                                 colspan="5"
-                                class="p-4 text-center text-slate-400"
+                                class="p-4 text-center text-slate-500"
                             >
                                 Cargando...
                             </td>
@@ -123,7 +123,7 @@
                         <tr v-else-if="errorMessage">
                             <td
                                 colspan="5"
-                                class="p-4 text-center text-red-400"
+                                class="p-4 text-center text-red-600"
                             >
                                 {{ errorMessage }}
                             </td>
@@ -131,22 +131,22 @@
                         <tr
                             v-for="user in staffData.data"
                             :key="user.id"
-                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                            class="transition-colors hover:bg-slate-50"
                         >
-                            <td class="p-4">{{ user.name }}</td>
-                            <td class="p-4">{{ user.email }}</td>
-                            <td class="p-4">
+                            <td class="p-4 font-medium text-slate-900">{{ user.name }}</td>
+                            <td class="p-4 text-slate-600">{{ user.email }}</td>
+                            <td class="p-4 text-slate-600">
                                 {{ user.sex_id === 1 ? 'M' : 'F' }}
                             </td>
                             <td class="p-4">
                                 <span
-                                    class="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs"
+                                    class="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-blue-100"
                                 >
                                     {{ getRoleName(user) }}
                                 </span>
                                 <span
                                     v-if="user.disabled_at"
-                                    class="ml-2 rounded border border-red-700 bg-red-900/50 px-2 py-1 text-xs text-red-300"
+                                    class="ml-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-600 font-medium"
                                 >
                                     Deshabilitado
                                 </span>
@@ -155,19 +155,19 @@
                                 <div class="flex justify-center gap-3">
                                     <Icon
                                         @click="editUser(user)"
-                                        class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                        class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-600"
                                         icon="ic:baseline-edit"
                                     />
                                     <Icon
                                         v-if="user.disabled_at"
                                         @click="handleEnableUser(user.id)"
-                                        class="cursor-pointer text-xl text-green-500 hover:text-green-400"
+                                        class="cursor-pointer text-xl text-green-600 hover:text-green-700"
                                         icon="ic:baseline-restore"
                                         title="Habilitar"
                                     />
                                     <Icon
                                         v-else
-                                        class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                        class="cursor-pointer text-xl text-red-600 hover:text-red-700"
                                         icon="ic:baseline-restore-from-trash"
                                         title="Deshabilitar"
                                         @click="confirmDisable(user.id)"

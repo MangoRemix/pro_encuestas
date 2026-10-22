@@ -32,13 +32,13 @@
         </div>
 
         <div
-            class="w-full overflow-hidden rounded-lg border border-slate-700 bg-gray-500/50"
+            class="w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
         >
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-left">
+                <table class="w-full border-collapse text-left text-slate-800">
                     <thead>
                         <tr
-                            class="border-b border-slate-700 bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                            class="border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase font-semibold"
                         >
                             <th class="w-30 p-4">Orden</th>
                             <th class="p-4">Nombre</th>
@@ -49,22 +49,22 @@
                         v-model="categories"
                         item-key="id"
                         tag="tbody"
-                        class="custom-scrollbar divide-y divide-slate-700/50"
+                        class="custom-scrollbar divide-y divide-slate-100"
                         @end="onReorder"
                     >
                         <template #item="{ element: category }">
                             <tr
-                                class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                                class="text-slate-800 transition-colors hover:bg-slate-50"
                             >
-                                <td class="p-4">{{ category?.order }}</td>
-                                <td class="p-4">{{ category?.name }}</td>
+                                <td class="p-4 text-slate-700">{{ category?.order }}</td>
+                                <td class="p-4 font-medium text-slate-900">{{ category?.name }}</td>
                                 <td class="p-4">
                                     <div
                                         class="flex w-full items-center justify-center gap-x-3"
                                     >
                                         <Icon
                                             @click="editCategory(category)"
-                                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-400"
+                                            class="cursor-pointer text-xl text-yellow-500 hover:text-yellow-600"
                                             icon="ic:baseline-edit"
                                         />
                                         <Icon
@@ -73,7 +73,7 @@
                                                     category.id,
                                                 )
                                             "
-                                            class="cursor-pointer text-xl text-red-500 hover:text-red-400"
+                                            class="cursor-pointer text-xl text-red-600 hover:text-red-700"
                                             icon="ic:baseline-delete-forever"
                                         />
                                     </div>

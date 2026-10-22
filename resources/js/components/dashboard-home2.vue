@@ -22,40 +22,40 @@
 
     <div class="flex flex-wrap gap-6 md:px-6">
         <div
-            class="min-w-[320px] flex-1 overflow-hidden rounded-lg border border-slate-700 bg-slate-800"
+            class="min-w-[320px] flex-1 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
         >
             <div
-                class="flex items-center justify-between border-b border-slate-700 p-4"
+                class="flex items-center justify-between border-b border-slate-200 p-4"
             >
-                <h2 class="text-lg font-bold text-white">
+                <h2 class="text-lg font-bold text-slate-900">
                     Encuestas recientes
                 </h2>
                 <Link
                     href="/surveys"
-                    class="text-sm text-blue-400 hover:text-blue-300"
+                    class="text-sm font-medium text-blue-600 hover:text-blue-700"
                     >Ver todas</Link
                 >
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
+                <table class="w-full text-left text-slate-800">
                     <thead
-                        class="bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                        class="border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase"
                     >
                         <tr>
-                            <th class="p-4">Nombre</th>
-                            <th class="p-4 text-nowrap">Creada</th>
+                            <th class="p-4 font-semibold">Nombre</th>
+                            <th class="p-4 font-semibold text-nowrap">Creada</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50">
+                    <tbody class="divide-y divide-slate-100">
                         <tr
                             v-for="survey in recentSurveys"
                             :key="survey.id"
-                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                            class="transition-colors hover:bg-slate-50"
                         >
-                            <td class="p-4 text-xs font-medium md:text-[13px]">
+                            <td class="p-4 text-xs font-medium text-slate-900 md:text-[13px]">
                                 {{ survey.name }}
                             </td>
-                            <td class="p-4 text-xs md:text-[13px]">
+                            <td class="p-4 text-xs text-slate-500 md:text-[13px]">
                                 {{ formatedDate(survey.created_at) }}
                             </td>
                         </tr>
@@ -65,37 +65,37 @@
         </div>
 
         <div
-            class="min-w-fit flex-1 overflow-hidden rounded-lg border border-slate-700 bg-slate-800 lg:max-w-105"
+            class="min-w-fit flex-1 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:max-w-105"
         >
             <div
-                class="flex items-center justify-between border-b border-slate-700 p-4"
+                class="flex items-center justify-between border-b border-slate-200 p-4"
             >
-                <h2 class="text-lg font-bold text-white">
+                <h2 class="text-lg font-bold text-slate-900">
                     Top 5 Encuestadores
                 </h2>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
+                <table class="w-full text-left text-slate-800">
                     <thead
-                        class="bg-slate-900/50 text-xs tracking-wider text-white uppercase"
+                        class="border-b border-slate-200 bg-slate-50 text-xs tracking-wider text-slate-500 uppercase"
                     >
                         <tr>
-                            <th class="p-4">Encuestador</th>
-                            <th class="p-4 text-center">
+                            <th class="p-4 font-semibold">Encuestador</th>
+                            <th class="p-4 text-center font-semibold">
                                 Encuestas realizadas
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50">
+                    <tbody class="divide-y divide-slate-100">
                         <tr
                             v-for="pollster in topPollsters"
                             :key="pollster.pollster_id"
-                            class="text-slate-200 transition-colors hover:bg-slate-600/30"
+                            class="transition-colors hover:bg-slate-50"
                         >
-                            <td class="p-4 text-xs font-medium md:text-[13px]">
+                            <td class="p-4 text-xs font-medium text-slate-900 md:text-[13px]">
                                 {{ pollster.pollster_name }}
                             </td>
-                            <td class="p-4 text-center text-xs md:text-[13px]">
+                            <td class="p-4 text-center text-xs font-semibold text-slate-700 md:text-[13px]">
                                 {{ pollster.total_surveys_conducted }}
                             </td>
                         </tr>

@@ -52,7 +52,7 @@
                 <button
                     :disabled="disabledRewind"
                     type="button"
-                    class="yellow-button-app basis-xs cursor-pointer rounded px-4 py-2 text-white"
+                    class="primary-button-app basis-xs cursor-pointer rounded px-4 py-2 text-white"
                     @click="decrementQuestion"
                 >
                     Anterior
